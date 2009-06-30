@@ -6,8 +6,18 @@
 (defparameter *msg-loop-thread* nil)
 (defparameter *nick* "sykobot")
 
+(defun shut-up ()
+  (setf (irc:client-stream *conn*) (make-broadcast-stream)))
+
+(defun un-shut-up ()
+  (setf (irc:client-stream *conn*) *standard-output*))
+
 (defun join-channel (name)
   (irc:join *conn* name))
+
+(defun change-nickname (new-name)
+  (setf *nick* new-name)
+  (irc:nick *conn* new-name))
 
 (defun connect-to-server (server-name &rest channels)
   (setf *conn* (irc:connect :nickname *nick* :server server-name))
@@ -56,6 +66,13 @@
          (send-msg channel "pong"))
         ((string-equal cmd "google")
          (google-search args sender channel))
+        ((and (string-equal cmd "shut") (string-equal "up" args))
+         (send-msg channel (format nil "~A: okay. Tell me \"talk again\" when ~
+                                        you realize how lonely you really are." sender))
+         (shut-up))
+        ((string-equal cmd "talk")
+         (send-msg channel (format nil "~A: bla bla bla bla. There, happy?" sender))
+         (un-shut-up))
         ((string-equal cmd "help")
          (send-msg channel (format nil "~A: I'm not a psychiatrist. Go away." sender)))
         (t (send-notice sender (format nil "I don't know how to ~A." cmd)))))
