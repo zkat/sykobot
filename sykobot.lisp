@@ -15,14 +15,19 @@
   (irc:add-hook *conn* 'irc:irc-privmsg-message #'msg-hook))
 
 (defun silent-mode (msg)
-  (when (let ((x (string-not-equal (cadr (irc:arguments msg)) "talk")))
-          (or (not x)
-              (= x 4)))
-    (send-msg (car (irc:arguments msg))
-              (format nil
-                      "~A: bla bla bla bla. There, happy?"
-                      (irc:source msg)))
-    (un-shut-up)))
+  (let* ((sender (irc:source msg))
+         (channel (car (irc:arguments msg)))
+         (message (second (irc:arguments msg)))
+         (string (scan-string-for-direct-message channel message))
+         (command (car (split "\\s+" string :limit 2))))
+    (when (let ((x (string-not-equal command "talk")))
+            (or (not x)
+                (= x 4)))
+      (send-msg channel
+                (format nil
+                        "~A: bla bla bla bla. There, happy?"
+                        sender))
+      (un-shut-up)))))
 
 (defun join-channel (name)
   (irc:join *conn* name))
