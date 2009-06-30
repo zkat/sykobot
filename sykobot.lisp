@@ -116,38 +116,7 @@
     (usocket:ns-host-not-found-error () (error "Host not found"))))
 
 (defun decode-html-string (string)
-  (ppcre:regex-replace-all "&#?.*?;" string #'decode-html-entity
-                           :simple-calls T))
-
-(defun decode-html-entity (entity)
-  (if (eq (char entity 1) #\#)
-      (decode-numerical-html-entity entity)
-      (decode-named-html-entity entity)))
-
-(defun decode-named-html-entity (entity)
-  (let ((regexp (build-entity-regexp entity)))
-    (or (lookup-named-html-entity
-         regexp "http://www.w3schools.com/tags/ref_entities.asp")
-        (lookup-named-html-entity
-         regexp "http://www.w3schools.com/tags/ref_symbols.asp")
-        "?")))
-
-(defun decode-numerical-html-entity (entity)
-  (string (code-char (parse-integer entity :start 2 :junk-allowed T))))
-
-(defun build-entity-regexp (entity)
-  (ppcre:create-scanner
-   (print (format nil "(#\\d*;)</td>.*?\\W.*?<td>&amp;~A"
-                  (subseq entity 1)))
-   :multi-line-mode T))
-
-(defun lookup-named-html-entity (regexp url)
-  (decode-numerical-html-entity
-   (format nil "&~A"
-           (elt (or (nth-value 1 (ppcre:scan-to-strings
-                          regexp (drakma:http-request url)))
-            (return-from lookup-named-html-entity NIL))
-            0))))
+  (html-entities:decode-entities string))
 
 (defun send-notice (target message)
   (irc:notice *conn* target message))
