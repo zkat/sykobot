@@ -27,7 +27,7 @@
                 (format nil
                         "~A: bla bla bla bla. There, happy?"
                         sender))
-      (un-shut-up)))))
+      (un-shut-up))))
 
 (defun join-channel (name)
   (irc:join *conn* name))
