@@ -44,7 +44,10 @@
 (defun respond-to-message (sender channel message)
   (let* ((string (scan-string-for-direct-message channel message))
          (command+args (split "\\s+" string :limit 2)))
-    (answer-command (car command+args) (cadr command+args) sender channel)))
+    (handler-case
+        (answer-command (car command+args) (cadr command+args) sender channel)
+      (error (e)
+        (send-msg channel (format nil "~A: An error occurred: ~A" sender e))))))
 
 (defun answer-command (cmd args sender channel)
   (cond ((string-equal cmd "echo")
@@ -60,7 +63,7 @@
 (defun google-search (query sender channel)
   (let ((search-string (regex-replace-all "\\s+" query "+")))
     (multiple-value-bind (title url)
-        (url-info (format nil "http://google.com/search?btnI&q=~A" search-string))
+        (url-info (format nil "http://google.com/search?btnI&filter=1&safe=on&q=~A" search-string))
       (send-msg channel (format nil "~A: ~A <~A>" sender title url)))))
 
 (defun url-info (url)
