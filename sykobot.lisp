@@ -8,19 +8,19 @@
 
 (defun shut-up ()
   (irc:remove-hook *conn* 'irc:irc-privmsg-message #'msg-hook)
-  (irc:add-hook *conn* 'irc:irc-privmsg-message #'silent-mode)
+  (irc:add-hook *conn* 'irc:irc-privmsg-message #'silent-mode))
 
 (defun un-shut-up ()
-  (irc:remove-hook *conn 'irc:irc-privmsg-message #'silent-mode)
+  (irc:remove-hook *conn* 'irc:irc-privmsg-message #'silent-mode)
   (irc:add-hook *conn* 'irc:irc-privmsg-message #'msg-hook))
 
 (defun silent-mode (msg)
   (when (let ((x (string-equal (cadr (irc:arguments msg)) "talk")))
           (or (not x)
               (= x 4)))
-    (send-msg channel
+    (send-msg channel ; where's this supposed to come from? :)
               (format nil
-                      "~A: bla bla bla bla. There, happy?" sender))
+                      "~A: bla bla bla bla. There, happy?" sender)) ; sender, too
     (un-shut-up)))
 
 (defun join-channel (name)
