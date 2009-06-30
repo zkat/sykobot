@@ -15,7 +15,7 @@
   (irc:add-hook *conn* 'irc:irc-privmsg-message #'msg-hook))
 
 (defun silent-mode (msg)
-  (when (let ((x (string-equal (cadr (irc:arguments msg)) "talk")))
+  (when (let ((x (string-not-equal (cadr (irc:arguments msg)) "talk")))
           (or (not x)
               (= x 4)))
     (send-msg (car (irc:arguments msg))
