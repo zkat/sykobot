@@ -18,10 +18,10 @@
   (when (let ((x (string-equal (cadr (irc:arguments msg)) "talk")))
           (or (not x)
               (= x 4)))
-    (send-msg (irc:source msg)
+    (send-msg (car (irc:arguments msg))
               (format nil
                       "~A: bla bla bla bla. There, happy?"
-                      (car (irc:arguments msg))))
+                      (irc:source msg)))
     (un-shut-up)))
 
 (defun join-channel (name)
