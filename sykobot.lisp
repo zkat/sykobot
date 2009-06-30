@@ -76,7 +76,7 @@
           (drakma:http-request url)
         (declare (ignore status-code headers))
         (values (multiple-value-bind (match vec)
-                    (scan-to-strings (create-scanner "<title>(.+)</title>" 
+                    (scan-to-strings (create-scanner "<title[ \\t\\r\\n]*>(.+)</title[ \\t\\r\\n]*>" 
                                                      :case-insensitive-mode t) body)
                   (declare (ignore match))
                   (if (< 0 (length vec))
