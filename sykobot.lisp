@@ -109,7 +109,7 @@
   (when (scan "https?://.*[.$| |>]" string) t))
 
 (defun grab-url (string)
-  (find-if #'has-url-p (split "\\s+|>|<|," string)))
+  (find-if #'has-url-p (split "[\\s+><,]" string)))
 
 (defun topic (channel-name)
   (let ((channel (irc:find-channel *conn* channel-name)))
