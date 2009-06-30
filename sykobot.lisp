@@ -18,9 +18,10 @@
   (when (let ((x (string-equal (cadr (irc:arguments msg)) "talk")))
           (or (not x)
               (= x 4)))
-    (send-msg channel ; where's this supposed to come from? :)
+    (send-msg (irc:source msg)
               (format nil
-                      "~A: bla bla bla bla. There, happy?" sender)) ; sender, too
+                      "~A: bla bla bla bla. There, happy?"
+                      (car (irc:arguments msg))))
     (un-shut-up)))
 
 (defun join-channel (name)
