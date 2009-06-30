@@ -81,6 +81,8 @@
          (send-msg channel (format nil "~A: okay. Tell me \"talk again\" when ~
                                         you realize how lonely you really are." sender))
          (shut-up))
+        ((string-equal cmd "chant")
+         (send-msg channel "FUCK REGEX"))
         ((string-equal cmd "help")
          (send-msg channel (format nil "~A: I'm not a psychiatrist. Go away." sender)))
         (t (send-notice sender (format nil "I don't know how to ~A." cmd)))))
@@ -97,7 +99,7 @@
           (drakma:http-request url)
         (declare (ignore status-code headers))
         (values (multiple-value-bind (match vec)
-                    (scan-to-strings (create-scanner "<title>(.+)</title>"
+                    (scan-to-strings (create-scanner "<title[ \\t\\r\\n]*>(.+)</title[ \\t\\r\\n]*>"
                                                      :case-insensitive-mode t) body)
                   (declare (ignore match))
                   (if (< 0 (length vec))
@@ -128,7 +130,7 @@
   (when (scan "https?://.*[.$| |>]" string) t))
 
 (defun grab-url (string)
-  (find-if #'has-url-p (split "\\s+|>|<|," string)))
+  (find-if #'has-url-p (split "[\\s+><,]" string)))
 
 (defun topic (channel-name)
   (let ((channel (irc:find-channel *conn* channel-name)))
