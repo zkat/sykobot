@@ -61,7 +61,7 @@
   (let ((search-string (regex-replace-all "\\s+" query "+")))
     (multiple-value-bind (title url)
         (url-info (format nil "http://google.com/search?btnI&q=~A" search-string))
-      (send-msg channel (format nil "~A: ~A <~A>" sender title (puri:uri-host (puri:uri url)))))))
+      (send-msg channel (format nil "~A: ~A <~A>" sender title url)))))
 
 (defun url-info (url)
   (handler-case
@@ -69,7 +69,8 @@
           (drakma:http-request url)
         (declare (ignore status-code headers))
         (values (multiple-value-bind (match vec)
-                    (scan-to-strings "<title>(.+)</title>" body)
+                    (scan-to-strings (create-scanner "<title>(.+)</title>" 
+                                                     :case-insensitive-mode t) body)
                   (declare (ignore match))
                   (if (< 0 (length vec))
                       (elt vec 0)
@@ -99,7 +100,7 @@
   (when (scan "https?://.*[.$| |>]" string) t))
 
 (defun grab-url (string)
-  (find-if #'has-url-p (split "\\s+|>|<" string)))
+  (find-if #'has-url-p (split "\\s+|>|<|," string)))
 
 (defun topic (channel-name)
   (let ((channel (irc:find-channel *conn* channel-name)))
