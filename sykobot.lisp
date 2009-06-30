@@ -62,6 +62,8 @@
          (google-search args sender channel))
         ((string-equal cmd "help")
          (send-msg channel (format nil "~A: I'm not a psychiatrist. Go away." sender)))
+        ((string-equal cmd "chant")
+         (send-msg channel "FUCK REGEX"))
         (t (send-notice sender (format nil "Unknown command: ~A" cmd)))))
 
 (defun google-search (query sender channel)
