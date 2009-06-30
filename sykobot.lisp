@@ -96,7 +96,7 @@
 (defun google-search (query sender channel)
   (let ((search-string (regex-replace-all "\\s+" query "+")))
     (multiple-value-bind (title url)
-        (url-info (format nil "http://google.com/search?btnI&filter=1&safe=on&q=~A" search-string))
+        (url-info (format nil "http://google.com/search?filter=1&safe=on&q=~A&btnI" search-string))
       (send-msg channel (format nil "~A: ~A <~A>" sender title url)))))
 
 (defun url-info (url)
