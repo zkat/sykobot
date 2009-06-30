@@ -7,10 +7,21 @@
 (defparameter *nick* "sykobot")
 
 (defun shut-up ()
-  (setf (irc:client-stream *conn*) (make-broadcast-stream)))
+  (irc:remove-hook *conn* 'irc:irc-privmsg-message #'msg-hook)
+  (irc:add-hook *conn* 'irc:irc-privmsg-message #'silent-mode)
 
 (defun un-shut-up ()
-  (setf (irc:client-stream *conn*) *standard-output*))
+  (irc:remove-hook *conn 'irc:irc-privmsg-message #'silent-mode)
+  (irc:add-hook *conn* 'irc:irc-privmsg-message #'msg-hook))
+
+(defun silent-mode (msg)
+  (when (let ((x (string-equal (cadr (irc:arguments msg)) "talk")))
+          (or (not x)
+              (= x 4)))
+    (send-msg channel
+              (format nil
+                      "~A: bla bla bla bla. There, happy?" sender))
+    (un-shut-up)))
 
 (defun join-channel (name)
   (irc:join *conn* name))
@@ -70,9 +81,6 @@
          (send-msg channel (format nil "~A: okay. Tell me \"talk again\" when ~
                                         you realize how lonely you really are." sender))
          (shut-up))
-        ((string-equal cmd "talk")
-         (send-msg channel (format nil "~A: bla bla bla bla. There, happy?" sender))
-         (un-shut-up))
         ((string-equal cmd "help")
          (send-msg channel (format nil "~A: I'm not a psychiatrist. Go away." sender)))
         (t (send-notice sender (format nil "I don't know how to ~A." cmd)))))
