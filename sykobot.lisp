@@ -58,7 +58,7 @@
          (google-search args sender channel))
         ((string-equal cmd "help")
          (send-msg channel (format nil "~A: I'm not a psychiatrist. Go away." sender)))
-        (t (send-notice sender (format nil "Unknown command: ~A" cmd)))))
+        (t (send-notice sender (format nil "I don't know how to ~A." cmd)))))
 
 (defun google-search (query sender channel)
   (let ((search-string (regex-replace-all "\\s+" query "+")))
@@ -72,7 +72,7 @@
           (drakma:http-request url)
         (declare (ignore status-code headers))
         (values (multiple-value-bind (match vec)
-                    (scan-to-strings (create-scanner "<title>(.+)</title>" 
+                    (scan-to-strings (create-scanner "<title>(.+)</title>"
                                                      :case-insensitive-mode t) body)
                   (declare (ignore match))
                   (if (< 0 (length vec))
