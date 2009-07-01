@@ -26,7 +26,8 @@
 
 (defreply run-bot ((bot #@sykobot))
   (connect bot (server bot) (password bot)))
-#+nil(defreply connect ((bot #@sykobot) server &optional password)
+
+(defreply connect ((bot #@sykobot) server &optional password)
   (setf (connection bot) (irc:connect :nickname (nickname bot) :server server :password password))
   (irc:add-hook (connection bot) 'irc:irc-privmsg-message
                 (lambda (msg)
@@ -40,18 +41,6 @@
                                                  (let ((r (find-restart 'continue c)))
                                                    (when r (invoke-restart r))))))
             (irc:read-message-loop (connection bot))))))
-(defreply connect ((bot #@sykobot) server &optional password)
-  (setf (connection bot) (irc:connect :nickname (nickname bot) :server server :password password))
-  (irc:add-hook (connection bot) 'irc:irc-privmsg-message
-                (lambda (msg)
-                  (handler-bind ((cl-irc:no-such-reply (lambda (c)
-                                                         (let ((r (find-restart 'continue c)))
-                                                           (when r (invoke-restart r))))))
-                    (msg-hook bot msg))))
-  (handler-bind ((cl-irc:no-such-reply (lambda (c)
-                                         (let ((r (find-restart 'continue c)))
-                                           (when r (invoke-restart r))))))
-    (irc:read-message-loop (connection bot))))
 
 (defreply disconnect ((bot #@sykobot) &optional message)
   (bt:destroy-thread (msg-loop-thread bot))
