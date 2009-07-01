@@ -49,6 +49,18 @@
                            (format nil "~A, I found ~D result~:P.~@[ Check out <~A>.~]"
                                    sender numlinks (car links))))))
 
+(add-command "kiloseconds"
+	     (lambda (bot args sender channel)
+	       (send-msg bot channel (get-ks-time))))
+
+(defun get-ks-time ()
+  (multiple-value-bind (seconds minutes hours)
+      (get-decoded-time)
+    (format nil "The time is ~D ks" (/ (+ seconds
+					  (* minutes 60)
+					  (* hours 3600))
+				       1000.0))))
+
 (defun search-url (engine query)
   (format nil engine (regex-replace-all "\\s+" query "+")))
 
