@@ -1,9 +1,11 @@
 (in-package :sykobot)
 
+(export '(*default-channels* *server* *identify-with-nickserv?* *nickserv-password* *nickname*))
 (defvar *default-channels* nil)
 (defvar *server* nil)
 (defvar *identify-with-nickserv?* nil)
 (defvar *nickserv-password* nil)
+(defvar *nickname* nil)
 
 (defun config-exists-p ()
   (if (probe-file (merge-pathnames ".sykobotrc" (user-homedir-pathname)))
@@ -18,13 +20,15 @@
                                            (when r (invoke-restart r))))))
     (when (config-exists-p)
       (load (merge-pathnames ".sykobotrc" (user-homedir-pathname))))
-    (when *server
-      (setf (server #@sykobot) *server*))
-    (run-bot #@sykobot)
+    (when *nickname*
+      (setf (nickname (proto 'sykobot)) *nickname*))
+    (when *server*
+      (setf (server (proto 'sykobot)) *server*))
+    (run-bot (proto 'sykobot))
     (when *identify-with-nickserv?*
-      (identify #@sykobot *nickserv-password*))
+      (identify (proto 'sykobot) *nickserv-password*))
     (loop for channel in *default-channels*
-       do (join #@sykobot channel))))
+       do (join (proto 'sykobot) channel))))
 
 
 
