@@ -2,9 +2,9 @@
   (:use :cl :cl-ppcre))
 (in-package :sykobot)
 
-(defparameter *conn* nil)
-(defparameter *msg-loop-thread* nil)
-(defparameter *nick* "sykobot")
+(defvar *conn* nil)
+(defvar *msg-loop-thread* nil)
+(defvar *nick* "sykobot")
 
 ;;;
 ;;; IRC connection
