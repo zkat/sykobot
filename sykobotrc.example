@@ -6,6 +6,9 @@
 ;;; Package: configs should be in the :sykobot-user package
 (in-package :sykobot-user)
 
+;; nickname goes here (duh)
+(setf *nickname* "omgloltestbot")
+
 ;; this is actually the default. Removing this line will change nothing.
 (setf *server* "irc.freenode.net")
 
