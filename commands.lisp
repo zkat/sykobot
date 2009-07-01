@@ -18,41 +18,23 @@
     (clrhash command-table))
   )
 
-(add-command "echo" (lambda (args sender channel)
+(add-command "echo" (lambda (bot args sender channel)
                      (send-msg channel args)))
-(add-command "ping" (lambda (args sender channel)
+(add-command "ping" (lambda (bot args sender channel)
                      (send-msg channel "pong")))
-(add-command "google" (lambda (args sender channel)
+(add-command "google" (lambda (bot args sender channel)
                        (google-search args sender channel)))
 (add-command "shut" (lambda (args sender channel) 
-                     (shut-up)))
-(add-command "chant" (lambda (args sender channel) 
+                      (send-msg channel
+                                (format nil "~A: Fine. Be that way. Tell me to talk when you realize ~
+                                                 just how lonely and pathetic you really are." sender))
+                      (shut-up)))
+(add-command "chant" (lambda (bot args sender channel) 
                       (send-msg channel "FUCK REGEX")))
-(add-command "help" (lambda (args sender channel)
-                     (send-msg channel (format nil "~A: I'm not a psychiatrist. Go away." sender))))
-
-(defun shut-up ()
-  (irc:remove-hook *conn* 'irc:irc-privmsg-message #'msg-hook)
-  (irc:add-hook *conn* 'irc:irc-privmsg-message #'silent-mode))
-
-(defun un-shut-up ()
-  (irc:remove-hook *conn* 'irc:irc-privmsg-message #'silent-mode)
-  (irc:add-hook *conn* 'irc:irc-privmsg-message #'msg-hook))
-
-(defun silent-mode (msg)
-  (let* ((sender (irc:source msg))
-         (channel (car (irc:arguments msg)))
-         (message (second (irc:arguments msg)))
-         (string (scan-string-for-direct-message channel message))
-         (command (car (split "\\s+" string :limit 2))))
-    (when (let ((x (string-not-equal command "talk")))
-            (or (not x)
-                (= x 4)))
-      (send-msg channel
-                (format nil
-                        "~A: bla bla bla bla. There, happy?"
-                        sender))
-      (un-shut-up))))
+(add-command "help" (lambda (bot args sender channel)
+                      (send-msg channel (format nil "~A: I'm not a psychiatrist. Go away." sender))))
+(add-command "tell" (lambda (bot args sender channel)
+                      (send-msg channel)))
 
 (defun google-search (query sender channel)
   (let ((search-string (regex-replace-all "\\s+" query "+")))
