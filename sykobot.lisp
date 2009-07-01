@@ -6,57 +6,12 @@
 (defparameter *msg-loop-thread* nil)
 (defparameter *nick* "sykobot")
 
-(let ((command-table (make-hash-table :test #'eq)))
-  (defun add-command (cmd-symbol fn)
-    (setf (gethash cmd-symbol command-table) fn))
-
-  (defun remove-command (cmd-symbol)
-    (remhash cmd-symbol command-table))
-
-  (defun command-function (cmd-symbol)
-    (multiple-value-bind (fn hasp)
-        (gethash cmd-symbol command-table)
-      (if hasp fn 
-          (lambda (args sender channel)
-            (send-notice sender (format nil "I don't know how to ~A." cmd-symbol))))))
-  
-  (defun erase-all-commands ()
-    (clrhash command-table))
-  )
-
-(defun shut-up ()
-  (irc:remove-hook *conn* 'irc:irc-privmsg-message #'msg-hook)
-  (irc:add-hook *conn* 'irc:irc-privmsg-message #'silent-mode))
-
-(defun un-shut-up ()
-  (irc:remove-hook *conn* 'irc:irc-privmsg-message #'silent-mode)
-  (irc:add-hook *conn* 'irc:irc-privmsg-message #'msg-hook))
-
-(defun silent-mode (msg)
-  (let* ((sender (irc:source msg))
-         (channel (car (irc:arguments msg)))
-         (message (second (irc:arguments msg)))
-         (string (scan-string-for-direct-message channel message))
-         (command (car (split "\\s+" string :limit 2))))
-    (when (let ((x (string-not-equal command "talk")))
-            (or (not x)
-                (= x 4)))
-      (send-msg channel
-                (format nil
-                        "~A: bla bla bla bla. There, happy?"
-                        sender))
-      (un-shut-up))))
-
-(defun join-channel (name)
-  (irc:join *conn* name))
-
-(defun change-nickname (new-name)
-  (setf *nick* new-name)
-  (irc:nick *conn* new-name))
-
+;;;
+;;; IRC connection
+;;;
 (defun connect (server-name &rest channels)
   (setf *conn* (irc:connect :nickname *nick* :server server-name))
-  (mapc #'join-channel channels)
+  (mapc #'join channels)
   (irc:add-hook *conn* 'irc:irc-privmsg-message #'msg-hook)
   (setf *msg-loop-thread* (bt:make-thread
                            (lambda ()
@@ -66,11 +21,64 @@
   (bt:destroy-thread *msg-loop-thread*)
   (irc:quit *conn* (or message (values))))
 
+(defun join (channel-name)
+  (irc:join *conn* channel-name))
+
+(defun part (channel-name)
+  (irc:part *conn* channel-name))
+
+(defun identify (password)
+  (send-msg "nickserv" (format nil "identify ~A" password)))
+
+;;;
+;;; irc functions
+;;;
+(defun change-nickname (new-name)
+  (setf *nick* new-name)
+  (irc:nick *conn* new-name))
+
+(defun send-notice (target message)
+  (irc:notice *conn* target message))
+
+(defun send-msg (channel message)
+  (irc:privmsg *conn* channel (or message "")))
+
+(defun topic (channel-name)
+  (let ((channel (irc:find-channel *conn* channel-name)))
+    (irc:topic channel)))
+
+;;;
+;;; Message processing
+;;;
 (defun msg-hook (msg)
   (let ((sender (irc:source msg))
         (channel (car (irc:arguments msg)))
         (message (second (irc:arguments msg))))
     (process-message sender channel message)))
+
+(defun process-message (sender channel message)
+  (when (sent-to-me-p channel message)
+    (respond-to-message sender channel message))
+  (when (and (has-url-p message)
+             (not (string-equal sender *nick*)))
+    (handler-case
+        (multiple-value-bind (title url)
+            (url-info (grab-url message))
+          (send-msg channel (format nil "Title: ~A (at ~A)" title (puri:uri-host (puri:uri url)))))
+      (error ()
+        (values)))))
+
+(defun respond-to-message (sender channel message)
+  (let* ((string (scan-string-for-direct-message channel message))
+         (command+args (split "\\s+" string :limit 2)))
+    (handler-case
+        (answer-command (car command+args) (cadr command+args) sender channel)
+      (error (e)
+        (send-msg channel (format nil "~A: An error occurred: ~A" sender e))))))
+
+(defun answer-command (cmd args sender channel)
+  (let ((fn (command-function cmd)))
+    (funcall fn args sender channel)))
 
 (defun sent-to-me-p (channel message)
   (when (scan-string-for-direct-message channel message)
@@ -86,68 +94,3 @@
         ((scan "^!+" message)
          (regex-replace "^!+" message ""))))
 
-(defun respond-to-message (sender channel message)
-  (let* ((string (scan-string-for-direct-message channel message))
-         (command+args (split "\\s+" string :limit 2)))
-    (handler-case
-        (answer-command (car command+args) (cadr command+args) sender channel)
-      (error (e)
-        (send-msg channel (format nil "~A: An error occurred: ~A" sender e))))))
-
-(defun answer-command (cmd args sender channel)
-  (let ((fn (command-function (read-from-string cmd))))
-    (funcall fn args sender channel)))
-
-(defun google-search (query sender channel)
-  (let ((search-string (regex-replace-all "\\s+" query "+")))
-    (multiple-value-bind (title url)
-        (url-info (format nil "http://google.com/search?filter=1&safe=on&q=~A&btnI" search-string))
-      (send-msg channel (format nil "~A: ~A <~A>" sender title url)))))
-
-(defun url-info (url)
-  (handler-case
-      (multiple-value-bind (body status-code headers uri)
-          (drakma:http-request url)
-        (declare (ignore status-code headers))
-        (values (multiple-value-bind (match vec)
-                    (scan-to-strings
-                     (create-scanner 
-                      "<title[ \\t\\r\\n]*>[ \\t\\r\\n]*(.+)[ \\t\\r\\n]*</title[ \\t\\r\\n]*>"
-                      :case-insensitive-mode t) body)
-                  (declare (ignore match))
-                  (if (< 0 (length vec))
-                      (decode-html-string (elt vec 0))
-                      nil))
-                (with-output-to-string (s)
-                  (puri:render-uri uri s))))
-    (usocket:ns-host-not-found-error () (error "Host not found"))))
-
-(defun decode-html-string (string)
-  (html-entities:decode-entities string))
-
-(defun send-notice (target message)
-  (irc:notice *conn* target message))
-(defun send-msg (channel message)
-  (irc:privmsg *conn* channel (or message "")))
-
-(defun process-message (sender channel message)
-  (when (sent-to-me-p channel message)
-    (respond-to-message sender channel message))
-  (when (and (has-url-p message)
-             (not (string-equal sender *nick*)))
-    (handler-case
-        (multiple-value-bind (title url)
-            (url-info (grab-url message))
-          (send-msg channel (format nil "Title: ~A (at ~A)" title (puri:uri-host (puri:uri url)))))
-      (error ()
-        (values)))))
-
-(defun has-url-p (string)
-  (when (scan "https?://.*[.$| |>]" string) t))
-
-(defun grab-url (string)
-  (find-if #'has-url-p (split "[\\s+><,]" string)))
-
-(defun topic (channel-name)
-  (let ((channel (irc:find-channel *conn* channel-name)))
-    (irc:topic channel)))
