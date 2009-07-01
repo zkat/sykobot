@@ -1,0 +1,12 @@
+;;; Any code in file "~/.sykobotrc" will be loaded after all
+;;; the other files have loaded.
+;;;
+;;; Sample code:
+(in-package :sykobot-user)
+(defproto my-bot (#@sykobot)
+  ((nickname "my-super-special-bot")
+   (server "irc.freenode.net")))
+
+(defreply run-bot :after ((bot #@my-bot) server)
+  (identify bot "nickserv-password"))
+(run-bot #@my-bot)
