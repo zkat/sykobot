@@ -36,11 +36,13 @@
                                                            (when r (invoke-restart r))))))
                     (msg-hook bot msg))))
   (setf (msg-loop-thread bot)
-        (lambda ()
-          (handler-bind ((cl-irc:no-such-reply (lambda (c)
-                                                 (let ((r (find-restart 'continue c)))
-                                                   (when r (invoke-restart r))))))
-            (irc:read-message-loop (connection bot))))))
+        (bt:make-thread
+         (lambda ()
+           (handler-bind ((cl-irc:no-such-reply
+                           (lambda (c)
+                             (let ((r (find-restart 'continue c)))
+                               (when r (invoke-restart r))))))
+             (irc:read-message-loop (connection bot)))))))
 
 (defreply disconnect ((bot #@sykobot) &optional message)
   (bt:destroy-thread (msg-loop-thread bot))
