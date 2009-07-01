@@ -1,6 +1,5 @@
 (in-package :sykobot)
 
-(export '(*default-channels* *server* *identify-with-nickserv?* *nickserv-password* *nickname*))
 (defvar *default-channels* nil)
 (defvar *server* nil)
 (defvar *identify-with-nickserv?* nil)
@@ -26,7 +25,8 @@
       (setf (server (proto 'sykobot)) *server*))
     (run-bot (proto 'sykobot))
     (when *identify-with-nickserv?*
-      (identify (proto 'sykobot) *nickserv-password*))
+      (identify (proto 'sykobot) *nickserv-password*)
+      (sleep 2))
     (loop for channel in *default-channels*
        do (join (proto 'sykobot) channel))))
 
