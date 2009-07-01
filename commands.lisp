@@ -38,7 +38,7 @@
                       (send-msg bot channel "FUCK REGEX")))
 (add-command "help" (lambda (bot args sender channel)
                       (send-msg bot channel (format nil "~A: I'm not a psychiatrist. Go away." sender))))
-(add-command "tell" (lambda (bot args sender channel)
+#+nil(add-command "tell" (lambda (bot args sender channel)
                       (send-msg bot channel)))
 
 (add-command "cliki" (lambda (bot args sender channel)
