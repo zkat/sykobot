@@ -16,8 +16,7 @@
             (send-notice bot sender (format nil "I don't know how to ~A." cmd))))))
 
   (defun erase-all-commands ()
-    (clrhash command-table))
-  )
+    (clrhash command-table)))
 
 (add-command "echo" (lambda (bot args sender channel)
                      (send-msg bot channel args)))
