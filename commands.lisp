@@ -1,0 +1,15 @@
+(in-package :sykobot)
+
+(add-command 'echo (lambda (args sender channel)
+                     (send-msg channel args)))
+(add-command 'ping (lambda (args sender channel)
+                     (send-msg channel "pong")))
+(add-command 'google (lambda (args sender channel)
+                       (google-search args sender channel)))
+(add-command 'shut (lambda (args sender channel) 
+                     (shut-up)))
+(add-command 'chant (lambda (args sender channel) 
+                      (send-msg channel "FUCK REGEX")))
+(add-command 'help (lambda (args sender channel)
+                     (send-msg channel (format nil "~A: I'm not a psychiatrist. Go away." sender))))
+

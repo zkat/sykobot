@@ -5,7 +5,24 @@
 (defparameter *conn* nil)
 (defparameter *msg-loop-thread* nil)
 (defparameter *nick* "sykobot")
-(defvar *commands* (make-hash-table :test #'eq))
+
+(let ((command-table (make-hash-table :test #'eq)))
+  (defun add-command (cmd-symbol fn)
+    (setf (gethash cmd-symbol command-table) fn))
+
+  (defun remove-command (cmd-symbol)
+    (remhash cmd-symbol command-table))
+
+  (defun command-function (cmd-symbol)
+    (multiple-value-bind (fn hasp)
+        (gethash cmd-symbol command-table)
+      (if hasp fn 
+          (lambda (args sender channel)
+            (send-notice sender (format nil "I don't know how to ~A." cmd-symbol))))))
+  
+  (defun erase-all-commands ()
+    (clrhash command-table))
+  )
 
 (defun shut-up ()
   (irc:remove-hook *conn* 'irc:irc-privmsg-message #'msg-hook)
@@ -37,7 +54,7 @@
   (setf *nick* new-name)
   (irc:nick *conn* new-name))
 
-(defun connect-to-server (server-name &rest channels)
+(defun connect (server-name &rest channels)
   (setf *conn* (irc:connect :nickname *nick* :server server-name))
   (mapc #'join-channel channels)
   (irc:add-hook *conn* 'irc:irc-privmsg-message #'msg-hook)
@@ -77,30 +94,9 @@
       (error (e)
         (send-msg channel (format nil "~A: An error occurred: ~A" sender e))))))
 
-(defun add-command (cmd-symbol fn)
-  (setf (gethash cmd-symbol *commands*) fn))
-(defun remove-command (cmd-symbol)
-  (remhash cmd-symbol *commands*))
-(defun command-function (cmd-symbol)
-  (multiple-value-bind (fn hasp)
-      (gethash cmd-symbol *commands*)
-    (or fn (lambda (args sender channel) 
-             (send-notice sender (format nil "I don't know how to ~A." cmd))))))
 (defun answer-command (cmd args sender channel)
-  (funcall (command-function (read-from-string cmd)) args sender channel))
-
-(add-command 'echo (lambda (args sender channel)
-                     (send-msg channel args)))
-(add-command 'ping (lambda (args sender channel)
-                     (send-msg channel "pong")))
-(add-command 'google (lambda (args sender channel)
-                       (google-search args sender channel)))
-(add-command 'shut (lambda (args sender channel) 
-                     (shut-up)))
-(add-command 'chant (lambda (args sender channel) 
-                      (send-msg channel "FUCK REGEX")))
-(add-command 'help (lambda (args sender channel)
-                     (send-msg channel (format nil "~A: I'm not a psychiatrist. Go away." sender))))
+  (let ((fn (command-function (read-from-string cmd))))
+    (funcall fn args sender channel)))
 
 (defun google-search (query sender channel)
   (let ((search-string (regex-replace-all "\\s+" query "+")))
@@ -114,8 +110,10 @@
           (drakma:http-request url)
         (declare (ignore status-code headers))
         (values (multiple-value-bind (match vec)
-                    (scan-to-strings (create-scanner "<title[ \\t\\r\\n]*>(.+)</title[ \\t\\r\\n]*>"
-                                                     :case-insensitive-mode t) body)
+                    (scan-to-strings
+                     (create-scanner 
+                      "<title[ \\t\\r\\n]*>[ \\t\\r\\n]*(.+)[ \\t\\r\\n]*</title[ \\t\\r\\n]*>"
+                      :case-insensitive-mode t) body)
                   (declare (ignore match))
                   (if (< 0 (length vec))
                       (decode-html-string (elt vec 0))
