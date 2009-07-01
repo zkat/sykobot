@@ -18,7 +18,7 @@
                                            (when r (invoke-restart r))))))
     (when (config-exists-p)
       (load (merge-pathnames ".sykobotrc" (user-homedir-pathname))))
-    (when *server
+    (when *server*
       (setf (server #@sykobot) *server*))
     (run-bot #@sykobot)
     (when *identify-with-nickserv?*
