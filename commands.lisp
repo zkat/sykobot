@@ -23,7 +23,11 @@
 (add-command "ping" (lambda (bot args sender channel)
                      (send-msg bot channel "pong")))
 (add-command "google" (lambda (bot args sender channel)
-                       (google-search bot args sender channel)))
+                        (multiple-value-bind (title url)
+                            (google-search args)
+                          (send-msg bot channel
+                                    (format nil "~A: ~A <~A>"
+                                            sender title url)))))
 (add-command "shut" (lambda (bot args sender channel)
                       (send-msg bot channel
                                 (format nil "~A: Fine. Be that way. Tell me to talk when you realize ~
@@ -36,11 +40,19 @@
 (add-command "tell" (lambda (bot args sender channel)
                       (send-msg bot channel)))
 
-(defun google-search (bot query sender channel)
-  (let ((search-string (regex-replace-all "\\s+" query "+")))
-    (multiple-value-bind (title url)
-        (url-info (format nil "http://google.com/search?filter=1&safe=on&q=~A&btnI" search-string))
-      (send-msg bot channel (format nil "~A: ~A <~A>" sender title url)))))
+(add-command "cliki" (lambda (bot args sender channel)
+                       (send-msg bot channel
+                                 (format nil "~A, I found ~D result~:P. Check it out at <~A> or leave me alone."
+                                         sender (nth-value 1 (cliki-urls args))
+                                         (search-url "http://www.cliki.net/admin/search?words=~A" args)))))
+
+(defun search-url (engine query)
+  (format nil engine (regex-replace-all "\\s+" query "+")))
+
+(defun google-search (query)
+  (url-info (search-url
+             "http://google.com/search?filter=1&safe=on&q=~A&btnI"
+             query)))
 
 (defun url-info (url)
   (handler-case
@@ -60,6 +72,19 @@
                   (puri:render-uri uri s))))
     (usocket:ns-host-not-found-error () (error "Host not found"))))
 
+(defun cliki-urls (query)
+  (let ((links NIL)
+        (page (drakma:http-request
+               (search-url "http://www.cliki.net/admin/search?words=~A"
+                           query))))
+    (ppcre:do-register-groups (url)
+        ("\\d <b><a href=\"(.*?)\">(.*?)<" page)
+      (push url links))
+    (values links
+            (parse-integer (ppcre:scan-to-strings "(\\d*) results? found" page)
+                           :junk-allowed T))))
+
+
 (defun decode-html-string (string)
   (html-entities:decode-entities string))
 
@@ -68,3 +93,4 @@
 
 (defun grab-url (string)
   (find-if #'has-url-p (split "[\\s+><,]" string)))
+
