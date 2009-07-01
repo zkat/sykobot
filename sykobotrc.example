@@ -1,3 +1,4 @@
+;;;; -*- Mode: Lisp; Syntax: ANSI-Common-Lisp; Base: 10 -*-
 ;;; Any code in file "~/.sykobotrc" will be loaded after all
 ;;; the other files have loaded.
 ;;;
