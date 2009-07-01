@@ -118,11 +118,14 @@
                                                      :case-insensitive-mode t) body)
                   (declare (ignore match))
                   (if (< 0 (length vec))
-                      (elt vec 0)
+                      (decode-html-string (elt vec 0))
                       nil))
                 (with-output-to-string (s)
                   (puri:render-uri uri s))))
     (usocket:ns-host-not-found-error () (error "Host not found"))))
+
+(defun decode-html-string (string)
+  (html-entities:decode-entities string))
 
 (defun send-notice (target message)
   (irc:notice *conn* target message))
