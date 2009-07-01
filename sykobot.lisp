@@ -77,6 +77,10 @@
 (defreply send-msg ((bot (proto 'sykobot)) channel message)
   (irc:privmsg (connection bot) channel (or message "")))
 
+(defreply send-action ((bot (proto 'sykobot)) channel action)
+  (send-msg bot channel (format nil "~AACTION ~A~A" (code-char 1) action (code-char 1))))
+
+
 (defreply topic ((bot (proto 'sykobot)) channel &optional new-topic)
   (if new-topic
       (irc:topic- (connection bot) channel new-topic)
