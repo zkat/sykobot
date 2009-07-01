@@ -5,7 +5,7 @@
 (defproto sykobot ()
   ((connection nil)
    (msg-loop-thread nil)
-   (nickname "sykobot")
+   (nickname "sykobot2")
    (silentp nil)))
 
 ;;;
@@ -15,7 +15,7 @@
 (defmessage disconnect (bot &optional message))
 (defmessage join (bot channel))
 (defmessage part (bot channel))
-(defmessage identify (bot))
+(defmessage identify (bot password))
 
 (defreply connect ((bot #@sykobot) server)
   (setf (connection bot) (irc:connect :nickname (nickname bot) :server server))
@@ -36,7 +36,7 @@
   (irc:part (connection bot) channel))
 
 (defreply identify ((bot #@sykobot) password)
-  (send-msg "nickserv" (format nil "identify ~A" password)))
+  (send-msg bot "nickserv" (format nil "identify ~A" password)))
 
 ;;;
 ;;; irc functions
@@ -82,28 +82,28 @@
 
 (defmessage silent-mode-process-message (bot sender channel message))
 (defreply silent-mode-process-message ((bot #@sykobot) sender channel message)
-  (when (sent-to-me-p channel message)
-    (let ((command (car (split "\\s+" (scan-string-for-direct-message channel message) :limit 2))))
+  (when (sent-to-me-p bot channel message)
+    (let ((command (car (split "\\s+" (scan-string-for-direct-message bot channel message) :limit 2))))
       (when (string-equal command "talk")
-        (send-msg channel (format nil "~A: bla bla bla bla. There, happy?" sender))
+        (send-msg bot channel (format nil "~A: bla bla bla bla. There, happy?" sender))
         (un-shut-up bot)))))
 
 (defmessage process-message (bot sender channel message))
 (defreply process-message ((bot #@sykobot) sender channel message)
-  (when (sent-to-me-p channel message)
+  (when (sent-to-me-p bot channel message)
     (respond-to-message bot sender channel message))
   (when (and (has-url-p message)
              (not (string-equal sender (nickname bot))))
     (handler-case
         (multiple-value-bind (title url)
             (url-info (grab-url message))
-          (send-msg channel (format nil "Title: ~A (at ~A)" title (puri:uri-host (puri:uri url)))))
+          (send-msg bot channel (format nil "Title: ~A (at ~A)" title (puri:uri-host (puri:uri url)))))
       (error ()
         (values)))))
 
 (defmessage respond-to-message (bot sender channel message))
 (defreply respond-to-message ((bot #@sykobot) sender channel message)
-  (let* ((string (scan-string-for-direct-message channel message))
+  (let* ((string (scan-string-for-direct-message bot channel message))
          (command+args (split "\\s+" string :limit 2)))
     (handler-case
         (answer-command bot (car command+args) (cadr command+args) sender channel)
@@ -115,8 +115,8 @@
   (let ((fn (command-function cmd)))
     (funcall fn bot args sender channel)))
 
-(defun sent-to-me-p (channel message)
-  (when (scan-string-for-direct-message channel message)
+(defun sent-to-me-p (bot channel message)
+  (when (scan-string-for-direct-message bot channel message)
     t))
 
 (defmessage scan-string-for-direct-message (bot channel message))

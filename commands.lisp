@@ -11,36 +11,36 @@
     (multiple-value-bind (fn hasp)
         (gethash cmd command-table)
       (if hasp fn 
-          (lambda (args sender channel)
-            (send-notice sender (format nil "I don't know how to ~A." cmd))))))
+          (lambda (bot args sender channel)
+            (send-notice bot sender (format nil "I don't know how to ~A." cmd))))))
   
   (defun erase-all-commands ()
     (clrhash command-table))
   )
 
 (add-command "echo" (lambda (bot args sender channel)
-                     (send-msg channel args)))
+                     (send-msg bot channel args)))
 (add-command "ping" (lambda (bot args sender channel)
-                     (send-msg channel "pong")))
+                     (send-msg bot channel "pong")))
 (add-command "google" (lambda (bot args sender channel)
-                       (google-search args sender channel)))
-(add-command "shut" (lambda (args sender channel) 
+                       (google-search bot args sender channel)))
+(add-command "shut" (lambda (bot args sender channel) 
                       (send-msg channel
                                 (format nil "~A: Fine. Be that way. Tell me to talk when you realize ~
                                                  just how lonely and pathetic you really are." sender))
-                      (shut-up)))
+                      (shut-up bot)))
 (add-command "chant" (lambda (bot args sender channel) 
-                      (send-msg channel "FUCK REGEX")))
+                      (send-msg bot channel "FUCK REGEX")))
 (add-command "help" (lambda (bot args sender channel)
-                      (send-msg channel (format nil "~A: I'm not a psychiatrist. Go away." sender))))
+                      (send-msg bot channel (format nil "~A: I'm not a psychiatrist. Go away." sender))))
 (add-command "tell" (lambda (bot args sender channel)
-                      (send-msg channel)))
+                      (send-msg bot channel)))
 
-(defun google-search (query sender channel)
+(defun google-search (bot query sender channel)
   (let ((search-string (regex-replace-all "\\s+" query "+")))
     (multiple-value-bind (title url)
         (url-info (format nil "http://google.com/search?filter=1&safe=on&q=~A&btnI" search-string))
-      (send-msg channel (format nil "~A: ~A <~A>" sender title url)))))
+      (send-msg bot channel (format nil "~A: ~A <~A>" sender title url)))))
 
 (defun url-info (url)
   (handler-case
