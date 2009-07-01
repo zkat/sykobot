@@ -19,6 +19,18 @@
     (clrhash command-table))
   )
 
+(defun think (bot channel)
+  (send-action bot channel "thinks"))
+
+(defun pause-in-thought (bot channel &key (max-time 5) (action-probability 2))
+  (if (zerop (random action-probability))
+      (think bot channel))
+  (sleep (1+ (random max-time))))
+
+
+(add-command "think" (lambda (bot args sender channel)
+		       (think bot channel 2)))
+
 (add-command "echo" (lambda (bot args sender channel)
                      (send-msg bot channel args)))
 (add-command "ping" (lambda (bot args sender channel)
@@ -99,10 +111,10 @@
     (if memo
 	(destructuring-bind (text sender) memo
 	  (send-msg bot channel (format nil "~A: Hold on! ~A left you a memo" recipient sender))
-	  (sleep (1+ (random 5)))
+	  (pause-in-thought bot channel :max-time 5 :action-probability 10)
 	  (send-msg bot channel (format nil "~A: Uhhh, the memo was.. umm" recipient))
-	  (sleep (1+ (random 5)))
-	  (send-msg bot channel (format nil "~A: \"~A\"" recipient text))))))
+	  (pause-in-thought bot channel :max-time 5)
+	  (send-msg bot channel (format nil "~A: ~A ~~ ~A" recipient text sender))))))
 
 
 (defun search-url (engine query)
