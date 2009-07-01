@@ -6,6 +6,6 @@
   :serial t
   :components ((:file "sykobot")
                (:file "commands")
-               (:file "config"))
+               (:file "config")))
 
 
