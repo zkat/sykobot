@@ -6,20 +6,15 @@
 ;;; Package: configs should be in the :sykobot-user package
 (in-package :sykobot-user)
 
+;; this is actually the default. Removing this line will change nothing.
+(setf *server* "irc.freenode.net")
+
 ;;; We'll use whatever's in this list to connect to a bunch of channels after we're loaded.
-(defparameter *default-channels* '("#sykosomatic"))
+(setf *default-channels* '("#sykosomatic" "#lispgames" "#flood"))
 
-;;; This defproto definition defines a custom bot prototype. We can extend #@sykobot to add custom
-;;; properties to the bot.
-(defproto my-bot (#@sykobot)
-  ((nickname "my-super-special-bot")
-   (server "irc.freenode.net")))
+;; replace nil with t to identify.
+(setf *identify-with-nickserv?* nil)
 
-;;; This reply will run after the bot is connected. It'll identify with the nickserv, and then
-;;; join all the channels we defined in *default-channels*
-(defreply run-bot :after ((bot #@my-bot))
-  (identify bot "nickserv-password")
-  (loop for channel in *default-channels* do (join bot channel)))
+;; password to identify with goes here, as a string
+(setf *nickserv-password* "pass")
 
-;;; This actually runs the bot. We need the #@ syntax to fetch the right one.
-(run-bot #@my-bot)
