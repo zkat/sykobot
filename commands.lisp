@@ -10,11 +10,11 @@
   (defun command-function (cmd)
     (multiple-value-bind (fn hasp)
         (gethash cmd command-table)
-      (if hasp fn 
+      (if hasp fn
           (lambda (bot args sender channel)
             (declare (ignore channel args))
             (send-notice bot sender (format nil "I don't know how to ~A." cmd))))))
-  
+
   (defun erase-all-commands ()
     (clrhash command-table))
   )
@@ -25,12 +25,12 @@
                      (send-msg bot channel "pong")))
 (add-command "google" (lambda (bot args sender channel)
                        (google-search bot args sender channel)))
-(add-command "shut" (lambda (bot args sender channel) 
+(add-command "shut" (lambda (bot args sender channel)
                       (send-msg bot channel
                                 (format nil "~A: Fine. Be that way. Tell me to talk when you realize ~
                                                  just how lonely and pathetic you really are." sender))
                       (shut-up bot)))
-(add-command "chant" (lambda (bot args sender channel) 
+(add-command "chant" (lambda (bot args sender channel)
                       (send-msg bot channel "FUCK REGEX")))
 (add-command "help" (lambda (bot args sender channel)
                       (send-msg bot channel (format nil "~A: I'm not a psychiatrist. Go away." sender))))
@@ -50,7 +50,7 @@
         (declare (ignore status-code headers))
         (values (multiple-value-bind (match vec)
                     (scan-to-strings
-                     (create-scanner 
+                     (create-scanner
                       "<title\\s*>\\s*(.+)\\s*</title\\s*>"
                       :case-insensitive-mode t) body)
                   (declare (ignore match))
