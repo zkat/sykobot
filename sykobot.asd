@@ -5,6 +5,7 @@
   :depends-on (cl-irc cl-ppcre bordeaux-threads drakma html-entities sheeple)
   :serial t
   :components ((:file "sykobot")
-               (:file "commands")))
+               (:file "commands")
+               (:file "config"))
 
 
