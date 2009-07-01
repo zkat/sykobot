@@ -12,6 +12,7 @@
         (gethash cmd command-table)
       (if hasp fn 
           (lambda (bot args sender channel)
+            (declare (ignore channel args))
             (send-notice bot sender (format nil "I don't know how to ~A." cmd))))))
   
   (defun erase-all-commands ()
@@ -25,7 +26,7 @@
 (add-command "google" (lambda (bot args sender channel)
                        (google-search bot args sender channel)))
 (add-command "shut" (lambda (bot args sender channel) 
-                      (send-msg channel
+                      (send-msg bot channel
                                 (format nil "~A: Fine. Be that way. Tell me to talk when you realize ~
                                                  just how lonely and pathetic you really are." sender))
                       (shut-up bot)))
