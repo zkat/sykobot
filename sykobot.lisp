@@ -108,9 +108,10 @@
       (when (string-equal command "talk")
         (send-msg bot channel (format nil "~A: bla bla bla bla. There, happy?" sender))
         (un-shut-up bot)))))
-
+0
 (defmessage process-message (bot sender channel message))
 (defreply process-message ((bot (proto 'sykobot)) sender channel message)
+  (send-pending-memos bot sender channel)
   (when (sent-to-me-p bot channel message)
     (respond-to-message bot sender channel message))
   (when (and (has-url-p message)
@@ -121,6 +122,9 @@
           (send-msg bot channel (format nil "Title: ~A (at ~A)" title (puri:uri-host (puri:uri url)))))
       (error ()
         (values)))))
+
+(defun send-pending-memos (bot sender channel)
+  (send-memos-for-recipient bot channel sender))
 
 (defmessage respond-to-message (bot sender channel message))
 (defreply respond-to-message ((bot (proto 'sykobot)) sender channel message)

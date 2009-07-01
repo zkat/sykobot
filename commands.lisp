@@ -62,6 +62,49 @@
 					  (* hours 3600))
 				       1000.0))))
 
+
+(let ((memo-table (make-hash-table :test #'equalp)))
+  (defun add-memo (recipient memo sender)
+    (setf (gethash recipient memo-table) (list memo sender)))
+
+  (defun remove-memo (recipient)
+    (remhash recipient memo-table))
+
+  (defun get-memo (recipient)
+    (multiple-value-bind (memo hasp)
+        (gethash recipient memo-table)
+      (if hasp 
+	  memo
+	  nil)))
+
+  (defun get-and-remove-memo (recipient)
+    (let ((memo (get-memo recipient)))
+      (remove-memo recipient)
+      memo))
+	  
+  (defun erase-all-memos ()
+    (clrhash memo-table))
+  )
+
+
+(add-command "leave-memo" (lambda (bot args sender channel)
+			    (destructuring-bind (recipient memo)
+				  (split "\\s+" args :limit 2)
+			      (progn
+				(add-memo recipient memo sender)
+				(send-msg bot channel (format nil "tada! Added memo for ~A" recipient))))))
+
+(defun send-memos-for-recipient (bot channel recipient)
+  (let ((memo (get-and-remove-memo recipient)))
+    (if memo
+	(destructuring-bind (text sender) memo
+	  (send-msg bot channel (format nil "~A: Hold on! ~A left you a memo" recipient sender))
+	  (sleep (1+ (random 5)))
+	  (send-msg bot channel (format nil "~A: Uhhh, the memo was.. umm" recipient))
+	  (sleep (1+ (random 5)))
+	  (send-msg bot channel (format nil "~A: \"~A\"" recipient text))))))
+
+
 (defun search-url (engine query)
   (format nil engine (regex-replace-all "\\s+" query "+")))
 
