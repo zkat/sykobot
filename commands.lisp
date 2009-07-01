@@ -23,12 +23,13 @@
                      (send-msg bot channel args)))
 (add-command "ping" (lambda (bot args sender channel)
                      (send-msg bot channel "pong")))
-(add-command "google" (lambda (bot args sender channel)
-                        (multiple-value-bind (title url)
-                            (google-search args)
-                          (send-msg bot channel
-                                    (format nil "~A: ~A <~A>"
-                                            sender title url)))))
+(add-command "google"
+             (lambda (bot args sender channel)
+               (multiple-value-bind (title url)
+                   (google-search args)
+                 (send-msg bot channel
+                           (format nil "~A: ~A <~A>"
+                                   sender title url)))))
 (add-command "shut" (lambda (bot args sender channel)
                       (send-msg bot channel
                                 (format nil "~A: Fine. Be that way. Tell me to talk when you realize ~
@@ -41,11 +42,13 @@
 (add-command "tell" (lambda (bot args sender channel)
                       (send-msg bot channel)))
 
-(add-command "cliki" (lambda (bot args sender channel)
-                       (send-msg bot channel
-                                 (format nil "~A, I found ~D result~:P. Check it out at <~A> or leave me alone."
-                                         sender (nth-value 1 (cliki-urls args))
-                                         (search-url "http://www.cliki.net/admin/search?words=~A" args)))))
+(add-command "cliki"
+             (lambda (bot args sender channel)
+               (send-msg bot channel
+                         (multiple-value-bind (links numlinks)
+                             (cliki-urls args)
+                           (format nil "~A, I found ~D result~:P.~@[ Check out <~A>.~]"
+                                   sender numlinks (car links))))))
 
 (defun search-url (engine query)
   (format nil engine (regex-replace-all "\\s+" query "+")))
@@ -81,10 +84,12 @@
     (ppcre:do-register-groups (url)
         ("\\d <b><a href=\"(.*?)\">(.*?)<" page)
       (push url links))
-    (values links
-            (parse-integer (ppcre:scan-to-strings "(\\d*) results? found" page)
-                           :junk-allowed T))))
-
+    (values (nreverse links)
+            (or (parse-integer
+                 (or (ppcre:scan-to-strings "(\\d*) results? found" page)
+                     "")
+                 :junk-allowed T)
+                0))))
 
 (defun decode-html-string (string)
   (html-entities:decode-entities string))
