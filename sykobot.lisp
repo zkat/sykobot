@@ -1,7 +1,9 @@
 (defpackage #:sykobot
-  (:use :cl :cl-ppcre :sheeple))
+  (:use :cl :cl-ppcre :sheeple)
+  (:export :sykobot :run-bot :connect :disconnect :join :part :identify :nick :send-notice
+           :send-msg :topic :add-command :remove-command :connection :nickname :server :password))
 (defpackage #:sykobot-user
-  (:use :cl :sheeple :cl-ppcre))
+  (:use :cl :sykobot :sheeple :cl-ppcre))
 (in-package :sykobot)
 
 (defproto sykobot ()
@@ -24,21 +26,32 @@
 
 (defreply run-bot ((bot #@sykobot))
   (connect bot (server bot) (password bot)))
+#+nil(defreply connect ((bot #@sykobot) server &optional password)
+  (setf (connection bot) (irc:connect :nickname (nickname bot) :server server :password password))
+  (irc:add-hook (connection bot) 'irc:irc-privmsg-message
+                (lambda (msg)
+                  (handler-bind ((cl-irc:no-such-reply (lambda (c)
+                                                         (let ((r (find-restart 'continue c)))
+                                                           (when r (invoke-restart r))))))
+                    (msg-hook bot msg))))
+  (setf (msg-loop-thread bot)
+        (lambda ()
+          (handler-bind ((cl-irc:no-such-reply (lambda (c)
+                                                 (let ((r (find-restart 'continue c)))
+                                                   (when r (invoke-restart r))))))
+            (irc:read-message-loop (connection bot))))))
 (defreply connect ((bot #@sykobot) server &optional password)
   (setf (connection bot) (irc:connect :nickname (nickname bot) :server server :password password))
   (irc:add-hook (connection bot) 'irc:irc-privmsg-message
                 (lambda (msg)
-                  (handler-bind
-                      ((error (lambda (c)
-                                (let ((r (find-restart 'continue c)))
-                                  (when r (invoke-restart r))))))
-                    (msg-hook bot msg))))
-  (setf (msg-loop-thread bot) (bt:make-thread
-                               (lambda ()
-                                 (handler-bind ((error (lambda (c)
+                  (handler-bind ((cl-irc:no-such-reply (lambda (c)
                                                          (let ((r (find-restart 'continue c)))
                                                            (when r (invoke-restart r))))))
-                                   (irc:read-message-loop (connection bot)))))))
+                    (msg-hook bot msg))))
+  (handler-bind ((cl-irc:no-such-reply (lambda (c)
+                                         (let ((r (find-restart 'continue c)))
+                                           (when r (invoke-restart r))))))
+    (irc:read-message-loop (connection bot))))
 
 (defreply disconnect ((bot #@sykobot) &optional message)
   (bt:destroy-thread (msg-loop-thread bot))

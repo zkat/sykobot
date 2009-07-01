@@ -5,7 +5,10 @@
       t nil))
 
 (defun run-sykobot ()
-  (if (config-exists-p)
-      (load (merge-pathnames ".sykobotrc" (user-homedir-pathname)))
-      (run-bot #@sykobot "irc.freenode.net")))
+  (handler-bind ((cl-irc:no-such-reply (lambda (c)
+                                         (let ((r (find-restart 'continue c)))
+                                           (when r (invoke-restart r))))))
+    (if (config-exists-p)
+        (load (merge-pathnames ".sykobotrc" (user-homedir-pathname)))
+        (run-bot #@sykobot "irc.freenode.net"))))
 
