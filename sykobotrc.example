@@ -1,12 +1,25 @@
 ;;; Any code in file "~/.sykobotrc" will be loaded after all
 ;;; the other files have loaded.
 ;;;
-;;; Sample code:
+;;;
+
+;;; Package: configs should be in the :sykobot-user package
 (in-package :sykobot-user)
+
+;;; We'll use whatever's in this list to connect to a bunch of channels after we're loaded.
+(defparameter *default-channels* '("#sykosomatic"))
+
+;;; This defproto definition defines a custom bot prototype. We can extend #@sykobot to add custom
+;;; properties to the bot.
 (defproto my-bot (#@sykobot)
   ((nickname "my-super-special-bot")
    (server "irc.freenode.net")))
 
-(defreply run-bot :after ((bot #@my-bot) server)
-  (identify bot "nickserv-password"))
+;;; This reply will run after the bot is connected. It'll identify with the nickserv, and then
+;;; join all the channels we defined in *default-channels*
+(defreply run-bot :after ((bot #@my-bot))
+  (identify bot "nickserv-password")
+  (loop for channel in *default-channels* do (join bot channel)))
+
+;;; This actually runs the bot. We need the #@ syntax to fetch the right one.
 (run-bot #@my-bot)
