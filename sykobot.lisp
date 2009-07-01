@@ -1,29 +1,46 @@
 (defpackage #:sykobot
-  (:use :cl :cl-ppcre :sheeple))
+  (:use :cl :cl-ppcre :sheeple)
+  (:export :sykobot :run-bot :connect :disconnect :join :part :identify :nick :send-notice
+           :send-msg :topic :add-command :remove-command :connection :nickname :server :password))
+(defpackage #:sykobot-user
+  (:use :cl :sykobot :sheeple :cl-ppcre))
 (in-package :sykobot)
 
 (defproto sykobot ()
   ((connection nil)
    (msg-loop-thread nil)
-   (nickname "sykobot2")
+   (nickname "sykobot")
+   (server "irc.freenode.net")
+   (password nil)
    (silentp nil)))
 
 ;;;
 ;;; IRC connection
 ;;;
-(defmessage connect (bot server))
+(defmessage run-bot (bot))
+(defmessage connect (bot server &optional password))
 (defmessage disconnect (bot &optional message))
 (defmessage join (bot channel))
 (defmessage part (bot channel))
 (defmessage identify (bot password))
 
-(defreply connect ((bot #@sykobot) server)
-  (setf (connection bot) (irc:connect :nickname (nickname bot) :server server))
-  (irc:add-hook (connection bot) 'irc:irc-privmsg-message (lambda (msg)
-                                                            (msg-hook bot msg)))
-  (setf (msg-loop-thread bot) (bt:make-thread
-                               (lambda ()
-                                 (irc:read-message-loop (connection bot))))))
+(defreply run-bot ((bot #@sykobot))
+  (connect bot (server bot) (password bot)))
+
+(defreply connect ((bot #@sykobot) server &optional password)
+  (setf (connection bot) (irc:connect :nickname (nickname bot) :server server :password password))
+  (irc:add-hook (connection bot) 'irc:irc-privmsg-message
+                (lambda (msg)
+                  (handler-bind ((cl-irc:no-such-reply (lambda (c)
+                                                         (let ((r (find-restart 'continue c)))
+                                                           (when r (invoke-restart r))))))
+                    (msg-hook bot msg))))
+  (setf (msg-loop-thread bot)
+        (lambda ()
+          (handler-bind ((cl-irc:no-such-reply (lambda (c)
+                                                 (let ((r (find-restart 'continue c)))
+                                                   (when r (invoke-restart r))))))
+            (irc:read-message-loop (connection bot))))))
 
 (defreply disconnect ((bot #@sykobot) &optional message)
   (bt:destroy-thread (msg-loop-thread bot))

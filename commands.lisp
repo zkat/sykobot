@@ -12,6 +12,7 @@
         (gethash cmd command-table)
       (if hasp fn
           (lambda (bot args sender channel)
+            (declare (ignore channel args))
             (send-notice bot sender (format nil "I don't know how to ~A." cmd))))))
 
   (defun erase-all-commands ()
