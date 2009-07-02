@@ -164,4 +164,3 @@
          (regex-replace (format nil "^~A, " (nickname bot)) message ""))
         ((scan (format nil "^~A+" *cmd-prefix*) message)
          (regex-replace (format nil "^~A+" *cmd-prefix*) message ""))))
-
