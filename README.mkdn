@@ -1,4 +1,4 @@
 About
 =====
 
-Sykobot is a next-gen AI, programmed with a next-gen library ([Sheeple][1]).
+Sykobot is a next-gen AI, programmed in a next-gen language.
