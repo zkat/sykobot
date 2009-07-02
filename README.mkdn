@@ -1,0 +1,4 @@
+About
+=====
+
+Sykobot is a next-gen AI, programmed in a next-gen language.

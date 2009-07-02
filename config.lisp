@@ -18,7 +18,8 @@
                                          (let ((r (find-restart 'continue c)))
                                            (when r (invoke-restart r))))))
     (when (config-exists-p)
-      (load (merge-pathnames ".sykobotrc" (user-homedir-pathname))))
+      (handler-bind ((end-of-file (lambda (c) (error "You missed a paren somewhere"))))
+        (load (merge-pathnames ".sykobotrc" (user-homedir-pathname)))))
     (when *nickname*
       (setf (nickname (proto 'sykobot)) *nickname*))
     (when *server*
@@ -26,9 +27,7 @@
     (run-bot (proto 'sykobot))
     (when *identify-with-nickserv?*
       (identify (proto 'sykobot) *nickserv-password*)
-      (sleep 2))
+      (sleep 5))
     (loop for channel in *default-channels*
        do (join (proto 'sykobot) channel))))
-
-
 

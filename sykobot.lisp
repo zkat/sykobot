@@ -65,6 +65,7 @@
 (defmessage nick (bot new-nick))
 (defmessage send-notice (bot target message))
 (defmessage send-msg (bot channel message))
+(defmessage send-reply (bot target channel message))
 (defmessage topic (bot channel &optional new-topic))
 
 (defreply nick ((bot (proto 'sykobot)) new-nick)
@@ -76,6 +77,9 @@
 
 (defreply send-msg ((bot (proto 'sykobot)) channel message)
   (irc:privmsg (connection bot) channel (or message "")))
+
+(defreply send-reply ((bot (proto 'sykobot)) target channel message)
+  (send-msg bot channel (format nil "~A: ~A" target message)))
 
 (defreply send-action ((bot (proto 'sykobot)) channel action)
   (send-msg bot channel (format nil "~AACTION ~A~A" (code-char 1) action (code-char 1))))
@@ -110,12 +114,13 @@
   (when (sent-to-me-p bot channel message)
     (let ((command (car (split "\\s+" (scan-string-for-direct-message bot channel message) :limit 2))))
       (when (string-equal command "talk")
-        (send-msg bot channel (format nil "~A: bla bla bla bla. There, happy?" sender))
+        (send-reply bot sender channel "bla bla bla bla. There, happy?")
         (un-shut-up bot)))))
-0
+
 (defmessage process-message (bot sender channel message))
 (defreply process-message ((bot (proto 'sykobot)) sender channel message)
   (send-pending-memos bot sender channel)
+  (scan-for-more message)
   (when (sent-to-me-p bot channel message)
     (respond-to-message bot sender channel message))
   (when (and (has-url-p message)
@@ -137,7 +142,7 @@
     (handler-case
         (answer-command bot (car command+args) (cadr command+args) sender channel)
       (error (e)
-        (send-msg bot channel (format nil "~A: An error occurred: ~A" sender e))))))
+        (send-reply bot sender channel (format nil "An error occurred: ~A" e))))))
 
 (defmessage answer-command (bot cmd args sender channel))
 (defreply answer-command ((bot (proto 'sykobot)) cmd args sender channel)
@@ -148,6 +153,7 @@
   (when (scan-string-for-direct-message bot channel message)
     t))
 
+(defparameter *cmd-prefix* "@")
 (defmessage scan-string-for-direct-message (bot channel message))
 (defreply scan-string-for-direct-message ((bot (proto 'sykobot)) channel message)
   (cond ((equal channel (nickname bot))
@@ -156,6 +162,6 @@
          (regex-replace (format nil "^~A: " (nickname bot)) message ""))
         ((scan (format nil "^~A, " (nickname bot)) message)
          (regex-replace (format nil "^~A, " (nickname bot)) message ""))
-        ((scan "^!+" message)
-         (regex-replace "^!+" message ""))))
+        ((scan (format nil "^~A+" *cmd-prefix*) message)
+         (regex-replace (format nil "^~A+" *cmd-prefix*) message ""))))
 
