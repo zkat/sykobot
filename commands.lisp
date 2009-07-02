@@ -30,7 +30,7 @@
 
 (defvar *more* "lulz")
 (add-command "think" (lambda (bot args sender channel)
-		       (think bot channel 2)))
+                       (think bot channel 2)))
 (add-command "echo" (lambda (bot args sender channel)
                      (send-msg bot channel args)))
 (add-command "ping" (lambda (bot args sender channel)
@@ -43,8 +43,8 @@
                              (format nil "~A <~A>" title url)))))
 (add-command "shut" (lambda (bot args sender channel)
                       (send-reply bot sender channel
-                                  "Fine. Be that way. Tell me to talk when you realize ~
-                                   just how lonely and pathetic you really are.")
+                                  (format nil "Fine. Be that way. Tell me to talk when you realize ~
+                                              just how lonely and pathetic you really are."))
                       (shut-up bot)))
 (add-command "chant" (lambda (bot args sender channel)
                       (send-msg bot channel (format nil "MORE ~:@(~A~)" *more*))))
@@ -67,28 +67,28 @@
                          (format nil "the time is GMT ~3$ ks." (get-ks-time)))))
 
 (add-command "memo" (lambda (bot args sender channel)
-			    (destructuring-bind (recipient memo)
-				  (split "\\s+" args :limit 2)
-			      (progn
-				(add-memo recipient memo sender)
-				(send-msg bot channel 
+                            (destructuring-bind (recipient memo)
+                                  (split "\\s+" args :limit 2)
+                              (progn
+                                (add-memo recipient memo sender)
+                                (send-msg bot channel
                                           (format nil "tada! Added memo for ~A. ~
                                                        I'll let them know next time they speak"
                                                   recipient))))))
 
 (defvar *prepositions*
   '("aboard"  "about"  "above"  "across"  "after"  "against"  "along"  "among"  "around"  "as"   "at"
-    "before"  "behind"   "below" "beneath" "beside"  "between"  "beyond"  "but" "except"  "by"  
+    "before"  "behind"   "below" "beneath" "beside"  "between"  "beyond"  "but" "except"  "by"
     "concerning"  "despite"  "down"  "during"  "except" "for"  "from"  "in"  "into"  "like" "near"
     "of"  "off"  "on"  "onto"  "out"  "outside"  "over"  "past"  "per"  "regarding"  "since"  "through"
-    "throughout"  "till"  "to"  "toward"  "under" "underneath"  "until"  "up"   "upon"  "with"  
+    "throughout"  "till"  "to"  "toward"  "under" "underneath"  "until"  "up"   "upon"  "with"
     "within" "without"))
 (defvar *conjunctions*
   '("for" "and" "nor" "but" "or" "yet" "so"))
 (defvar *articles*
   '("an" "a" "the"))
 (defun scan-for-more (s)
-  (let ((str (nth-value 
+  (let ((str (nth-value
               1 (scan-to-strings "[MORE|MOAR]\\W+((\\W|[A-Z0-9])+)([A-Z0-9])($|[^A-Z0-9])" s))))
     (or
      (and str
@@ -137,15 +137,15 @@
   (defun get-memo (recipient)
     (multiple-value-bind (memo hasp)
         (gethash recipient memo-table)
-      (if hasp 
-	  memo
-	  nil)))
+      (if hasp
+          memo
+          nil)))
 
   (defun get-and-remove-memo (recipient)
     (let ((memo (get-memo recipient)))
       (remove-memo recipient)
       memo))
-	  
+
   (defun erase-all-memos ()
     (clrhash memo-table))
   )
