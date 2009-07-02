@@ -16,8 +16,7 @@
             (send-notice bot sender (format nil "I don't know how to ~A." cmd))))))
 
   (defun erase-all-commands ()
-    (clrhash command-table))
-  )
+    (clrhash command-table)))
 
 (defun think (bot channel)
   (send-action bot channel "thinks"))
@@ -63,16 +62,19 @@
                                    sender numlinks (car links))))))
 
 (add-command "kiloseconds"
-	     (lambda (bot args sender channel)
-	       (send-msg bot channel (get-ks-time))))
+             (lambda (bot args sender channel)
+               (send-msg bot channel
+                         (format nil "~A, the time is GMT ~3$ ks."
+                                 sender (get-ks-time)))))
 
 (defun get-ks-time ()
-  (multiple-value-bind (seconds minutes hours)
+  (multiple-value-bind
+        (seconds minutes hours date month year day light zone)
       (get-decoded-time)
-    (format nil "The time is ~D ks" (/ (+ seconds
-					  (* minutes 60)
-					  (* hours 3600))
-				       1000.0))))
+    (/ (+ seconds
+          (* 60 (+ minutes
+                   (* 60 (mod (+ hours zone) 24)))))
+       1000)))
 
 
 (let ((memo-table (make-hash-table :test #'equalp)))
