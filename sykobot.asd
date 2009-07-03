@@ -7,10 +7,10 @@
                bordeaux-threads
                drakma
                html-entities
-               sheeple
-               alref)
+               sheeple)
   :serial t
-  :components ((:file "sykobot")
+  :components ((:file "alref")
+               (:file "sykobot")
                (:file "commands")
                (:file "config")
                (:file "chant")))

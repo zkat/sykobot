@@ -1,5 +1,5 @@
 (defpackage #:sykobot
-  (:use :cl :cl-ppcre :sheeple :alref)
+  (:use :cl :cl-ppcre :sheeple)
   (:export :sykobot :run-bot :connect :disconnect :join :part :identify :nick :send-notice
            :send-msg :topic :add-command :remove-command :connection :nickname :server :password
            :*default-channels* :*server* :*identify-with-nickserv?* :*nickserv-password* :*nickname*))
