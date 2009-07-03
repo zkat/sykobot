@@ -51,10 +51,10 @@
     (send-msg *bot* *channel* (format nil "~A" code))))
 
 ;; todo -- something that works like "give"
-(defcommand "help"
+(defcommand "give"
   (register-groups-bind (new-target new-command new-args)
       ("(\\S+) (\\S+) (.*)$" *args*
-    (answer-command *bot* new-command new-args new-target *channel*)))
+    (answer-command *bot* new-command new-args new-target *channel*))))
 
 ;;; Google
 (defcommand "google"
