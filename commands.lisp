@@ -34,7 +34,10 @@
 (add-command "echo" (lambda (bot args sender channel)
                      (send-msg bot channel args)))
 (add-command "ping" (lambda (bot args sender channel)
-                     (send-msg bot channel "pong")))
+                     (send-reply bot sender channel "pong")))
+(add-command "<3" (lambda (bot args sender channel)
+                     (send-reply bot sender channel "<3 <3 <3 OMG <3 <3 <3")))
+
 (add-command "google"
              (lambda (bot args sender channel)
                (multiple-value-bind (title url)
@@ -43,13 +46,25 @@
                              (format nil "~A <~A>" title url)))))
 (add-command "shut" (lambda (bot args sender channel)
                       (send-reply bot sender channel
-                                  "Fine. Be that way. Tell me to talk when you realize ~
-                                   just how lonely and pathetic you really are.")
+                                  (format nil "Fine. Be that way. Tell me to talk when you realize ~
+                                               just how lonely and pathetic you really are."))
                       (shut-up bot)))
 (add-command "chant" (lambda (bot args sender channel)
                       (send-msg bot channel (format nil "MORE ~:@(~A~)" *more*))))
 (add-command "help" (lambda (bot args sender channel)
-                      (send-reply bot sender channel "I'm not a psychiatrist. Go away.")))
+                      (send-reply bot sender channel "No.")))
+(add-command "hi" (lambda (bot args sender channel)
+                      (send-reply bot sender channel "Go away.")))
+(add-command "code->char" (lambda (bot args sender channel)
+                      (let ((char (code-char (read-from-string (car (split "\\s+" args))))))
+                       (send-msg bot channel (format nil "~A" char)))))
+(add-command "char->code" (lambda (bot args sender channel)
+                            (let ((code (char-code (elt args 0))))
+                              (send-msg bot channel (format nil "~A" code)))))
+(add-command "frot" (lambda (bot args sender channel)
+                      (send-reply bot sender channel
+                                  (format nil "~A http://heroichomosex.org ~A"
+                                          (code-char 9891) (code-char 9891)))))
 #+nil(add-command "tell" (lambda (bot args sender channel)
                       (send-msg bot channel)))
 (add-command "exit" (lambda (bot args sender channel)
