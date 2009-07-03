@@ -1,5 +1,8 @@
 (in-package :sykobot)
 
+;;;
+;;; Command definition
+;;;
 (let ((command-table (make-hash-table :test #'equalp)))
   (defun add-command (cmd fn)
     (setf (gethash cmd command-table) fn))
@@ -18,6 +21,14 @@
   (defun erase-all-commands ()
     (clrhash command-table)))
 
+(defmacro defcommand (name &body body)
+  `(add-command ,name
+                (lambda (*bot* *args* *sender* *channel*)
+                  (declare (special *bot* *args* *sender* *channel*))
+                  (declare (ignorable *args* *bot* *sender* *channel*))
+                  ,@body)))
+
+;;; general utils
 (defun think (bot channel &optional (minimum-delay 0))
   (send-action bot channel "thinks")
   (+ minimum-delay (sleep 8))
@@ -28,102 +39,58 @@
       (think bot channel))
   (sleep (1+ (random max-time))))
 
-(add-command "think" (lambda (bot args sender channel)
-		       (think bot channel 2)))
-(add-command "echo" (lambda (bot args sender channel)
-                     (send-msg bot channel args)))
-(add-command "ping" (lambda (bot args sender channel)
-                     (send-msg bot channel "pong")))
-(add-command "google"
-             (lambda (bot args sender channel)
-               (multiple-value-bind (title url)
-                   (google-search args)
-                 (send-reply bot sender channel
-                             (format nil "~A <~A>" title url)))))
-(add-command "shut" (lambda (bot args sender channel)
-                      (send-reply bot sender channel
-                                  (format nil "Fine. Be that way. Tell me to talk when you realize ~
-                                               just how lonely and pathetic you really are."))
-                      (shut-up bot)))
-(add-command "help" (lambda (bot args sender channel)
-                      (send-reply bot sender channel "I'm not a psychiatrist. Go away.")))
-#+nil(add-command "tell" (lambda (bot args sender channel)
-                      (send-msg bot channel)))
-(add-command "exit" (lambda (bot args sender channel)
-                      (send-reply bot sender channel "1 ON 1 FAGGOT")))
-(add-command "cliki"
-             (lambda (bot args sender channel)
-               (send-reply bot sender channel
-                         (multiple-value-bind (links numlinks)
-                             (cliki-urls args)
-                           (format nil "I found ~D result~:P.~@[ Check out <~A>.~]"
-                                   numlinks (car links))))))
-(add-command "kiloseconds"
-             (lambda (bot args sender channel)
-               (send-reply bot sender channel
-                         (format nil "the time is GMT ~3$ ks." (get-ks-time)))))
+;;; base commands
+(defcommand "think"
+  (think *bot* *channel* 2))
+(defcommand "echo"
+  (send-msg *bot* *channel* *args*))
+(defcommand "ping"
+  (send-reply *bot* *sender* *channel* "pong"))
+(defcommand "<3"
+  (send-reply *bot* *sender* *channel* "<3 <3 <3 OMG <3 <3 <3"))
+(defcommand "shut"
+  (when (scan "up" *args*)
+    (send-reply *bot* *sender* *channel*
+                (format nil "Fine. Be that way. Tell me to talk when you realize ~
+                           just how lonely and pathetic you really are."))
+    (shut-up *bot*)))
+(defcommand "help"
+  (send-reply *bot* *sender* *channel* "No."))
+(defcommand "hi"
+  (send-reply *bot* *sender* *channel* "Go away."))
+(defcommand "code->char"
+  (let ((char (code-char (read-from-string (car (split "\\s+" *args*))))))
+    (send-msg *bot* *channel* (format nil "~A" char))))
+(defcommand "char->code"
+  (let ((code (char-code (elt *args* 0))))
+    (send-msg *bot* *channel* (format nil "~A" code))))
+;; todo -- something that works like "give"
+#+nil(defcommand "tell"
+       (send-msg *bot* *channel*))
+(defcommand "give"
+  (let* ((split-args (split "\\s+" *args* :limit 3))
+         (new-target (car split-args))
+         (new-command (cadr split-args))
+         (new-args (third split-args)))
+    (answer-command *bot* new-command new-args new-target *channel*)))
 
-(add-command "memo" (lambda (bot args sender channel)
-			    (destructuring-bind (recipient memo)
-				  (split "\\s+" args :limit 2)
-			      (progn
-				(add-memo recipient memo sender)
-				(send-msg bot channel 
-                                          (format nil "tada! Added memo for ~A. ~
-                                                       I'll let them know next time they speak"
-                                                  recipient))))))
+(defcommand "exit"
+  (send-reply *bot* *sender* *channel* "1 ON 1 FAGGOT"))
 
-(defun get-ks-time ()
-  (multiple-value-bind
-        (seconds minutes hours date month year day light zone)
-      (get-decoded-time)
-    (declare (ignore date month year day light))
-    (/ (+ seconds
-          (* 60 (+ minutes
-                   (* 60 (mod (+ hours zone) 24)))))
-       1000)))
-
-(let ((memo-table (make-hash-table :test #'equalp)))
-  (defun add-memo (recipient memo sender)
-    (setf (gethash recipient memo-table) (list memo sender)))
-
-  (defun remove-memo (recipient)
-    (remhash recipient memo-table))
-
-  (defun get-memo (recipient)
-    (multiple-value-bind (memo hasp)
-        (gethash recipient memo-table)
-      (if hasp 
-	  memo
-	  nil)))
-
-  (defun get-and-remove-memo (recipient)
-    (let ((memo (get-memo recipient)))
-      (remove-memo recipient)
-      memo))
-	  
-  (defun erase-all-memos ()
-    (clrhash memo-table))
-  )
-
-(defun send-memos-for-recipient (bot channel recipient)
-  (let ((memo (get-and-remove-memo recipient)))
-    (when memo
-      (destructuring-bind (text sender) memo
-        (send-reply bot recipient channel (format nil "Hold on! ~A left you a memo" sender))
-        (pause-in-thought bot channel :max-time 5 :action-probability 10)
-        (send-reply bot recipient channel "Uhhh, the memo was.. umm")
-        (pause-in-thought bot channel :max-time 5)
-        (send-reply bot recipient channel (format nil "\"~A\" - ~A" text sender))))))
-
-
-(defun search-url (engine query)
-  (format nil engine (regex-replace-all "\\s+" query "+")))
+;;; Google
+(defcommand "google"
+  (multiple-value-bind (title url)
+      (google-search *args*)
+    (send-reply *bot* *sender* *channel*
+                (format nil "~A <~A>" title url))))
 
 (defun google-search (query)
   (url-info (search-url
              "http://google.com/search?filter=1&safe=on&q=~A&btnI"
              query)))
+
+(defun search-url (engine query)
+  (format nil engine (regex-replace-all "\\s+" query "+")))
 
 (defun url-info (url)
   (multiple-value-bind (body status-code headers uri)
@@ -141,6 +108,75 @@
             (with-output-to-string (s)
               (puri:render-uri uri s)))))
 
+(defun decode-html-string (string)
+  (html-entities:decode-entities string))
+
+;;; kiloseconds
+(defcommand "kiloseconds"
+  (send-reply *bot* *sender* *channel*
+              (format nil "the time is GMT ~3$ ks." (get-ks-time))))
+
+(defun get-ks-time ()
+  (multiple-value-bind
+        (seconds minutes hours date month year day light zone)
+      (get-decoded-time)
+    (declare (ignore date month year day light))
+    (/ (+ seconds
+          (* 60 (+ minutes
+                   (* 60 (mod (+ hours zone) 24)))))
+       1000)))
+
+;;; memos
+(defcommand "memo"
+  (destructuring-bind (recipient memo)
+      (split "\\s+" *args* :limit 2)
+    (progn
+      (add-memo recipient memo *sender*)
+      (send-msg *bot* *channel*
+                (format nil "Tada! Added memo for ~A. ~
+                             I'll let them know next time they speak"
+                        recipient)))))
+
+(let ((memo-table (make-hash-table :test #'equalp)))
+  (defun add-memo (recipient memo sender)
+    (setf (gethash recipient memo-table) (list memo sender)))
+
+  (defun remove-memo (recipient)
+    (remhash recipient memo-table))
+
+  (defun get-memo (recipient)
+    (multiple-value-bind (memo hasp)
+        (gethash recipient memo-table)
+      (if hasp
+          memo
+          nil)))
+
+  (defun get-and-remove-memo (recipient)
+    (let ((memo (get-memo recipient)))
+      (remove-memo recipient)
+      memo))
+
+  (defun erase-all-memos ()
+    (clrhash memo-table)))
+
+(defun send-memos-for-recipient (bot channel recipient)
+  (let ((memo (get-and-remove-memo recipient)))
+    (when memo
+      (destructuring-bind (text sender) memo
+        (send-reply bot recipient channel (format nil "Hold on! ~A left you a memo" sender))
+        (pause-in-thought bot channel :max-time 5 :action-probability 10)
+        (send-reply bot recipient channel "Uhhh, the memo was.. umm")
+        (pause-in-thought bot channel :max-time 5)
+        (send-reply bot recipient channel (format nil "\"~A\" - ~A" text sender))))))
+
+;;; Cliki search
+(defcommand "cliki"
+  (send-reply *bot* *sender* *channel*
+              (multiple-value-bind (links numlinks)
+                  (cliki-urls *args*)
+                (format nil "I found ~D result~:P.~@[ Check out <~A>.~]"
+                        numlinks (car links)))))
+
 (defun cliki-urls (query)
   (let ((links NIL)
         (page (drakma:http-request
@@ -156,12 +192,5 @@
                  :junk-allowed T)
                 0))))
 
-(defun decode-html-string (string)
-  (html-entities:decode-entities string))
 
-(defun has-url-p (string)
-  (when (scan "https?://.*[.$| |>]" string) t))
-
-(defun grab-url (string)
-  (find-if #'has-url-p (split "[\\s+><,]" string)))
 
