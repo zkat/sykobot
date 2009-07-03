@@ -64,16 +64,12 @@
 (defcommand "char->code" 
   (let ((code (char-code (elt *args* 0))))
     (send-msg *bot* *channel* (format nil "~A" code))))
-;; todo -- something that works like "give"
-#+nil(defcommand "tell" 
+(defcommand "tell" 
        (send-msg *bot* *channel*))
 (defcommand "give"
-  (let* ((split-args (split "\\s+" *args* :limit 3))
-         (new-target (car split-args))
-         (new-command (cadr split-args))
-         (new-args (third split-args)))
-    (answer-command *bot* new-command new-args new-target *channel*)))
-
+  (register-groups-bind (new-target new-command new-args)
+      ("(\\S+) (\\S+) (.*)$" *args*
+    (answer-command *bot* new-command new-args new-target *channel*))))
 (defcommand "exit" 
   (send-reply *bot* *sender* *channel* "1 ON 1 FAGGOT"))
 
