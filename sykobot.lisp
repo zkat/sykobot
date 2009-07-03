@@ -1,5 +1,5 @@
 (defpackage #:sykobot
-  (:use :cl :cl-ppcre :sheeple)
+  (:use :cl :cl-ppcre :sheeple :alref)
   (:export :sykobot :run-bot :connect :disconnect :join :part :identify :nick :send-notice
            :send-msg :topic :add-command :remove-command :connection :nickname :server :password
            :*default-channels* :*server* :*identify-with-nickserv?* :*nickserv-password* :*nickname*))
@@ -120,7 +120,7 @@
 (defmessage process-message (bot sender channel message))
 (defreply process-message ((bot (proto 'sykobot)) sender channel message)
   (send-pending-memos bot sender channel)
-  (scan-for-more message)
+  (scan-for-more message channel)
   (when (sent-to-me-p bot channel message)
     (respond-to-message bot sender channel message))
   (when (and (has-url-p message)
