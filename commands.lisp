@@ -28,54 +28,33 @@
                   (declare (ignorable *args* *bot* *sender* *channel*))
                   ,@body)))
 
-;;; general utils
-(defun think (bot channel &optional (minimum-delay 0))
-  (send-action bot channel "thinks")
-  (+ minimum-delay (sleep 8))
-  (send-msg bot channel "Hmm.... Indeed."))
-
-(defun pause-in-thought (bot channel &key (max-time 5) (action-probability 2))
-  (if (zerop (random action-probability))
-      (think bot channel))
-  (sleep (1+ (random max-time))))
-
 ;;; base commands
-(defcommand "think"
-  (think *bot* *channel* 2))
 (defcommand "echo"
   (send-msg *bot* *channel* *args*))
 (defcommand "ping"
   (send-reply *bot* *sender* *channel* "pong"))
-(defcommand "<3"
-  (send-reply *bot* *sender* *channel* "<3 <3 <3 OMG <3 <3 <3"))
 (defcommand "shut"
   (when (scan "up" *args*)
     (send-reply *bot* *sender* *channel*
                 (format nil "Fine. Be that way. Tell me to talk when you realize ~
                            just how lonely and pathetic you really are."))
     (shut-up *bot*)))
-(defcommand "help"
-  (send-reply *bot* *sender* *channel* "No."))
 (defcommand "hi"
   (send-reply *bot* *sender* *channel* "Go away."))
+
+;;; Slightly buggy
 (defcommand "code->char"
   (let ((char (code-char (read-from-string (car (split "\\s+" *args*))))))
     (send-msg *bot* *channel* (format nil "~A" char))))
 (defcommand "char->code"
   (let ((code (char-code (elt *args* 0))))
     (send-msg *bot* *channel* (format nil "~A" code))))
-;; todo -- something that works like "give"
-#+nil(defcommand "tell"
-       (send-msg *bot* *channel*))
-(defcommand "give"
-  (let* ((split-args (split "\\s+" *args* :limit 3))
-         (new-target (car split-args))
-         (new-command (cadr split-args))
-         (new-args (third split-args)))
-    (answer-command *bot* new-command new-args new-target *channel*)))
 
-(defcommand "exit"
-  (send-reply *bot* *sender* *channel* "1 ON 1 FAGGOT"))
+;; todo -- something that works like "give"
+(defcommand "help"
+  (register-groups-bind (new-target new-command new-args)
+      ("(\\S+) (\\S+) (.*)$" *args*
+    (answer-command *bot* new-command new-args new-target *channel*)))
 
 ;;; Google
 (defcommand "google"
@@ -163,10 +142,6 @@
   (let ((memo (get-and-remove-memo recipient)))
     (when memo
       (destructuring-bind (text sender) memo
-        (send-reply bot recipient channel (format nil "Hold on! ~A left you a memo" sender))
-        (pause-in-thought bot channel :max-time 5 :action-probability 10)
-        (send-reply bot recipient channel "Uhhh, the memo was.. umm")
-        (pause-in-thought bot channel :max-time 5)
         (send-reply bot recipient channel (format nil "\"~A\" - ~A" text sender))))))
 
 ;;; Cliki search
