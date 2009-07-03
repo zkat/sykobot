@@ -64,10 +64,6 @@
 (defcommand "char->code" 
   (let ((code (char-code (elt *args* 0))))
     (send-msg *bot* *channel* (format nil "~A" code))))
-(defcommand "frot" 
-  (send-reply *bot* *sender* *channel*
-              (format nil "~A http://heroichomosex.org ~A"
-                      (code-char 9891) (code-char 9891))))
 ;; todo -- something that works like "give"
 #+nil(defcommand "tell" 
        (send-msg *bot* *channel*))
