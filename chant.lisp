@@ -25,10 +25,10 @@
       *default-alref-value* "MONEY")
 
 ;;; This command is used to chant.
-(add-command "chant" (lambda (bot args sender channel)
-                      (send-msg bot channel
-                                (format nil "MORE ~:@(~A~)"
-                                        (alref channel *more*)))))
+(defcommand "chant"
+  (send-msg *bot* *channel*
+            (format nil "MORE ~:@(~A~)"
+                    (alref *channel* *more*))))
 
 ;;; This is where the cookie crumbles.
 ;;;
