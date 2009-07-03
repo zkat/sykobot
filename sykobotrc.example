@@ -22,3 +22,6 @@
 ;; password to identify with goes here, as a string
 (setf *nickserv-password* "pass")
 
+;; set this to T to get a bit of profiling information at the REPL
+(setf *time-commands* nil)
+
