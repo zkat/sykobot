@@ -64,8 +64,6 @@
 (defcommand "char->code" 
   (let ((code (char-code (elt *args* 0))))
     (send-msg *bot* *channel* (format nil "~A" code))))
-(defcommand "tell" 
-       (send-msg *bot* *channel*))
 (defcommand "give"
   (register-groups-bind (new-target new-command new-args)
       ("(\\S+) (\\S+) (.*)$" *args*
