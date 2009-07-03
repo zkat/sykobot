@@ -1,0 +1,16 @@
+* TODO Features requested by wizzo
+  I guess if we actually get these features built into sykobot, it may actually
+  replace supybot as phrik's backend.
+** DONE google search
+** TODO quotegrabs
+   Persistent quotegrabs, including being able to !grab, !rq, and !q <someone>
+
+** TODO Factoids
+   ability to define simple persistent factoids that can be called up with just !factname
+** TODO Admin access
+   Maybe later? Register users, etc.
+** TODO ELIZA
+   *shrug*
+
+** TODO Stability
+   Don't want this fucker crashing.
