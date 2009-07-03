@@ -49,9 +49,11 @@
 (defcommand "<3"
   (send-reply *bot* *sender* *channel* "<3 <3 <3 OMG <3 <3 <3"))
 (defcommand "shut" 
-  (send-reply *bot* *sender* *channel*
-              (format nil "Fine. Be that way. Tell me to talk when you realize ~
-                           just how lonely and pathetic you really are.")))
+  (when (scan "up" *args*)
+    (send-reply *bot* *sender* *channel*
+                (format nil "Fine. Be that way. Tell me to talk when you realize ~
+                           just how lonely and pathetic you really are."))
+    (shut-up *bot*)))
 (defcommand "help" 
   (send-reply *bot* *sender* *channel* "No."))
 (defcommand "hi" 
