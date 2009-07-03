@@ -41,6 +41,10 @@
     (shut-up *bot*)))
 (defcommand "hi"
   (send-reply *bot* *sender* *channel* "Go away."))
+(defcommand "give"
+  (register-groups-bind (new-target new-command new-args)
+      ("(\\S+) (\\S+) (.*)$" *args*
+    (answer-command *bot* new-command new-args new-target *channel*))))
 
 ;;; Slightly buggy
 (defcommand "code->char"
@@ -50,26 +54,7 @@
   (let ((code (char-code (elt *args* 0))))
     (send-msg *bot* *channel* (format nil "~A" code))))
 
-;; todo -- something that works like "give"
-(defcommand "give"
-  (register-groups-bind (new-target new-command new-args)
-      ("(\\S+) (\\S+) (.*)$" *args*
-    (answer-command *bot* new-command new-args new-target *channel*))))
-
-;;; Google
-(defcommand "google"
-  (multiple-value-bind (title url)
-      (google-search *args*)
-    (send-reply *bot* *sender* *channel*
-                (format nil "~A <~A>" title url))))
-
-(defun google-search (query)
-  (url-info (search-url
-             "http://google.com/search?filter=1&safe=on&q=~A&btnI"
-             query)))
-
-(defun search-url (engine query)
-  (format nil engine (regex-replace-all "\\s+" query "+")))
+;;; General web functionality
 
 (defun url-info (url)
   (multiple-value-bind (body status-code headers uri)
@@ -89,6 +74,46 @@
 
 (defun decode-html-string (string)
   (html-entities:decode-entities string))
+
+(defun search-url (engine query)
+  (format nil engine (regex-replace-all "\\s+" query "+")))
+
+;;; CLiki search
+
+(defcommand "cliki"
+  (send-reply *bot* *sender* *channel*
+              (multiple-value-bind (links numlinks)
+                  (cliki-urls *args*)
+                (format nil "I found ~D result~:P.~@[ Check out <~A>.~]"
+                        numlinks (car links)))))
+
+(defun cliki-urls (query)
+  (let ((links NIL)
+        (page (drakma:http-request
+               (search-url "http://www.cliki.net/admin/search?words=~A"
+                           query))))
+    (ppcre:do-register-groups (url)
+        ("\\d <b><a href=\"(.*?)\">(.*?)<" page)
+      (push url links))
+    (values (nreverse links)
+            (or (parse-integer
+                 (or (ppcre:scan-to-strings "(\\d*) results? found" page)
+                     "")
+                 :junk-allowed T)
+                0))))
+
+;;; Google search
+
+(defcommand "google"
+  (multiple-value-bind (title url)
+      (google-search *args*)
+    (send-reply *bot* *sender* *channel*
+                (format nil "~A <~A>" title url))))
+
+(defun google-search (query)
+  (url-info (search-url
+             "http://google.com/search?filter=1&safe=on&q=~A&btnI"
+             query)))
 
 ;;; kiloseconds
 (defcommand "kiloseconds"
@@ -143,29 +168,3 @@
     (when memo
       (destructuring-bind (text sender) memo
         (send-reply bot recipient channel (format nil "\"~A\" - ~A" text sender))))))
-
-;;; Cliki search
-(defcommand "cliki"
-  (send-reply *bot* *sender* *channel*
-              (multiple-value-bind (links numlinks)
-                  (cliki-urls *args*)
-                (format nil "I found ~D result~:P.~@[ Check out <~A>.~]"
-                        numlinks (car links)))))
-
-(defun cliki-urls (query)
-  (let ((links NIL)
-        (page (drakma:http-request
-               (search-url "http://www.cliki.net/admin/search?words=~A"
-                           query))))
-    (ppcre:do-register-groups (url)
-        ("\\d <b><a href=\"(.*?)\">(.*?)<" page)
-      (push url links))
-    (values (nreverse links)
-            (or (parse-integer
-                 (or (ppcre:scan-to-strings "(\\d*) results? found" page)
-                     "")
-                 :junk-allowed T)
-                0))))
-
-
-

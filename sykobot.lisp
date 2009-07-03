@@ -15,7 +15,7 @@
    (server "irc.freenode.net")
    (password nil)
    (silentp nil)))
-
+(defvar *active-bots* nil)
 ;;;
 ;;; IRC connection
 ;;;
@@ -27,7 +27,8 @@
 (defmessage identify (bot password))
 
 (defreply run-bot ((bot (proto 'sykobot)))
-  (connect bot (server bot) (password bot)))
+  (connect bot (server bot) (password bot))
+  (pushnew bot *active-bots*))
 
 (defreply connect ((bot (proto 'sykobot)) server &optional password)
   (setf (connection bot) (irc:connect :nickname (nickname bot) :server server :password password))
@@ -48,6 +49,7 @@
 
 (defreply disconnect ((bot (proto 'sykobot)) &optional message)
   (bt:destroy-thread (msg-loop-thread bot))
+  (setf *active-bots* (delete bot *active-bots*))
   (irc:quit (connection bot) (or message (values))))
 
 (defreply join ((bot (proto 'sykobot)) channel)
