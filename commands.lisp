@@ -29,67 +29,69 @@
   (sleep (1+ (random max-time))))
 
 (defvar *more* "lulz")
-(add-command "think" (lambda (bot args sender channel)
-		       (think bot channel 2)))
-(add-command "echo" (lambda (bot args sender channel)
-                     (send-msg bot channel args)))
-(add-command "ping" (lambda (bot args sender channel)
-                     (send-reply bot sender channel "pong")))
-(add-command "<3" (lambda (bot args sender channel)
-                     (send-reply bot sender channel "<3 <3 <3 OMG <3 <3 <3")))
+(defmacro defcommand (name &body body)
+  `(add-command ,name
+                (lambda (*bot* *args* *sender* *channel*)
+                  (declare (special *bot* *args* *sender* *channel*))
+                  (declare (ignorable *args* *bot* *sender* *channel*))
+                  ,@body)))
+(defcommand "think"
+  (think *bot* *channel* 2))
+(defcommand "echo"
+  (send-msg *bot* *channel* *args*))
+(defcommand "ping"
+  (send-reply *bot* *sender* *channel* "pong"))
+(defcommand "<3"
+  (send-reply *bot* *sender* *channel* "<3 <3 <3 OMG <3 <3 <3"))
+(defcommand "google"
+  (multiple-value-bind (title url)
+      (google-search *args*)
+    (send-reply *bot* *sender* *channel*
+                (format nil "~A <~A>" title url))))
+(defcommand "shut" 
+  (send-reply *bot* *sender* *channel*
+              (format nil "Fine. Be that way. Tell me to talk when you realize ~
+                           just how lonely and pathetic you really are.")))
+(defcommand "chant" 
+  (send-msg *bot* *channel* (format nil "MORE ~:@(~A~)" *more*)))
+(defcommand "help" 
+  (send-reply *bot* *sender* *channel* "No."))
+(defcommand "hi" 
+  (send-reply *bot* *sender* *channel* "Go away."))
+(defcommand "code->char" 
+  (let ((char (code-char (read-from-string (car (split "\\s+" *args*))))))
+    (send-msg *bot* *channel* (format nil "~A" char))))
+(defcommand "char->code" 
+  (let ((code (char-code (elt *args* 0))))
+    (send-msg *bot* *channel* (format nil "~A" code))))
+(defcommand "frot" 
+  (send-reply *bot* *sender* *channel*
+              (format nil "~A http://heroichomosex.org ~A"
+                      (code-char 9891) (code-char 9891))))
+;; todo -- something that works like "give"
+#+nil(defcommand "tell" 
+       (send-msg *bot* *channel*))
+(defcommand "exit" 
+  (send-reply *bot* *sender* *channel* "1 ON 1 FAGGOT"))
+(defcommand "cliki"
+  (send-reply *bot* *sender* *channel*
+              (multiple-value-bind (links numlinks)
+                  (cliki-urls *args*)
+                (format nil "I found ~D result~:P.~@[ Check out <~A>.~]"
+                        numlinks (car links)))))
+(defcommand "kiloseconds"
+  (send-reply *bot* *sender* *channel*
+              (format nil "the time is GMT ~3$ ks." (get-ks-time))))
 
-(add-command "google"
-             (lambda (bot args sender channel)
-               (multiple-value-bind (title url)
-                   (google-search args)
-                 (send-reply bot sender channel
-                             (format nil "~A <~A>" title url)))))
-(add-command "shut" (lambda (bot args sender channel)
-                      (send-reply bot sender channel
-                                  (format nil "Fine. Be that way. Tell me to talk when you realize ~
-                                               just how lonely and pathetic you really are."))
-                      (shut-up bot)))
-(add-command "chant" (lambda (bot args sender channel)
-                      (send-msg bot channel (format nil "MORE ~:@(~A~)" *more*))))
-(add-command "help" (lambda (bot args sender channel)
-                      (send-reply bot sender channel "No.")))
-(add-command "hi" (lambda (bot args sender channel)
-                      (send-reply bot sender channel "Go away.")))
-(add-command "code->char" (lambda (bot args sender channel)
-                      (let ((char (code-char (read-from-string (car (split "\\s+" args))))))
-                       (send-msg bot channel (format nil "~A" char)))))
-(add-command "char->code" (lambda (bot args sender channel)
-                            (let ((code (char-code (elt args 0))))
-                              (send-msg bot channel (format nil "~A" code)))))
-(add-command "frot" (lambda (bot args sender channel)
-                      (send-reply bot sender channel
-                                  (format nil "~A http://heroichomosex.org ~A"
-                                          (code-char 9891) (code-char 9891)))))
-#+nil(add-command "tell" (lambda (bot args sender channel)
-                      (send-msg bot channel)))
-(add-command "exit" (lambda (bot args sender channel)
-                      (send-reply bot sender channel "1 ON 1 FAGGOT")))
-(add-command "cliki"
-             (lambda (bot args sender channel)
-               (send-reply bot sender channel
-                         (multiple-value-bind (links numlinks)
-                             (cliki-urls args)
-                           (format nil "I found ~D result~:P.~@[ Check out <~A>.~]"
-                                   numlinks (car links))))))
-(add-command "kiloseconds"
-             (lambda (bot args sender channel)
-               (send-reply bot sender channel
-                         (format nil "the time is GMT ~3$ ks." (get-ks-time)))))
-
-(add-command "memo" (lambda (bot args sender channel)
-			    (destructuring-bind (recipient memo)
-				  (split "\\s+" args :limit 2)
-			      (progn
-				(add-memo recipient memo sender)
-				(send-msg bot channel 
-                                          (format nil "tada! Added memo for ~A. ~
-                                                       I'll let them know next time they speak"
-                                                  recipient))))))
+(defcommand "memo" 
+  (destructuring-bind (recipient memo)
+      (split "\\s+" *args* :limit 2)
+    (progn
+      (add-memo recipient memo *sender*)
+      (send-msg *bot* *channel* 
+                (format nil "Tada! Added memo for ~A. ~
+                             I'll let them know next time they speak"
+                        recipient)))))
 
 (defvar *prepositions*
   '("aboard"  "about"  "above"  "across"  "after"  "against"  "along"  "among"  "around"  "as"   "at"
