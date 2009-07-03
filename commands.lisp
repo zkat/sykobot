@@ -1,5 +1,8 @@
 (in-package :sykobot)
 
+;;;
+;;; Command definition
+;;;
 (let ((command-table (make-hash-table :test #'equalp)))
   (defun add-command (cmd fn)
     (setf (gethash cmd command-table) fn))
@@ -18,6 +21,14 @@
   (defun erase-all-commands ()
     (clrhash command-table)))
 
+(defmacro defcommand (name &body body)
+  `(add-command ,name
+                (lambda (*bot* *args* *sender* *channel*)
+                  (declare (special *bot* *args* *sender* *channel*))
+                  (declare (ignorable *args* *bot* *sender* *channel*))
+                  ,@body)))
+
+;;; general utils
 (defun think (bot channel &optional (minimum-delay 0))
   (send-action bot channel "thinks")
   (+ minimum-delay (sleep 8))
@@ -28,13 +39,7 @@
       (think bot channel))
   (sleep (1+ (random max-time))))
 
-(defvar *more* "lulz")
-(defmacro defcommand (name &body body)
-  `(add-command ,name
-                (lambda (*bot* *args* *sender* *channel*)
-                  (declare (special *bot* *args* *sender* *channel*))
-                  (declare (ignorable *args* *bot* *sender* *channel*))
-                  ,@body)))
+;;; base commands
 (defcommand "think"
   (think *bot* *channel* 2))
 (defcommand "echo"
@@ -43,17 +48,10 @@
   (send-reply *bot* *sender* *channel* "pong"))
 (defcommand "<3"
   (send-reply *bot* *sender* *channel* "<3 <3 <3 OMG <3 <3 <3"))
-(defcommand "google"
-  (multiple-value-bind (title url)
-      (google-search *args*)
-    (send-reply *bot* *sender* *channel*
-                (format nil "~A <~A>" title url))))
 (defcommand "shut" 
   (send-reply *bot* *sender* *channel*
               (format nil "Fine. Be that way. Tell me to talk when you realize ~
                            just how lonely and pathetic you really are.")))
-(defcommand "chant" 
-  (send-msg *bot* *channel* (format nil "MORE ~:@(~A~)" *more*)))
 (defcommand "help" 
   (send-reply *bot* *sender* *channel* "No."))
 (defcommand "hi" 
@@ -73,26 +71,45 @@
        (send-msg *bot* *channel*))
 (defcommand "exit" 
   (send-reply *bot* *sender* *channel* "1 ON 1 FAGGOT"))
-(defcommand "cliki"
-  (send-reply *bot* *sender* *channel*
-              (multiple-value-bind (links numlinks)
-                  (cliki-urls *args*)
-                (format nil "I found ~D result~:P.~@[ Check out <~A>.~]"
-                        numlinks (car links)))))
-(defcommand "kiloseconds"
-  (send-reply *bot* *sender* *channel*
-              (format nil "the time is GMT ~3$ ks." (get-ks-time))))
 
-(defcommand "memo" 
-  (destructuring-bind (recipient memo)
-      (split "\\s+" *args* :limit 2)
-    (progn
-      (add-memo recipient memo *sender*)
-      (send-msg *bot* *channel* 
-                (format nil "Tada! Added memo for ~A. ~
-                             I'll let them know next time they speak"
-                        recipient)))))
+;;; Google
+(defcommand "google"
+  (multiple-value-bind (title url)
+      (google-search *args*)
+    (send-reply *bot* *sender* *channel*
+                (format nil "~A <~A>" title url))))
 
+(defun google-search (query)
+  (url-info (search-url
+             "http://google.com/search?filter=1&safe=on&q=~A&btnI"
+             query)))
+
+(defun search-url (engine query)
+  (format nil engine (regex-replace-all "\\s+" query "+")))
+
+(defun url-info (url)
+  (multiple-value-bind (body status-code headers uri)
+      (drakma:http-request url)
+    (declare (ignore status-code headers))
+    (values (multiple-value-bind (match vec)
+                (scan-to-strings
+                 (create-scanner
+                  "<title\\s*>\\s*(.+)\\s*</title\\s*>"
+                  :case-insensitive-mode t) body)
+              (declare (ignore match))
+              (if (< 0 (length vec))
+                  (decode-html-string (elt vec 0))
+                  nil))
+            (with-output-to-string (s)
+              (puri:render-uri uri s)))))
+
+(defun decode-html-string (string)
+  (html-entities:decode-entities string))
+
+;;; More
+(defcommand "chant" 
+  (send-msg *bot* *channel* (format nil "MORE ~:@(~A~)" *more*)))
+(defvar *more* "lulz")
 (defvar *prepositions*
   '("aboard"  "about"  "above"  "across"  "after"  "against"  "along"  "among"  "around"  "as"   "at"
     "before"  "behind"   "below" "beneath" "beside"  "between"  "beyond"  "but" "except"  "by"
@@ -134,6 +151,11 @@
              (or
               (and str (setf *more* (string-upcase (elt str 0)))))))))))))
 
+;;; kiloseconds
+(defcommand "kiloseconds"
+  (send-reply *bot* *sender* *channel*
+              (format nil "the time is GMT ~3$ ks." (get-ks-time))))
+
 (defun get-ks-time ()
   (multiple-value-bind
         (seconds minutes hours date month year day light zone)
@@ -143,6 +165,17 @@
           (* 60 (+ minutes
                    (* 60 (mod (+ hours zone) 24)))))
        1000)))
+
+;;; memos
+(defcommand "memo" 
+  (destructuring-bind (recipient memo)
+      (split "\\s+" *args* :limit 2)
+    (progn
+      (add-memo recipient memo *sender*)
+      (send-msg *bot* *channel* 
+                (format nil "Tada! Added memo for ~A. ~
+                             I'll let them know next time they speak"
+                        recipient)))))
 
 (let ((memo-table (make-hash-table :test #'equalp)))
   (defun add-memo (recipient memo sender)
@@ -177,30 +210,13 @@
         (pause-in-thought bot channel :max-time 5)
         (send-reply bot recipient channel (format nil "\"~A\" - ~A" text sender))))))
 
-
-(defun search-url (engine query)
-  (format nil engine (regex-replace-all "\\s+" query "+")))
-
-(defun google-search (query)
-  (url-info (search-url
-             "http://google.com/search?filter=1&safe=on&q=~A&btnI"
-             query)))
-
-(defun url-info (url)
-  (multiple-value-bind (body status-code headers uri)
-      (drakma:http-request url)
-    (declare (ignore status-code headers))
-    (values (multiple-value-bind (match vec)
-                (scan-to-strings
-                 (create-scanner
-                  "<title\\s*>\\s*(.+)\\s*</title\\s*>"
-                  :case-insensitive-mode t) body)
-              (declare (ignore match))
-              (if (< 0 (length vec))
-                  (decode-html-string (elt vec 0))
-                  nil))
-            (with-output-to-string (s)
-              (puri:render-uri uri s)))))
+;;; Cliki search
+(defcommand "cliki"
+  (send-reply *bot* *sender* *channel*
+              (multiple-value-bind (links numlinks)
+                  (cliki-urls *args*)
+                (format nil "I found ~D result~:P.~@[ Check out <~A>.~]"
+                        numlinks (car links)))))
 
 (defun cliki-urls (query)
   (let ((links NIL)
@@ -217,12 +233,5 @@
                  :junk-allowed T)
                 0))))
 
-(defun decode-html-string (string)
-  (html-entities:decode-entities string))
 
-(defun has-url-p (string)
-  (when (scan "https?://.*[.$| |>]" string) t))
-
-(defun grab-url (string)
-  (find-if #'has-url-p (split "[\\s+><,]" string)))
 

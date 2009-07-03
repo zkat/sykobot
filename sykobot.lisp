@@ -123,6 +123,9 @@
   (scan-for-more message)
   (when (sent-to-me-p bot channel message)
     (respond-to-message bot sender channel message))
+  (scan-for-url bot sender channel message))
+
+(defun scan-for-url (bot sender channel message)
   (when (and (has-url-p message)
              (not (string-equal sender (nickname bot))))
     (handler-case
@@ -131,6 +134,12 @@
           (send-msg bot channel (format nil "Title: ~A (at ~A)" title (puri:uri-host (puri:uri url)))))
       (error ()
         (values)))))
+
+(defun has-url-p (string)
+  (when (scan "https?://.*[.$| |>]" string) t))
+
+(defun grab-url (string)
+  (find-if #'has-url-p (split "[\\s+><,]" string)))
 
 (defun send-pending-memos (bot sender channel)
   (send-memos-for-recipient bot channel sender))
