@@ -6,6 +6,8 @@
 ;;;;   project, lacks some of the features (both convenience
 ;;;;   and bug-safety) that the full utility has.
 
+(in-package :sykobot)
+
 (defvar *default-alref-test* #.#'eql)
 (defvar *default-alref-value* NIL)
 (defmacro with-gensyms (vars &body body)
@@ -13,7 +15,7 @@
      ,@body))
 (defun alref (item alist &key
               (test *default-alref-test*)
-              (key *default-alref-key*)
+              (key #'identity)
               (default *default-alref-value*))
   "Retreive the value corresponding to ITEM in ALIST."
   (or (cdr (assoc item alist :test test :key key))

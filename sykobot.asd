@@ -9,8 +9,8 @@
                html-entities
                sheeple)
   :serial t
-  :components ((:file "alref")
-               (:file "sykobot")
+  :components ((:file "sykobot")
+               (:file "alref")
                (:file "commands")
                (:file "config")
                (:file "chant")))

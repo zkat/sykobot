@@ -43,8 +43,8 @@
   (send-reply *bot* *sender* *channel* "Go away."))
 (defcommand "give"
   (register-groups-bind (new-target new-command new-args)
-      ("(\\S+) (\\S+) (.*)$" *args*
-    (answer-command *bot* new-command new-args new-target *channel*))))
+      ("(\\S+) (\\S+) (.*)$" *args*)
+    (answer-command *bot* new-command new-args new-target *channel*)))
 
 ;;; Slightly buggy
 (defcommand "code->char"
