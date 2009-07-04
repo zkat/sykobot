@@ -35,28 +35,28 @@
   (send-msg bot channel "Hmm.... Indeed."))
 
 ;;; base commands
-(defcommand "think"
-  (think *bot* *channel* 2))
 (defcommand "echo"
   (send-msg *bot* *channel* *args*))
 (defcommand "ping"
   (send-reply *bot* *sender* *channel* "pong"))
-(defcommand "<3"
-  (send-reply *bot* *sender* *channel* "<3 <3 <3 OMG <3 <3 <3"))
-(defcommand "shut" 
+(defcommand "shut"
   (when (scan "up" *args*)
     (send-reply *bot* *sender* *channel*
                 (format nil "Fine. Be that way. Tell me to talk when you realize ~
                            just how lonely and pathetic you really are."))
     (shut-up *bot*)))
-(defcommand "help" 
-  (send-reply *bot* *sender* *channel* "No."))
-(defcommand "hi" 
+(defcommand "hi"
   (send-reply *bot* *sender* *channel* "Go away."))
-(defcommand "code->char" 
+(defcommand "give"
+  (register-groups-bind (new-target new-command new-args)
+      ("(\\S+) (\\S+) (.*)$" *args*)
+    (answer-command *bot* new-command new-args new-target *channel*)))
+
+;;; Slightly buggy
+(defcommand "code->char"
   (let ((char (code-char (read-from-string (car (split "\\s+" *args*))))))
     (send-msg *bot* *channel* (format nil "~A" char))))
-(defcommand "char->code" 
+(defcommand "char->code"
   (let ((code (char-code (elt *args* 0))))
     (send-msg *bot* *channel* (format nil "~A" code))))
 (defcommand "give"
@@ -78,8 +78,7 @@
              "http://google.com/search?filter=1&safe=on&q=~A&btnI"
              query)))
 
-(defun search-url (engine query)
-  (format nil engine (regex-replace-all "\\s+" query "+")))
+;;; General web functionality
 
 (defun url-info (url)
   (multiple-value-bind (body status-code headers uri)
@@ -100,50 +99,32 @@
 (defun decode-html-string (string)
   (html-entities:decode-entities string))
 
-;;; More
-(defvar *more* "lulz")
-(defcommand "chant" 
-  (send-msg *bot* *channel* (format nil "MORE ~:@(~A~)" *more*)))
-(defvar *prepositions*
-  '("aboard"  "about"  "above"  "across"  "after"  "against"  "along"  "among"  "around"  "as"   "at"
-    "before"  "behind"   "below" "beneath" "beside"  "between"  "beyond"  "but" "except"  "by"
-    "concerning"  "despite"  "down"  "during"  "except" "for"  "from"  "in"  "into"  "like" "near"
-    "of"  "off"  "on"  "onto"  "out"  "outside"  "over"  "past"  "per"  "regarding"  "since"  "through"
-    "throughout"  "till"  "to"  "toward"  "under" "underneath"  "until"  "up"   "upon"  "with"
-    "within" "without"))
-(defvar *conjunctions*
-  '("for" "and" "nor" "but" "or" "yet" "so"))
-(defvar *articles*
-  '("an" "a" "the"))
-(defun scan-for-more (s)
-  (let ((str (nth-value
-              1 (scan-to-strings "[MORE|MOAR]\\W+((\\W|[A-Z0-9])+)([A-Z0-9])($|[^A-Z0-9])" s))))
-    (or
-     (and str
-          (setf *more* (concatenate 'string (elt str 0) (elt str 2))))
-     (let ((str (nth-value 1 (scan-to-strings "(?i)[more|moar]\\W+(\\w+)\\W+(\\w+)\\W+(\\w+)" s))))
-       (or
-        (and str
-             (or (member (elt str 0) *prepositions* :test #'string-equal)
-                 (member (elt str 0) *conjunctions* :test #'string-equal)
-                 (member (elt str 0) *articles* :test #'string-equal))
-             (or (member (elt str 1) *prepositions* :test #'string-equal)
-                 (member (elt str 1) *conjunctions* :test #'string-equal)
-                 (member (elt str 1) *articles* :test #'string-equal))
-             (setf *more* (string-upcase
-                           (concatenate 'string (elt str 0) " " (elt str 1)
-                                        " " (elt str 2)))))
-        (let ((str (nth-value 1 (scan-to-strings "(?i)[more|moar]\\W+(\\w+)\\W+(\\w+)" s))))
-          (or
-           (and str
-                (or (member (elt str 0) *prepositions* :test #'string-equal)
-                    (member (elt str 0) *conjunctions* :test #'string-equal)
-                    (member (elt str 0) *articles* :test #'string-equal))
-                (setf *more* (string-upcase
-                              (concatenate 'string (elt str 0) " " (elt str 1)))))
-           (let ((str (nth-value 1 (scan-to-strings "(?i)[more|moar]\\W+(\\w+)" s))))
-             (or
-              (and str (setf *more* (string-upcase (elt str 0)))))))))))))
+(defun search-url (engine query)
+  (format nil engine (regex-replace-all "\\s+" query "+")))
+
+;;; CLiki search
+
+(defcommand "cliki"
+  (send-reply *bot* *sender* *channel*
+              (multiple-value-bind (links numlinks)
+                  (cliki-urls *args*)
+                (format nil "I found ~D result~:P.~@[ Check out <~A>.~]"
+                        numlinks (car links)))))
+
+(defun cliki-urls (query)
+  (let ((links NIL)
+        (page (drakma:http-request
+               (search-url "http://www.cliki.net/admin/search?words=~A"
+                           query))))
+    (ppcre:do-register-groups (url)
+        ("\\d <b><a href=\"(.*?)\">(.*?)<" page)
+      (push url links))
+    (values (nreverse links)
+            (or (parse-integer
+                 (or (ppcre:scan-to-strings "(\\d*) results? found" page)
+                     "")
+                 :junk-allowed T)
+                0))))
 
 ;;; kiloseconds
 (defcommand "kiloseconds"
@@ -161,12 +142,12 @@
        1000)))
 
 ;;; memos
-(defcommand "memo" 
+(defcommand "memo"
   (destructuring-bind (recipient memo)
       (split "\\s+" *args* :limit 2)
     (progn
       (add-memo recipient memo *sender*)
-      (send-msg *bot* *channel* 
+      (send-msg *bot* *channel*
                 (format nil "Tada! Added memo for ~A. ~
                              I'll let them know next time they speak"
                         recipient)))))
@@ -191,35 +172,10 @@
       memo))
 
   (defun erase-all-memos ()
-    (clrhash memo-table))
-  )
+    (clrhash memo-table)))
 
 (defun send-memos-for-recipient (bot channel recipient)
   (let ((memo (get-and-remove-memo recipient)))
     (when memo
       (destructuring-bind (text sender) memo
-        (send-reply bot recipient channel (format nil "Memo from ~A: \"~A\"" sender text))))))
-
-;;; Cliki search
-(defcommand "cliki"
-  (send-reply *bot* *sender* *channel*
-              (multiple-value-bind (links numlinks)
-                  (cliki-urls *args*)
-                (format nil "I found ~D result~:P.~@[ Check out <~A>.~]"
-                        numlinks (car links)))))
-
-(defun cliki-urls (query)
-  (let ((links NIL)
-        (page (drakma:http-request
-               (search-url "http://www.cliki.net/admin/search?words=~A"
-                           query))))
-    (ppcre:do-register-groups (url)
-        ("\\d <b><a href=\"(.*?)\">(.*?)<" page)
-      (push url links))
-    (values (nreverse links)
-            (or (parse-integer
-                 (or (ppcre:scan-to-strings "(\\d*) results? found" page)
-                     "")
-                 :junk-allowed T)
-                0))))
-
+        (send-reply bot recipient channel (format nil "\"~A\" - ~A" text sender))))))

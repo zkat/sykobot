@@ -122,7 +122,7 @@
 (defmessage process-message (bot sender channel message))
 (defreply process-message ((bot (proto 'sykobot)) sender channel message)
   (send-pending-memos bot sender channel)
-  (scan-for-more message)
+  (scan-for-more message channel)
   (when (sent-to-me-p bot channel message)
     (respond-to-message bot sender channel message))
   (scan-for-url bot sender channel message))
@@ -175,4 +175,3 @@
          (regex-replace (format nil "^~A, " (nickname bot)) message ""))
         ((scan (format nil "^~A+" *cmd-prefix*) message)
          (regex-replace (format nil "^~A+" *cmd-prefix*) message ""))))
-
