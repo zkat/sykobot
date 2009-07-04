@@ -4,7 +4,7 @@
            :identify :nick :send-notice :send-msg :topic :add-command
            :remove-command :connection :nickname :server :password
            :*default-channels* :*server* :*identify-with-nickserv?*
-           :*nickserv-password* :*nickname* :*time-commands*))
+           :*nickserv-password* :*nickname*))
 
 (defpackage #:sykobot-user
   (:use :cl :sykobot :sheeple :cl-ppcre))
@@ -19,8 +19,6 @@
    (silentp nil)))
 (defvar *active-bots* nil)
 
-;;; Set this as T to gain a massive verbosity boost in the REPL
-(defvar *time-commands* nil)
 ;;;
 ;;; IRC connection
 ;;;
@@ -164,11 +162,6 @@
 (defreply answer-command ((bot (proto 'sykobot)) cmd args sender channel)
   (let ((fn (command-function cmd)))
     (funcall fn bot args sender channel)))
-(defreply answer-command :around ((bot (proto 'sykobot)) cmd args sender channel)
-  (declare (ignore cmd args sender channel))
-  (if *time-commands*
-      (time (call-next-reply))
-      (call-next-reply)))
 
 (defun sent-to-me-p (bot channel message)
   (when (scan-string-for-direct-message bot channel message)
