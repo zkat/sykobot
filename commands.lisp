@@ -48,11 +48,18 @@
 
 ;;; Slightly buggy
 (defcommand "code->char"
-  (let ((char (code-char (read-from-string (car (split "\\s+" *args*))))))
-    (send-msg *bot* *channel* (format nil "~A" char))))
+  (send-msg *bot* *channel*
+            (let* ((str  (car (split "\\s+" (or *args* "") :limit 2)))
+                   (code (parse-integer str :junk-allowed T)))
+              (format nil "~:[Invalid code~;~:*~A~]"
+                      (and (integerp code) (/= code 127) (>= code 32)
+                              (code-char code))))))
 (defcommand "char->code"
-  (let ((code (char-code (elt *args* 0))))
-    (send-msg *bot* *channel* (format nil "~A" code))))
+  (send-msg *bot* *channel*
+            (let ((code (and *args* (char-code (elt *args* 0)))))
+              (format nil "~:[Invalid character~;~A~]"
+                      (and (integerp code) (/= code 127) (>= code 32))
+                      code))))
 
 ;;; General web functionality
 
