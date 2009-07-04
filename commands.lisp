@@ -285,3 +285,47 @@
   (activate-listener "parrot"))
 (defcommand "noparrot"
   (deactivate-listener "parrot"))
+
+
+(let ((fact-table (make-hash-table :test #'equalp)))
+  (defun set-fact (noun info)
+    (setf (gethash noun fact-table) info))
+
+  (defun get-fact (noun)
+    (multiple-value-bind (info hasp)
+	(gethash noun fact-table)
+      (if hasp
+	  (concatenate 'string noun " " info)
+	  (format nil "I know nothing about ~A" noun))))
+
+  (defun erase-all-facts ()
+    (clrhash fact-table)))
+	 
+
+(deflistener "scan-for-fact"
+  (do-register-groups (noun verb info) 
+      ("([a|an|the|this|that]*[ ]*[A-Za-z]+)[ ]+(is|are)[ ]+([a|an|the]*[ ]*[A-Za-z]+)" message)
+    (set-fact noun (concatenate 'string verb " " info))))
+(activate-listener "scan-for-fact")
+
+(defcommand "fact"
+  (send-msg *bot* *channel* (get-fact *args*)))
+
+
+
+(deflistener "scan-for-url"
+  (when (and (has-url-p message)
+             (not (string-equal sender (nickname bot))))
+    (handler-case
+        (multiple-value-bind (title url)
+            (url-info (grab-url message))
+          (send-msg bot channel (format nil "Title: ~A (at ~A)" title (puri:uri-host (puri:uri url)))))
+      (error ()
+        (values)))))
+(activate-listener "scan-for-url")
+
+(defun has-url-p (string)
+  (when (scan "https?://.*[.$| |>]" string) t))
+
+(defun grab-url (string)
+  (find-if #'has-url-p (split "[\\s+><,]" string)))

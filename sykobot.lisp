@@ -126,23 +126,6 @@
     (respond-to-message bot sender channel message)))
 
 
-(deflistener "scan-for-url"
-  (when (and (has-url-p message)
-             (not (string-equal sender (nickname bot))))
-    (handler-case
-        (multiple-value-bind (title url)
-            (url-info (grab-url message))
-          (send-msg bot channel (format nil "Title: ~A (at ~A)" title (puri:uri-host (puri:uri url)))))
-      (error ()
-        (values)))))
-(activate-listener "scan-for-url")
-
-(defun has-url-p (string)
-  (when (scan "https?://.*[.$| |>]" string) t))
-
-(defun grab-url (string)
-  (find-if #'has-url-p (split "[\\s+><,]" string)))
-
 (defmessage respond-to-message (bot sender channel message))
 (defreply respond-to-message ((bot (proto 'sykobot)) sender channel message)
   (let* ((string (scan-string-for-direct-message bot channel message))
