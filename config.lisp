@@ -16,23 +16,19 @@
 (defun run-sykobot ()
   (let ((bot (clone (proto 'sykobot))))
     (handler-bind ((cl-irc:no-such-reply (lambda (c)
-                                           (let ((r (find-restart 'continue c)))
-                                             (when r (invoke-restart r))))))
-      (when (config-exists-p)
-        (handler-bind ((end-of-file
-                        (lambda (c)
-                          (declare (ignore c))
-                          (error "You missed a paren somewhere"))))
-          (load (merge-pathnames ".sykobotrc" (user-homedir-pathname)))))
-      (when *nickname*
-        (setf (nickname bot) *nickname*))
-      (when *server*
-        (setf (server bot) *server*))
-      (run-bot bot)
-      (when *identify-with-nickserv?*
-        (identify bot *nickserv-password*)
-        (sleep 5))
-      (loop for channel in *default-channels*
-         do (join bot channel))
-      bot)))
+                                          (let ((r (find-restart 'continue c)))
+                                            (when r (invoke-restart r))))))
+     (when (config-exists-p)
+       (handler-bind ((end-of-file (lambda (c) (error "You missed a paren somewhere"))))
+         (load (merge-pathnames ".sykobotrc" (user-homedir-pathname)))))
+     (when *nickname*
+       (setf (nickname bot) *nickname*))
+     (when *server*
+       (setf (server bot) *server*))
+     (run-bot bot)
+     (when *identify-with-nickserv?*
+       (identify bot *nickserv-password*))
+     (loop for channel in *default-channels*
+        do (join bot channel))
+     bot)))
 

@@ -78,6 +78,18 @@
 (defun search-url (engine query)
   (format nil engine (regex-replace-all "\\s+" query "+")))
 
+;;; Google
+(defcommand "google"
+  (multiple-value-bind (title url)
+      (google-search *args*)
+    (send-reply *bot* *sender* *channel*
+                (format nil "~A <~A>" title url))))
+
+(defun google-search (query)
+  (url-info (search-url
+             "http://google.com/search?filter=1&safe=on&q=~A&btnI"
+             query)))
+
 ;;; CLiki search
 
 (defcommand "cliki"
@@ -101,19 +113,6 @@
                      "")
                  :junk-allowed T)
                 0))))
-
-;;; Google search
-
-(defcommand "google"
-  (multiple-value-bind (title url)
-      (google-search *args*)
-    (send-reply *bot* *sender* *channel*
-                (format nil "~A <~A>" title url))))
-
-(defun google-search (query)
-  (url-info (search-url
-             "http://google.com/search?filter=1&safe=on&q=~A&btnI"
-             query)))
 
 ;;; kiloseconds
 (defcommand "kiloseconds"
@@ -167,4 +166,4 @@
   (let ((memo (get-and-remove-memo recipient)))
     (when memo
       (destructuring-bind (text sender) memo
-        (send-reply bot recipient channel (format nil "\"~A\" - ~A" text sender))))))
+        (send-reply bot recipient channel (format nil "Memo from ~A: \"~A\"" sender text))))))
