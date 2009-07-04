@@ -2,10 +2,15 @@
   :version "0"
   :description "IRC bot for #sykosomatic"
   :licence "MIT"
-  :depends-on (cl-irc cl-ppcre bordeaux-threads drakma html-entities sheeple)
+  :depends-on (cl-irc
+               cl-ppcre
+               bordeaux-threads
+               drakma
+               html-entities
+               sheeple)
   :serial t
   :components ((:file "sykobot")
+               (:file "alref")
                (:file "commands")
-               (:file "config")))
-
-
+               (:file "config")
+               (:file "chant")))
