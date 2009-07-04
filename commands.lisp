@@ -34,11 +34,6 @@
   (+ minimum-delay (sleep 8))
   (send-msg bot channel "Hmm.... Indeed."))
 
-(defun pause-in-thought (bot channel &key (max-time 5) (action-probability 2))
-  (if (zerop (random action-probability))
-      (think bot channel))
-  (sleep (1+ (random max-time))))
-
 ;;; base commands
 (defcommand "think"
   (think *bot* *channel* 2))
@@ -66,8 +61,8 @@
     (send-msg *bot* *channel* (format nil "~A" code))))
 (defcommand "give"
   (register-groups-bind (new-target new-command new-args)
-      ("(\\S+) (\\S+) (.*)$" *args*
-    (answer-command *bot* new-command new-args new-target *channel*))))
+      ("(\\S+) (\\S+) (.*)$" *args*)
+    (answer-command *bot* new-command new-args new-target *channel*)))
 (defcommand "exit" 
   (send-reply *bot* *sender* *channel* "1 ON 1 FAGGOT"))
 
@@ -106,9 +101,9 @@
   (html-entities:decode-entities string))
 
 ;;; More
+(defvar *more* "lulz")
 (defcommand "chant" 
   (send-msg *bot* *channel* (format nil "MORE ~:@(~A~)" *more*)))
-(defvar *more* "lulz")
 (defvar *prepositions*
   '("aboard"  "about"  "above"  "across"  "after"  "against"  "along"  "among"  "around"  "as"   "at"
     "before"  "behind"   "below" "beneath" "beside"  "between"  "beyond"  "but" "except"  "by"
@@ -203,11 +198,7 @@
   (let ((memo (get-and-remove-memo recipient)))
     (when memo
       (destructuring-bind (text sender) memo
-        (send-reply bot recipient channel (format nil "Hold on! ~A left you a memo" sender))
-        (pause-in-thought bot channel :max-time 5 :action-probability 10)
-        (send-reply bot recipient channel "Uhhh, the memo was.. umm")
-        (pause-in-thought bot channel :max-time 5)
-        (send-reply bot recipient channel (format nil "\"~A\" - ~A" text sender))))))
+        (send-reply bot recipient channel (format nil "Memo from ~A \"~A\"" sender text))))))
 
 ;;; Cliki search
 (defcommand "cliki"

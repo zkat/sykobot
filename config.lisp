@@ -27,8 +27,7 @@
        (setf (server bot) *server*))
      (run-bot bot)
      (when *identify-with-nickserv?*
-       (identify bot *nickserv-password*)
-       (sleep 5))
+       (identify bot *nickserv-password*))
      (loop for channel in *default-channels*
         do (join bot channel))
      bot)))
