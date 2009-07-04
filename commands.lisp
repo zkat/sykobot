@@ -178,4 +178,4 @@
   (let ((memo (get-and-remove-memo recipient)))
     (when memo
       (destructuring-bind (text sender) memo
-        (send-reply bot recipient channel (format nil "\"~A\" - ~A" text sender))))))
+        (send-reply bot recipient channel (format nil "Memo from ~A: \"~A\"" sender text))))))
