@@ -31,7 +31,7 @@
 ;;; general utils
 (defun think (bot channel &optional (minimum-delay 0))
   (send-action bot channel "thinks")
-  (+ minimum-delay (sleep 8))
+  (sleep (+ 8 minimum-delay))
   (send-msg bot channel "Hmm.... Indeed."))
 
 (defun pause-in-thought (bot channel &key (max-time 5) (action-probability 2))
@@ -66,8 +66,8 @@
     (send-msg *bot* *channel* (format nil "~A" code))))
 (defcommand "give"
   (register-groups-bind (new-target new-command new-args)
-      ("(\\S+) (\\S+) (.*)$" *args*
-    (answer-command *bot* new-command new-args new-target *channel*))))
+      ("(\\S+) (\\S+) (.*)$" *args*)
+    (answer-command *bot* new-command new-args new-target *channel*)))
 (defcommand "exit" 
   (send-reply *bot* *sender* *channel* "1 ON 1 FAGGOT"))
 
