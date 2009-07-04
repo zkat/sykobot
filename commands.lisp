@@ -52,7 +52,6 @@
       ("(\\S+) (\\S+) (.*)$" *args*)
     (answer-command *bot* new-command new-args new-target *channel*)))
 
-;;; Slightly buggy
 (defcommand "code->char"
   (let ((char (code-char (read-from-string (car (split "\\s+" *args*))))))
     (send-msg *bot* *channel* (format nil "~A" char))))
