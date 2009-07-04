@@ -16,7 +16,7 @@
    (nickname "sykobot")
    (server "irc.freenode.net")
    (password nil)
-   (silentp nil)))
+   (mode :normal)))
 (defvar *active-bots* nil)
 
 ;;;
@@ -68,28 +68,28 @@
 ;;; irc functions
 ;;;
 (defmessage nick (bot new-nick))
-(defmessage send-notice (bot target message))
-(defmessage send-msg (bot channel message))
-(defmessage send-reply (bot target channel message))
-(defmessage topic (bot channel &optional new-topic))
-
 (defreply nick ((bot (proto 'sykobot)) new-nick)
   (setf (nickname bot) new-nick)
   (irc:nick (connection bot) new-nick))
 
+(defmessage send-notice (bot target message))
 (defreply send-notice ((bot (proto 'sykobot)) target message)
   (irc:notice (connection bot) target message))
 
+(defmessage send-msg (bot channel message))
 (defreply send-msg ((bot (proto 'sykobot)) channel message)
   (irc:privmsg (connection bot) channel (or message "")))
 
+(defmessage send-reply (bot target channel message))
 (defreply send-reply ((bot (proto 'sykobot)) target channel message)
   (send-msg bot channel (format nil "~A: ~A" target message)))
 
+(defmessage send-action (bot channel action))
 (defreply send-action ((bot (proto 'sykobot)) channel action)
-  (send-msg bot channel (format nil "~AACTION ~A~A" (code-char 1) action (code-char 1))))
+  (send-msg bot channel (format nil "~AACTION ~A~A"
+                                (code-char 1) action (code-char 1))))
 
-
+(defmessage topic (bot channel &optional new-topic))
 (defreply topic ((bot (proto 'sykobot)) channel &optional new-topic)
   (if new-topic
       (irc:topic- (connection bot) channel new-topic)
@@ -103,32 +103,32 @@
   (let ((sender (irc:source msg))
         (channel (car (irc:arguments msg)))
         (message (second (irc:arguments msg))))
-    (if (silentp bot)
-        (silent-mode-process-message bot sender channel message)
-        (process-message bot sender channel message))))
+    (process-message (mode bot) bot sender channel message)))
 
-(defmessage shut-up (bot))
-(defreply shut-up ((bot (proto 'sykobot)))
-  (setf (silentp bot) t))
-(defmessage un-shut-up (bot))
-(defreply un-shut-up ((bot (proto 'sykobot)))
-  (setf (silentp bot) nil))
-
-(defmessage silent-mode-process-message (bot sender channel message))
-(defreply silent-mode-process-message ((bot (proto 'sykobot)) sender channel message)
+(defmessage process-message (mode bot sender channel message))
+(defreply process-message ((mode :normal) (bot (proto 'sykobot))
+                           sender channel message)
+  (declare (ignore mode))
+  (send-pending-memos bot sender channel)
+  (scan-for-more message channel)
+  (when (sent-to-me-p bot channel message)
+    (respond-to-message bot sender channel message))
+  (scan-for-url bot sender channel message))
+(defreply process-message ((mode :silent) (bot (proto 'sykobot))
+                           sender channel message)
+  (declare (ignore mode))
   (when (sent-to-me-p bot channel message)
     (let ((command (car (split "\\s+" (scan-string-for-direct-message bot channel message) :limit 2))))
       (when (string-equal command "talk")
         (send-reply bot sender channel "bla bla bla bla. There, happy?")
         (un-shut-up bot)))))
 
-(defmessage process-message (bot sender channel message))
-(defreply process-message ((bot (proto 'sykobot)) sender channel message)
-  (send-pending-memos bot sender channel)
-  (scan-for-more message channel)
-  (when (sent-to-me-p bot channel message)
-    (respond-to-message bot sender channel message))
-  (scan-for-url bot sender channel message))
+(defmessage shut-up (bot))
+(defreply shut-up ((bot (proto 'sykobot)))
+  (setf (mode bot) :silent))
+(defmessage un-shut-up (bot))
+(defreply un-shut-up ((bot (proto 'sykobot)))
+  (setf (mode bot) :normal))
 
 (defun scan-for-url (bot sender channel message)
   (when (and (has-url-p message)
