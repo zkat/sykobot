@@ -121,8 +121,8 @@
 
 (defmessage process-message (bot sender channel message))
 (defreply process-message ((bot (proto 'sykobot)) sender channel message)
-  (send-pending-memos bot sender channel)
   (scan-for-more message)
+  (call-listeners bot sender channel message)
   (when (sent-to-me-p bot channel message)
     (respond-to-message bot sender channel message))
   (scan-for-url bot sender channel message))
@@ -142,9 +142,6 @@
 
 (defun grab-url (string)
   (find-if #'has-url-p (split "[\\s+><,]" string)))
-
-(defun send-pending-memos (bot sender channel)
-  (send-memos-for-recipient bot channel sender))
 
 (defmessage respond-to-message (bot sender channel message))
 (defreply respond-to-message ((bot (proto 'sykobot)) sender channel message)

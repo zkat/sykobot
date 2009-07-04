@@ -28,6 +28,47 @@
                   (declare (ignorable *args* *bot* *sender* *channel*))
                   ,@body)))
 
+(let ((listener-table (make-hash-table :test #'equalp))
+      (active-listeners ()))
+      (defun add-listener (lr fn)
+	(setf (gethash lr listener-table) fn))
+
+      (defun remove-listener (lr)
+	(remhash lr listener-table))
+
+      (defun listener-function (lr)
+	(multiple-value-bind (fn hasp)
+	    (gethash lr listener-table)
+	  (if hasp
+	      fn
+	      (lambda (bot sender channel message)
+		     (print "listener doesn't exist")))))
+
+      (defun activate-listener (lr)
+	(pushnew lr active-listeners :test #'equalp))
+
+      (defun deactivate-listener (lr)
+	(setf active-listeners (remove lr active-listeners :test #'equalp)))
+
+      (defun call-listener (lr bot sender channel message)
+	(funcall (listener-function lr) bot sender channel message))
+
+      (defun call-listeners (bot sender channel message)
+	(loop for lr in active-listeners
+	     do (call-listener lr bot sender channel message)))
+
+      (defun get-l-t ()
+	listener-table)
+
+      (defun get-a-l ()
+	active-listeners))
+
+
+(defmacro deflistener (name &body body)
+  `(add-listener ,name
+		(lambda (bot sender channel message)
+		  ,@body)))
+
 ;;; general utils
 (defun think (bot channel &optional (minimum-delay 0))
   (send-action bot channel "thinks")
@@ -199,15 +240,14 @@
     (clrhash memo-table))
   )
 
-(defun send-memos-for-recipient (bot channel recipient)
-  (let ((memo (get-and-remove-memo recipient)))
+(deflistener "send-memos"
+  (let* ((recipient sender)
+	 (memo (get-and-remove-memo recipient)))
     (when memo
-      (destructuring-bind (text sender) memo
-        (send-reply bot recipient channel (format nil "Hold on! ~A left you a memo" sender))
-        (pause-in-thought bot channel :max-time 5 :action-probability 10)
-        (send-reply bot recipient channel "Uhhh, the memo was.. umm")
-        (pause-in-thought bot channel :max-time 5)
-        (send-reply bot recipient channel (format nil "\"~A\" - ~A" text sender))))))
+      (destructuring-bind (text who-from) memo
+	(send-reply bot recipient channel (format nil "You have a memo!"))
+	(send-reply bot recipient channel (format nil "~A - ~A" text who-from))))))
+(activate-listener "send-memos")
 
 ;;; Cliki search
 (defcommand "cliki"
@@ -232,3 +272,11 @@
                  :junk-allowed T)
                 0))))
 
+
+
+(deflistener "parrot"
+  (send-msg bot channel message))
+(defcommand "parrot"
+  (activate-listener "parrot"))
+(defcommand "noparrot"
+  (deactivate-listener "parrot"))
