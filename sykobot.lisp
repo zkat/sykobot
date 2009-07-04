@@ -121,13 +121,12 @@
 
 (defmessage process-message (bot sender channel message))
 (defreply process-message ((bot (proto 'sykobot)) sender channel message)
-  (scan-for-more message)
   (call-listeners bot sender channel message)
   (when (sent-to-me-p bot channel message)
-    (respond-to-message bot sender channel message))
-  (scan-for-url bot sender channel message))
+    (respond-to-message bot sender channel message)))
 
-(defun scan-for-url (bot sender channel message)
+
+(deflistener "scan-for-url"
   (when (and (has-url-p message)
              (not (string-equal sender (nickname bot))))
     (handler-case
@@ -136,6 +135,7 @@
           (send-msg bot channel (format nil "Title: ~A (at ~A)" title (puri:uri-host (puri:uri url)))))
       (error ()
         (values)))))
+(activate-listener "scan-for-url")
 
 (defun has-url-p (string)
   (when (scan "https?://.*[.$| |>]" string) t))
