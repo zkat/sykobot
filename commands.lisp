@@ -19,20 +19,28 @@
   (defun erase-all-commands ()
     (clrhash command-table)))
 
-(defmacro defcommand (name &body body)
+#+nil(defmacro defcommand (name &body body)
   `(add-command ,name
                 (lambda (*bot* *args* *sender* *channel*)
                   (declare (special *bot* *args* *sender* *channel*))
                   (declare (ignorable *args* *bot* *sender* *channel*))
                   ,@body)))
 
+(defmacro defcommand (name vars regex &body body)
+  `(add-command ',name
+                (lambda (*bot* *message* *sender* *channel*)
+                  (declare (special *bot* *message* *sender* *channel*))
+                  (declare (ignorable *message* *bot* *sender* *channel*))
+                  (register-groups-bind ,vars (,regex *message*)
+                    ,@body))))
+
 ;;; base commands
 (defcommand "echo"
-  (send-msg *bot* *channel* *args*))
+  (send-msg *bot* *channel* *message*))
 (defcommand "ping"
   (send-reply *bot* *sender* *channel* "pong"))
 (defcommand "shut"
-  (when (scan "up" *args*)
+  (when (scan "up" *message*)
     (send-reply *bot* *sender* *channel*
                 (format nil "Fine. Be that way. Tell me to talk when you realize ~
                            just how lonely and pathetic you really are."))
@@ -41,20 +49,20 @@
   (send-reply *bot* *sender* *channel* "Go away."))
 (defcommand "give"
   (register-groups-bind (new-target new-command new-args)
-      ("(\\S+) (\\S+) (.*)$" *args*)
+      ("(\\S+) (\\S+) (.*)$" *message*)
     (answer-command *bot* new-command new-args new-target *channel*)))
 
 ;;; Character Decoding
 (defcommand "code->char"
   (send-msg *bot* *channel*
-            (let* ((str  (car (split "\\s+" (or *args* "") :limit 2)))
+            (let* ((str  (car (split "\\s+" (or *message* "") :limit 2)))
                    (code (parse-integer str :junk-allowed T)))
               (format nil "~:[Invalid code~;~:*~A~]"
                       (and (integerp code) (/= code 127) (>= code 32)
                               (code-char code))))))
 (defcommand "char->code"
   (send-msg *bot* *channel*
-            (let ((code (and *args* (char-code (elt *args* 0)))))
+            (let ((code (and *message* (char-code (elt *message* 0)))))
               (format nil "~:[Invalid character~;~A~]"
                       (and (integerp code) (/= code 127) (>= code 32))
                       code))))
@@ -85,7 +93,7 @@
 ;;; Google
 (defcommand "google"
   (multiple-value-bind (title url)
-      (google-search *args*)
+      (google-search *message*)
     (send-reply *bot* *sender* *channel*
                 (format nil "~A <~A>" title url))))
 
@@ -98,7 +106,7 @@
 (defcommand "cliki"
   (send-reply *bot* *sender* *channel*
               (multiple-value-bind (links numlinks)
-                  (cliki-urls *args*)
+                  (cliki-urls *message*)
                 (format nil "I found ~D result~:P.~@[ Check out <~A>.~]"
                         numlinks (car links)))))
 
@@ -135,7 +143,7 @@
 ;;; Memos
 (defcommand "memo"
   (destructuring-bind (recipient memo)
-      (split "\\s+" *args* :limit 2)
+      (split "\\s+" *message* :limit 2)
     (progn
       (add-memo recipient memo *sender*)
       (send-msg *bot* *channel*
@@ -206,7 +214,7 @@
           (set-fact noun (format nil "~A ~A ~A ~A" article noun verb info)))))
 
 (defcommand "fact"
-  (send-msg *bot* *channel* (get-fact *args*)))
+  (send-msg *bot* *channel* (get-fact *message*)))
 
 ;;; URLs
 (deflistener scan-for-url
