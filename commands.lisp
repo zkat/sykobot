@@ -55,10 +55,10 @@
     (loop for lr in active-listeners
        do (call-listener lr bot sender channel message)))
 
-  (defun get-l-t ()
+  (defun get-listener-table ()
     listener-table)
 
-  (defun get-a-l ()
+  (defun get-active-listeners ()
     active-listeners))
 
 
