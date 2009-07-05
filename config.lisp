@@ -22,4 +22,5 @@
      (when *identify-with-nickserv?*
        (identify bot *nickserv-password*))
      (dolist (channel *default-channels* bot)
-       (join bot channel)))))
+       (join bot channel)))
+    bot))
