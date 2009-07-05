@@ -5,30 +5,21 @@
 (defvar *identify-with-nickserv?* nil)
 (defvar *nickserv-password* nil)
 (defvar *nickname* nil)
+(defvar *init-file*
+  (merge-pathnames ".sykobotrc" (user-homedir-pathname)))
 
-(defun config-exists-p ()
-  (if (probe-file (merge-pathnames ".sykobotrc" (user-homedir-pathname)))
-      t nil))
-
-(defun load-rc-file ()
-  (load (merge-pathnames ".sykobotrc" (user-homedir-pathname))))
-
-(defun run-sykobot ()
+(defun run-sykobot (&optional (*init-file* *init-file*))
   (let ((bot (clone (proto 'sykobot))))
     (handler-bind ((cl-irc:no-such-reply (lambda (c)
                                           (let ((r (find-restart 'continue c)))
                                             (when r (invoke-restart r))))))
-     (when (config-exists-p)
-       (handler-bind ((end-of-file (lambda (c) (error "You missed a paren somewhere"))))
-         (load (merge-pathnames ".sykobotrc" (user-homedir-pathname)))))
-     (when *nickname*
-       (setf (nickname bot) *nickname*))
-     (when *server*
-       (setf (server bot) *server*))
+     (when (probe-file *init-file*)
+       (handler-case (load *init-file*)
+         (end-of-file () (error "You missed a paren somewhere"))))
+     (when *nickname* (setf (nickname bot) *nickname*))
+     (when *server*   (setf (server   bot) *server*))
      (run-bot bot)
      (when *identify-with-nickserv?*
        (identify bot *nickserv-password*))
-     (loop for channel in *default-channels*
-        do (join bot channel))
-     bot)))
-
+     (dolist (channel *default-channels* bot)
+       (join bot channel)))))
