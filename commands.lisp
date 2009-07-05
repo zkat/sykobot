@@ -295,23 +295,26 @@
     (multiple-value-bind (info hasp)
 	(gethash noun fact-table)
       (if hasp
-	  (concatenate 'string noun " " info)
+	  info
 	  (format nil "I know nothing about ~A" noun))))
 
   (defun erase-all-facts ()
     (clrhash fact-table)))
 	 
 
+(defun split-into-sub-statements (statement)
+  (split "\\s*(,|but|however|whereas|although|\\;|\\.)\\s*" statement))
+
 (deflistener "scan-for-fact"
-  (do-register-groups (noun verb info) 
-      ("([a|an|the|this|that]*[ ]*[A-Za-z]+)[ ]+(is|are)[ ]+([a|an|the|my|your|our|this|that]*[ ]*[A-Za-z\-]+)" message)
-    (set-fact noun (concatenate 'string verb " " info))))
+  (loop for statement in (split-into-sub-statements message)
+       do (do-register-groups (article noun verb info)
+	    (".*?([a|an|the|this|that]*)\\s*(\\w+)\\s+(is|are|isn't|ain't)\\s+(.+)"
+	     statement)
+	    (set-fact noun (format nil "~A ~A ~A ~A" article noun verb info)))))
 (activate-listener "scan-for-fact")
 
 (defcommand "fact"
   (send-msg *bot* *channel* (get-fact *args*)))
-
-
 
 (deflistener "scan-for-url"
   (when (and (has-url-p message)
