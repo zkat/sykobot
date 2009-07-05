@@ -11,6 +11,7 @@
   :serial t
   :components ((:file "sykobot")
                (:file "alref")
+               (:file "listeners")
                (:file "commands")
                (:file "config")
                (:file "chant")))
