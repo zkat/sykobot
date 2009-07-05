@@ -26,34 +26,35 @@
                   (declare (ignorable *args* *bot* *sender* *channel*))
                   ,@body)))
 ;;; Listeners
-(let ((listener-table (make-hash-table :test #'equalp))
+(let ((listener-table (make-hash-table :test #'eq))
       (active-listeners ()))
-  (defun add-listener (lr fn)
-    (setf (gethash lr listener-table) fn))
+  (defun add-listener (name function)
+    (assert (symbolp name))
+    (setf (gethash name listener-table) function))
 
-  (defun remove-listener (lr)
-    (remhash lr listener-table))
+  (defun remove-listener (name)
+    (remhash name listener-table))
 
-  (defun listener-function (lr)
+  (defun listener-function (name)
     (multiple-value-bind (fn hasp)
-        (gethash lr listener-table)
+        (gethash name listener-table)
       (if hasp
           fn
           (lambda (bot sender channel message)
             (print "listener doesn't exist")))))
 
-  (defun activate-listener (lr)
-    (pushnew lr active-listeners :test #'equalp))
+  (defun activate-listener (name)
+    (pushnew name active-listeners :test #'equalp))
 
-  (defun deactivate-listener (lr)
-    (setf active-listeners (remove lr active-listeners :test #'equalp)))
+  (defun deactivate-listener (name)
+    (setf active-listeners (remove name active-listeners :test #'equalp)))
 
-  (defun call-listener (lr bot sender channel message)
-    (funcall (listener-function lr) bot sender channel message))
+  (defun call-listener (name bot sender channel message)
+    (funcall (listener-function name) bot sender channel message))
 
   (defun call-listeners (bot sender channel message)
-    (loop for lr in active-listeners
-       do (call-listener lr bot sender channel message)))
+    (loop for name in active-listeners
+       do (call-listener name bot sender channel message)))
 
   (defun get-listener-table ()
     listener-table)
