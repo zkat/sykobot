@@ -64,8 +64,9 @@
 
 
 (defmacro deflistener (name &body body)
-  `(add-listener ,name
-                (lambda (bot sender channel message)
+  `(add-listener ',name
+                (lambda (*bot* *sender* *channel* *message*)
+                  (declare (special *bot* *sender* *channel* *message*))
                   ,@body)))
 
 ;;; base commands
