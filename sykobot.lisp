@@ -106,6 +106,7 @@
     (process-message (mode bot) bot sender channel message)))
 
 (defmessage process-message (mode bot sender channel message))
+
 (defreply process-message ((mode :normal) (bot (proto 'sykobot))
                            sender channel message)
   (declare (ignore mode))
