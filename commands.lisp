@@ -208,7 +208,7 @@
   (defun erase-all-memos ()
     (clrhash memo-table)))
 
-(deflistener "send-memos"
+(deflistener send-memos
   (let* ((recipient sender)
          (memo (get-and-remove-memo recipient)))
     (when memo
@@ -216,12 +216,12 @@
         (send-reply bot recipient channel (format nil "~A - ~A" text who-from))))))
 
 ;;; Parrot
-(deflistener "parrot"
+(deflistener parrot
   (send-msg bot channel message))
 (defcommand "parrot"
-  (activate-listener "parrot"))
+  (activate-listener 'parrot))
 (defcommand "noparrot"
-  (deactivate-listener "parrot"))
+  (deactivate-listener 'parrot))
 
 ;;; Facts
 (let ((fact-table (make-hash-table :test #'equalp)))
@@ -241,7 +241,7 @@
 (defun split-into-sub-statements (statement)
   (split "\\s*(,|but|however|whereas|although|\\;|\\.)\\s*" statement))
 
-(deflistener "scan-for-fact"
+(deflistener scan-for-fact
   (loop for statement in (split-into-sub-statements message)
        do (do-register-groups (article noun verb info)
             (".*?([a|an|the|this|that]*)\\s*(\\w+)\\s+(is|are|isn't|ain't)\\s+(.+)"
@@ -252,7 +252,7 @@
   (send-msg *bot* *channel* (get-fact *args*)))
 
 ;;; URLs
-(deflistener "scan-for-url"
+(deflistener scan-for-url
   (when (and (has-url-p message)
              (not (string-equal sender (nickname bot))))
     (handler-case
