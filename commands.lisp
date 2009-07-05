@@ -304,7 +304,7 @@
 
 (deflistener "scan-for-fact"
   (do-register-groups (noun verb info) 
-      ("([a|an|the|this|that]*[ ]*[A-Za-z]+)[ ]+(is|are)[ ]+([a|an|the]*[ ]*[A-Za-z]+)" message)
+      ("([a|an|the|this|that]*[ ]*[A-Za-z]+)[ ]+(is|are)[ ]+([a|an|the|my|your|our|this|that]*[ ]*[A-Za-z\-]+)" message)
     (set-fact noun (concatenate 'string verb " " info))))
 (activate-listener "scan-for-fact")
 
