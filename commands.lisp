@@ -166,15 +166,15 @@
     (clrhash memo-table)))
 
 (deflistener send-memos
-  (let* ((recipient sender)
+  (let* ((recipient *sender*)
          (memo (get-and-remove-memo recipient)))
     (when memo
       (destructuring-bind (text who-from) memo
-        (send-reply bot recipient channel (format nil "~A - ~A" text who-from))))))
+        (send-reply *bot* recipient *channel* (format nil "~A - ~A" text who-from))))))
 
 ;;; Parrot
 (deflistener parrot
-  (send-msg bot channel message))
+  (send-msg *bot* *channel* *message*))
 (defcommand "parrot"
   (activate-listener 'parrot))
 (defcommand "noparrot"
@@ -199,23 +199,23 @@
   (split "\\s*(,|but|however|whereas|although|\\;|\\.)\\s*" statement))
 
 (deflistener scan-for-fact
-  (loop for statement in (split-into-sub-statements message)
-       do (do-register-groups (article noun verb info)
+  (loop for statement in (split-into-sub-statements *message*)
+     do (do-register-groups (article noun verb info)
             (".*?([a|an|the|this|that]*)\\s*(\\w+)\\s+(is|are|isn't|ain't)\\s+(.+)"
              statement)
-            (set-fact noun (format nil "~A ~A ~A ~A" article noun verb info)))))
+          (set-fact noun (format nil "~A ~A ~A ~A" article noun verb info)))))
 
 (defcommand "fact"
   (send-msg *bot* *channel* (get-fact *args*)))
 
 ;;; URLs
 (deflistener scan-for-url
-  (when (and (has-url-p message)
-             (not (string-equal sender (nickname bot))))
+  (when (and (has-url-p *message*)
+             (not (string-equal *sender* (nickname *bot*))))
     (handler-case
         (multiple-value-bind (title url)
-            (url-info (grab-url message))
-          (send-msg bot channel (format nil "Title: ~A (at ~A)" title (puri:uri-host (puri:uri url)))))
+            (url-info (grab-url *message*))
+          (send-msg *bot* *channel* (format nil "Title: ~A (at ~A)" title (puri:uri-host (puri:uri url)))))
       (error ()
         (values)))))
 
