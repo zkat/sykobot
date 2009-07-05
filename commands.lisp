@@ -212,7 +212,6 @@
     (when memo
       (destructuring-bind (text who-from) memo
         (send-reply bot recipient channel (format nil "~A - ~A" text who-from))))))
-(activate-listener "send-memos")
 
 ;;; Parrot
 (deflistener "parrot"
@@ -246,7 +245,6 @@
             (".*?([a|an|the|this|that]*)\\s*(\\w+)\\s+(is|are|isn't|ain't)\\s+(.+)"
              statement)
             (set-fact noun (format nil "~A ~A ~A ~A" article noun verb info)))))
-(activate-listener "scan-for-fact")
 
 (defcommand "fact"
   (send-msg *bot* *channel* (get-fact *args*)))
@@ -261,7 +259,6 @@
           (send-msg bot channel (format nil "Title: ~A (at ~A)" title (puri:uri-host (puri:uri url)))))
       (error ()
         (values)))))
-(activate-listener "scan-for-url")
 
 (defun has-url-p (string)
   (when (scan "https?://.*[.$| |>]" string) t))
