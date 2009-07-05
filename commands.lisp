@@ -31,13 +31,15 @@
                 (lambda (*bot* *message* *sender* *channel*)
                   (declare (special *bot* *message* *sender* *channel*))
                   (declare (ignorable *message* *bot* *sender* *channel*))
-                  (register-groups-bind ,vars (,regex *message*)
-                    ,@body))))
+                  ,@(if vars
+                        `((register-groups-bind ,vars (,regex *message*)
+                            ,@body))
+                       `(,@body)))))
 
 ;;; base commands
-(defcommand "echo"
-  (send-msg *bot* *channel* *message*))
-(defcommand "ping"
+(defcommand "echo" (string) "(.*)"
+  (send-msg *bot* *channel* string))
+(defcommand "ping" () ""
   (send-reply *bot* *sender* *channel* "pong"))
 (defcommand "shut"
   (when (scan "up" *message*)
