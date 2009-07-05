@@ -1,8 +1,6 @@
 (in-package :sykobot)
 
-;;;
 ;;; Command definition
-;;;
 (let ((command-table (make-hash-table :test #'equalp)))
   (defun add-command (cmd fn)
     (setf (gethash cmd command-table) fn))
@@ -27,6 +25,47 @@
                   (declare (special *bot* *args* *sender* *channel*))
                   (declare (ignorable *args* *bot* *sender* *channel*))
                   ,@body)))
+;;; Listeners
+(let ((listener-table (make-hash-table :test #'equalp))
+      (active-listeners ()))
+      (defun add-listener (lr fn)
+        (setf (gethash lr listener-table) fn))
+
+      (defun remove-listener (lr)
+        (remhash lr listener-table))
+
+      (defun listener-function (lr)
+        (multiple-value-bind (fn hasp)
+            (gethash lr listener-table)
+          (if hasp
+              fn
+              (lambda (bot sender channel message)
+                     (print "listener doesn't exist")))))
+
+      (defun activate-listener (lr)
+        (pushnew lr active-listeners :test #'equalp))
+
+      (defun deactivate-listener (lr)
+        (setf active-listeners (remove lr active-listeners :test #'equalp)))
+
+      (defun call-listener (lr bot sender channel message)
+        (funcall (listener-function lr) bot sender channel message))
+
+      (defun call-listeners (bot sender channel message)
+        (loop for lr in active-listeners
+             do (call-listener lr bot sender channel message)))
+
+      (defun get-l-t ()
+        listener-table)
+
+      (defun get-a-l ()
+        active-listeners))
+
+
+(defmacro deflistener (name &body body)
+  `(add-listener ,name
+                (lambda (bot sender channel message)
+                  ,@body)))
 
 ;;; base commands
 (defcommand "echo"
@@ -46,7 +85,7 @@
       ("(\\S+) (\\S+) (.*)$" *args*)
     (answer-command *bot* new-command new-args new-target *channel*)))
 
-;;; Slightly buggy
+;;; Character Decoding
 (defcommand "code->char"
   (send-msg *bot* *channel*
             (let* ((str  (car (split "\\s+" (or *args* "") :limit 2)))
@@ -62,7 +101,6 @@
                       code))))
 
 ;;; General web functionality
-
 (defun url-info (url)
   (multiple-value-bind (body status-code headers uri)
       (drakma:http-request url)
@@ -98,7 +136,6 @@
              query)))
 
 ;;; CLiki search
-
 (defcommand "cliki"
   (send-reply *bot* *sender* *channel*
               (multiple-value-bind (links numlinks)
@@ -136,7 +173,7 @@
                    (* 60 (mod (+ hours zone) 24)))))
        1000)))
 
-;;; memos
+;;; Memos
 (defcommand "memo"
   (destructuring-bind (recipient memo)
       (split "\\s+" *args* :limit 2)
@@ -169,8 +206,65 @@
   (defun erase-all-memos ()
     (clrhash memo-table)))
 
-(defun send-memos-for-recipient (bot channel recipient)
-  (let ((memo (get-and-remove-memo recipient)))
+(deflistener "send-memos"
+  (let* ((recipient sender)
+         (memo (get-and-remove-memo recipient)))
     (when memo
-      (destructuring-bind (text sender) memo
-        (send-reply bot recipient channel (format nil "Memo from ~A: \"~A\"" sender text))))))
+      (destructuring-bind (text who-from) memo
+        (send-reply bot recipient channel (format nil "~A - ~A" text who-from))))))
+(activate-listener "send-memos")
+
+;;; Parrot
+(deflistener "parrot"
+  (send-msg bot channel message))
+(defcommand "parrot"
+  (activate-listener "parrot"))
+(defcommand "noparrot"
+  (deactivate-listener "parrot"))
+
+;;; Facts
+(let ((fact-table (make-hash-table :test #'equalp)))
+  (defun set-fact (noun info)
+    (setf (gethash noun fact-table) info))
+
+  (defun get-fact (noun)
+    (multiple-value-bind (info hasp)
+        (gethash noun fact-table)
+      (if hasp
+          info
+          (format nil "I know nothing about ~A" noun))))
+
+  (defun erase-all-facts ()
+    (clrhash fact-table)))
+
+(defun split-into-sub-statements (statement)
+  (split "\\s*(,|but|however|whereas|although|\\;|\\.)\\s*" statement))
+
+(deflistener "scan-for-fact"
+  (loop for statement in (split-into-sub-statements message)
+       do (do-register-groups (article noun verb info)
+            (".*?([a|an|the|this|that]*)\\s*(\\w+)\\s+(is|are|isn't|ain't)\\s+(.+)"
+             statement)
+            (set-fact noun (format nil "~A ~A ~A ~A" article noun verb info)))))
+(activate-listener "scan-for-fact")
+
+(defcommand "fact"
+  (send-msg *bot* *channel* (get-fact *args*)))
+
+;;; URLs
+(deflistener "scan-for-url"
+  (when (and (has-url-p message)
+             (not (string-equal sender (nickname bot))))
+    (handler-case
+        (multiple-value-bind (title url)
+            (url-info (grab-url message))
+          (send-msg bot channel (format nil "Title: ~A (at ~A)" title (puri:uri-host (puri:uri url)))))
+      (error ()
+        (values)))))
+(activate-listener "scan-for-url")
+
+(defun has-url-p (string)
+  (when (scan "https?://.*[.$| |>]" string) t))
+
+(defun grab-url (string)
+  (find-if #'has-url-p (split "[\\s+><,]" string)))
