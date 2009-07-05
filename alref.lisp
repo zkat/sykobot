@@ -21,8 +21,8 @@
   (or (cdr (assoc item alist :test test :key key))
       default))
 (define-setf-expander alref (item alist
-                             &key (test *default-alref-test*)
-                                  (key #'identity)
+                             &key (test '*default-alref-test*)
+                                  (key '#'identity)
                              &environment env)
   "Set the value corresponding to ITEM in ALIST."
   (multiple-value-bind (foo bar stores setter)
