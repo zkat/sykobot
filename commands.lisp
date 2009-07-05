@@ -28,38 +28,38 @@
 ;;; Listeners
 (let ((listener-table (make-hash-table :test #'equalp))
       (active-listeners ()))
-      (defun add-listener (lr fn)
-        (setf (gethash lr listener-table) fn))
+  (defun add-listener (lr fn)
+    (setf (gethash lr listener-table) fn))
 
-      (defun remove-listener (lr)
-        (remhash lr listener-table))
+  (defun remove-listener (lr)
+    (remhash lr listener-table))
 
-      (defun listener-function (lr)
-        (multiple-value-bind (fn hasp)
-            (gethash lr listener-table)
-          (if hasp
-              fn
-              (lambda (bot sender channel message)
-                     (print "listener doesn't exist")))))
+  (defun listener-function (lr)
+    (multiple-value-bind (fn hasp)
+        (gethash lr listener-table)
+      (if hasp
+          fn
+          (lambda (bot sender channel message)
+            (print "listener doesn't exist")))))
 
-      (defun activate-listener (lr)
-        (pushnew lr active-listeners :test #'equalp))
+  (defun activate-listener (lr)
+    (pushnew lr active-listeners :test #'equalp))
 
-      (defun deactivate-listener (lr)
-        (setf active-listeners (remove lr active-listeners :test #'equalp)))
+  (defun deactivate-listener (lr)
+    (setf active-listeners (remove lr active-listeners :test #'equalp)))
 
-      (defun call-listener (lr bot sender channel message)
-        (funcall (listener-function lr) bot sender channel message))
+  (defun call-listener (lr bot sender channel message)
+    (funcall (listener-function lr) bot sender channel message))
 
-      (defun call-listeners (bot sender channel message)
-        (loop for lr in active-listeners
-             do (call-listener lr bot sender channel message)))
+  (defun call-listeners (bot sender channel message)
+    (loop for lr in active-listeners
+       do (call-listener lr bot sender channel message)))
 
-      (defun get-l-t ()
-        listener-table)
+  (defun get-l-t ()
+    listener-table)
 
-      (defun get-a-l ()
-        active-listeners))
+  (defun get-a-l ()
+    active-listeners))
 
 
 (defmacro deflistener (name &body body)
