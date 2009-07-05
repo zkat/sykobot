@@ -42,37 +42,38 @@
 ;;;
 ;;; This scan function is fucked. I've started going over the regexps, and
 ;;;   I can tell that they're supposed to do SOMETHING, but they don't.
-(defun scan-for-more (s channel)
-  (let ((str (nth-value
-              1 (scan-to-strings "[MORE|MOAR]\\W+((\\W|[A-Z0-9])+)([A-Z0-9])($|[^A-Z0-9])" s))))
-    (or
-     (and str
-          (setf (alref channel *more*)
-                (concatenate 'string (elt str 0) (elt str 2))))
-     (let ((str (nth-value 1 (scan-to-strings "(?i)[more|moar]\\W+(\\w+)\\W+(\\w+)\\W+(\\w+)" s))))
-       (or
-        (and str
-             (or (member (elt str 0) *prepositions* :test #'string-equal)
-                 (member (elt str 0) *conjunctions* :test #'string-equal)
-                 (member (elt str 0) *articles* :test #'string-equal))
-             (or (member (elt str 1) *prepositions* :test #'string-equal)
-                 (member (elt str 1) *conjunctions* :test #'string-equal)
-                 (member (elt str 1) *articles* :test #'string-equal))
-             (setf (alref channel *more*)
-                   (string-upcase (concatenate 'string (elt str 0)
-                                               " " (elt str 1)
-                                               " " (elt str 2)))))
-        (let ((str (nth-value 1 (scan-to-strings "(?i)[more|moar]\\W+(\\w+)\\W+(\\w+)" s))))
-          (or
-           (and str
-                (or (member (elt str 0) *prepositions* :test #'string-equal)
-                    (member (elt str 0) *conjunctions* :test #'string-equal)
-                    (member (elt str 0) *articles* :test #'string-equal))
-                (setf (alref channel *more*)
-                      (string-upcase (concatenate 'string (elt str 0)
-                                                  " " (elt str 1)))))
-           (let ((str (nth-value 1 (scan-to-strings "(?i)[more|moar]\\W+(\\w+)" s))))
+(deflistener "scan-for-more"
+  (let ((s message))
+    (let ((str (nth-value
+                1 (scan-to-strings "[MORE|MOAR]\\W+((\\W|[A-Z0-9])+)([A-Z0-9])($|[^A-Z0-9])" s))))
+      (or
+       (and str
+            (setf (alref channel *more*)
+                  (concatenate 'string (elt str 0) (elt str 2))))
+       (let ((str (nth-value 1 (scan-to-strings "(?i)[more|moar]\\W+(\\w+)\\W+(\\w+)\\W+(\\w+)" s))))
+         (or
+          (and str
+               (or (member (elt str 0) *prepositions* :test #'string-equal)
+                   (member (elt str 0) *conjunctions* :test #'string-equal)
+                   (member (elt str 0) *articles* :test #'string-equal))
+               (or (member (elt str 1) *prepositions* :test #'string-equal)
+                   (member (elt str 1) *conjunctions* :test #'string-equal)
+                   (member (elt str 1) *articles* :test #'string-equal))
+               (setf (alref channel *more*)
+                     (string-upcase (concatenate 'string (elt str 0)
+                                                 " " (elt str 1)
+                                                 " " (elt str 2)))))
+          (let ((str (nth-value 1 (scan-to-strings "(?i)[more|moar]\\W+(\\w+)\\W+(\\w+)" s))))
+            (or
              (and str
+                  (or (member (elt str 0) *prepositions* :test #'string-equal)
+                      (member (elt str 0) *conjunctions* :test #'string-equal)
+                      (member (elt str 0) *articles* :test #'string-equal))
                   (setf (alref channel *more*)
-                        (string-upcase (elt str 0))))))))))))
-
+                        (string-upcase (concatenate 'string (elt str 0)
+                                                    " " (elt str 1)))))
+             (let ((str (nth-value 1 (scan-to-strings "(?i)[more|moar]\\W+(\\w+)" s))))
+               (and str
+                    (setf (alref channel *more*)
+                          (string-upcase (elt str 0)))))))))))))
+(activate-listener "scan-for-more")

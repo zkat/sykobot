@@ -109,11 +109,9 @@
 (defreply process-message ((mode :normal) (bot (proto 'sykobot))
                            sender channel message)
   (declare (ignore mode))
-  (send-pending-memos bot sender channel)
-  (scan-for-more message channel)
+  (call-listeners bot sender channel message)
   (when (sent-to-me-p bot channel message)
-    (respond-to-message bot sender channel message))
-  (scan-for-url bot sender channel message))
+    (respond-to-message bot sender channel message)))
 (defreply process-message ((mode :silent) (bot (proto 'sykobot))
                            sender channel message)
   (declare (ignore mode))
@@ -129,25 +127,6 @@
 (defmessage un-shut-up (bot))
 (defreply un-shut-up ((bot (proto 'sykobot)))
   (setf (mode bot) :normal))
-
-(defun scan-for-url (bot sender channel message)
-  (when (and (has-url-p message)
-             (not (string-equal sender (nickname bot))))
-    (handler-case
-        (multiple-value-bind (title url)
-            (url-info (grab-url message))
-          (send-msg bot channel (format nil "Title: ~A (at ~A)" title (puri:uri-host (puri:uri url)))))
-      (error ()
-        (values)))))
-
-(defun has-url-p (string)
-  (when (scan "https?://.*[.$| |>]" string) t))
-
-(defun grab-url (string)
-  (find-if #'has-url-p (split "[\\s+><,]" string)))
-
-(defun send-pending-memos (bot sender channel)
-  (send-memos-for-recipient bot channel sender))
 
 (defmessage respond-to-message (bot sender channel message))
 (defreply respond-to-message ((bot (proto 'sykobot)) sender channel message)
