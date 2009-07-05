@@ -107,12 +107,12 @@
         (page (drakma:http-request
                (search-url "http://www.cliki.net/admin/search?words=~A"
                            query))))
-    (ppcre:do-register-groups (url)
+    (do-register-groups (url)
         ("\\d <b><a href=\"(.*?)\">(.*?)<" page)
       (push url links))
     (values (nreverse links)
             (or (parse-integer
-                 (or (ppcre:scan-to-strings "(\\d*) results? found" page)
+                 (or (scan-to-strings "(\\d*) results? found" page)
                      "")
                  :junk-allowed T)
                 0))))
