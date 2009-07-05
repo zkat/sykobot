@@ -25,6 +25,7 @@
                   (declare (special *bot* *args* *sender* *channel*))
                   (declare (ignorable *args* *bot* *sender* *channel*))
                   ,@body)))
+
 ;;; base commands
 (defcommand "echo"
   (send-msg *bot* *channel* *args*))
