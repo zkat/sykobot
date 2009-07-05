@@ -42,7 +42,7 @@
 ;;;
 ;;; This scan function is fucked. I've started going over the regexps, and
 ;;;   I can tell that they're supposed to do SOMETHING, but they don't.
-(deflistener "scan-for-more"
+(deflistener scan-for-more
   (let ((s message))
     (let ((str (nth-value
                 1 (scan-to-strings "[MORE|MOAR]\\W+((\\W|[A-Z0-9])+)([A-Z0-9])($|[^A-Z0-9])" s))))
@@ -76,4 +76,3 @@
                (and str
                     (setf (alref channel *more*)
                           (string-upcase (elt str 0)))))))))))))
-(activate-listener "scan-for-more")
