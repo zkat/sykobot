@@ -7,8 +7,8 @@
             I'll let them know next time they speak."
            recipient))
 
-(defparameter *memos-file-path* (ensure-directories-exist
-                                 (merge-pathnames ".sykobot/memo-table.db" (user-homedir-pathname))))
+(defun memos-db (bot)
+  (merge-pathnames "memo-table.db" (bot-dir bot)))
 
 (defun make-memo (recipient sender text)
   (list recipient sender text (get-universal-time)))
@@ -21,12 +21,12 @@
 (defmessage erase-all-memos (bot))
 
 (defreply load-memos ((bot (proto 'sykobot)))
-  (when (probe-file *memos-file-path*)
+  (when (probe-file (memos-db bot))
     (setf (memos bot)
-          (cl-store:restore *memos-file-path*))))
+          (cl-store:restore (memos-db bot)))))
 
 (defreply save-memos ((bot (proto 'sykobot)))
-  (cl-store:store (memos bot) *memos-file-path*))
+  (cl-store:store (memos bot) (memos-db bot)))
 
 (defreply add-memo ((bot (proto 'sykobot)) recipient text sender)
   (pushnew (make-memo recipient sender text)

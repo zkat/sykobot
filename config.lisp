@@ -5,8 +5,13 @@
 (defvar *identify-with-nickserv?* nil)
 (defvar *nickserv-password* nil)
 (defvar *nickname* nil)
-(defvar *init-file*
-  (merge-pathnames ".sykobotrc" (user-homedir-pathname)))
+(defvar *bot-dir* nil)
+
+(defvar *home* (merge-pathnames ".sykobot/" (user-homedir-pathname)))
+
+(defmessage bot-dir (bot))
+(defreply bot-dir ((bot (proto 'sykobot)))
+  (ensure-directories-exist (merge-pathnames (dir bot) *home*)))
 
 (defun run-bot (&optional (bot-prototype (proto 'sykobot)))
   (let ((bot (clone bot-prototype)))
@@ -15,10 +20,13 @@
                                              (when r (invoke-restart r))))))
       (apply #'activate-listeners bot '(command-listener send-memos scan-for-fact
                                         scan-for-url scan-for-more))
-      (when (probe-file *init-file*)
-        (handler-case (load *init-file*)
-          (end-of-file () (error "You missed a paren somewhere"))))
-      (when *nickname* 
+      (when *bot-dir*
+        (setf (dir bot) *bot-dir*))
+      (let ((init-file (merge-pathnames "init" (bot-dir bot))))
+        (when (probe-file init-file)
+          (handler-case (load init-file)
+            (end-of-file () (error "You missed a paren somewhere")))))
+      (when *nickname*
         (setf (nickname bot) *nickname*))
       (when *server*
         (setf (server bot) *server*))

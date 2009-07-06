@@ -1,8 +1,15 @@
 ;;;; -*- Mode: Lisp; Syntax: ANSI-Common-Lisp; Base: 10 -*-
-;;; Any code in file "~/.sykobotrc" will be loaded after all
-;;; the other files have loaded.
 ;;;
+;;; Information for bots is contained in the ~/.sykobot/ direcotry.
+;;; Each bot has its own subdirectory.
+;;; To load the bot whose information is in subdirectory "testbot/",
+;;;   evaluate:
 ;;;
+;;; (let ((*bot-dir* "testbot/"))
+;;;   (run-bot))
+;;;
+;;; Additional files will be created within this directory. It is
+;;;   wisest to leave them alone, since they are databases.
 
 ;;; Package: configs should be in the :sykobot-user package
 (in-package :sykobot-user)
