@@ -29,6 +29,10 @@
                             ,@body))
                        `(,@body)))))
 
+(deflistener command-listener
+  (when (sent-to-me-p *bot* *channel* *message*)
+    (respond-to-message *bot* *sender* *channel* *message*)))
+
 ;;; base commands
 (defcommand echo (string) "(.*)"
   (send-reply *bot* *sender* *channel* string))

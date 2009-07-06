@@ -13,7 +13,7 @@
     (handler-bind ((cl-irc:no-such-reply (lambda (c)
                                            (let ((r (find-restart 'continue c)))
                                              (when r (invoke-restart r))))))
-      
+      (activate-listener 'command-listener)
       (activate-listener 'send-memos)
       (activate-listener 'scan-for-fact)
       (activate-listener 'scan-for-url)

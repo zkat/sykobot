@@ -110,9 +110,8 @@
 (defreply process-message ((mode :normal) (bot (proto 'sykobot))
                            sender channel message)
   (declare (ignore mode))
-  (call-listeners bot sender channel message)
-  (when (sent-to-me-p bot channel message)
-    (respond-to-message bot sender channel message)))
+  (call-listeners bot sender channel message))
+
 (defreply process-message ((mode :silent) (bot (proto 'sykobot))
                            sender channel message)
   (declare (ignore mode))
