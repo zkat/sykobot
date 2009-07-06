@@ -13,25 +13,27 @@
 (defun make-memo (recipient sender text)
   (list recipient sender text (get-universal-time)))
 
+(defmessage save-memos (bot))
 (defmessage load-memos (bot))
+(defmessage add-memo (bot recipient memo-text sender))
+(defmessage remove-memo (bot memo))
+(defmessage memos-for (bot recipient))
+(defmessage erase-all-memos (bot))
+
 (defreply load-memos ((bot (proto 'sykobot)))
   (when (probe-file *memos-file-path*)
     (setf (memos bot)
           (cl-store:restore *memos-file-path*))))
 
-(defmessage save-memos (bot))
 (defreply save-memos ((bot (proto 'sykobot)))
   (cl-store:store (memos bot) *memos-file-path*))
 
-(defmessage add-memo (bot recipient memo-text sender))
 (defreply add-memo ((bot (proto 'sykobot)) recipient text sender)
   (pushnew (make-memo recipient sender text) (gethash recipient (memos bot)) :test #'equalp))
-
 (defreply add-memo :after ((bot (proto 'sykobot)) recipient text sender)
   (declare (ignore recipient text sender))
   (save-memos bot))
 
-(defmessage remove-memo (bot memo))
 (defreply remove-memo ((bot (proto 'sykobot)) memo)
   (setf (gethash (car memo) (memos bot))
         (delete memo (gethash (car memo) (memos bot)) :test #'equalp)))
@@ -39,13 +41,11 @@
   (declare (ignore memo))
   (save-memos bot))
 
-(defmessage erase-all-memos (bot))
 (defreply erase-all-memos ((bot (proto 'sykobot)))
   (clrhash (memos bot)))
 (defreply erase-all-memos :after ((bot (proto 'sykobot)))
   (save-memos bot))
 
-(defmessage memos-for (bot recipient))
 (defreply memos-for ((bot (proto 'sykobot)) recipient)
   (gethash recipient (memos bot)))
 
