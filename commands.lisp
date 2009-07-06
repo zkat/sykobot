@@ -37,8 +37,10 @@
 (deflistener command-listener
   (when (sent-to-me-p *bot* *channel* *message*)
     (respond-to-message *bot* *sender* *channel* *message*)))
+
 (defun cmd-reply (message &rest format-args)
   (send-reply *bot* *sender* *channel* (apply #'format nil message format-args)))
+
 (defun cmd-msg (message &rest format-args)
   (send-msg *bot* *channel* (apply #'format nil message format-args)))
 
@@ -96,7 +98,7 @@
 (defcommand google (query) "(.*)"
   (multiple-value-bind (title url)
       (google-search query)
-    (cmd-reply "~:[~;~A ~]<~A>" title url)))
+    (cmd-reply "~:[~;~A ~]<~A>" title title url)))
 
 (defun google-search (query)
   (url-info (search-url
@@ -180,7 +182,7 @@
          (memo (get-and-remove-memo recipient)))
     (when memo
       (destructuring-bind (text who-from) memo
-        (cmd-reply "~A - ~A" text who-from)))))
+        (cmd-reply "Memo from ~A - \"~A\"" who-from text)))))
 
 ;;; Parrot
 (deflistener parrot
