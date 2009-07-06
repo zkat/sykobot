@@ -152,7 +152,7 @@
 (defcommand memo (recipient memo) "for (\\S+): (.*)"
   (add-memo recipient memo *sender*)
   (cmd-msg "Tada! Added memo for ~A. ~
-            I'll let them know next time they speak"
+            I'll let them know next time they speak."
            recipient))
 
 (let ((memo-table (make-hash-table :test #'equalp)))
