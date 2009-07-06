@@ -1,7 +1,7 @@
 (in-package :sykobot)
 
 ;;; Command definition
-(let ((command-table (make-hash-table :test #'equalp)))
+(let ((command-table (make-hash-table :test #'eql)))
   (defun add-command (cmd fn)
     (setf (gethash cmd command-table) fn))
 
@@ -37,17 +37,18 @@
                        `(,@body)))))
 
 ;;; base commands
-(defcommand "echo" (string) "(.*)"
+(defcommand echo (string) "(.*)"
+  (print "in echo body")
   (send-msg *bot* *channel* string))
-(defcommand "ping" () ""
+(defcommand ping () ""
   (send-reply *bot* *sender* *channel* "pong"))
-(defcommand "shut"
+(defcommand shut
   (when (scan "up" *message*)
     (send-reply *bot* *sender* *channel*
                 (format nil "Fine. Be that way. Tell me to talk when you realize ~
                            just how lonely and pathetic you really are."))
     (shut-up *bot*)))
-(defcommand "hi"
+(defcommand hi
   (send-reply *bot* *sender* *channel* "Go away."))
 (defcommand "give"
   (register-groups-bind (new-target new-command new-args)
