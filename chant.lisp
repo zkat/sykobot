@@ -25,7 +25,7 @@
       *default-alref-value* "MONEY")
 
 ;;; This command is used to chant.
-(defcommand chant () ""
+(defcommand chant ()
   (cmd-msg "MORE ~:@(~A~)" (alref *channel* *more*)))
 
 ;;; This is where the cookie crumbles.

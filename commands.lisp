@@ -25,7 +25,7 @@
   (defun erase-all-commands ()
     (clrhash command-table)))
 
-(defmacro defcommand (name vars regex &body body)
+(defmacro defcommand (name (&optional (regex "") &rest vars) &body body)
   `(add-command ',name
                 (lambda (*bot* *message* *sender* *channel*)
                   (declare (ignorable *message* *bot* *sender* *channel*))
@@ -45,30 +45,30 @@
   (send-msg *bot* *channel* (apply #'format nil message format-args)))
 
 ;;; base commands
-(defcommand echo (string) "(.*)"
+(defcommand echo ("(.*)" string)
   (cmd-reply string))
-(defcommand ping () ""
+(defcommand ping ()
   (cmd-reply "pong"))
-(defcommand shut (arg1) "(\\S+)*"
+(defcommand shut ("(\\S+)*" arg1)
   (when (equalp arg1 "up")
     (cmd-reply "Fine. Be that way. Tell me to talk when you realize ~
                 just how lonely and pathetic you really are.")
     (shut-up *bot*)))
-(defcommand hi () ""
+(defcommand hi ()
   (cmd-reply "Go away."))
-(defcommand give (new-target new-command new-args) "(\\S+) (\\S+) (.*)$"
+(defcommand give ("(\\S+) (\\S+) (.*)$" new-target new-command new-args)
   (answer-command *bot* new-command new-args new-target *channel*))
 
 ;;; Character Decoding
-(defcommand code->char (code-string) "(\\S+)*"
+(defcommand code->char ("(\\S+)*" code-string)
   (let ((code (if code-string (parse-integer code-string :junk-allowed T) 0)))
     (cmd-msg "~:[Invalid code~;~:*~A~]" (and (integerp code) (/= code 127) (>= code 32)
                                              (code-char code)))))
 
-(defcommand char->code (char-string) "(\\S+)*"
+(defcommand char->code ("(\\S+)*" char-string)
   (let ((code (and char-string (char-code (elt char-string 0)))))
     (cmd-msg  "~:[Invalid character~;~A~]"
-              (and (integerp code) (/= code 127) (>= code 32)) 
+              (and (integerp code) (/= code 127) (>= code 32))
               code)))
 
 ;;; General web functionality
@@ -95,7 +95,7 @@
   (format nil engine (regex-replace-all "\\s+" query "+")))
 
 ;;; Google
-(defcommand google (query) "(.*)"
+(defcommand google ("(.*)" query)
   (multiple-value-bind (title url)
       (google-search query)
     (cmd-reply "~:[~;~A ~]<~A>" title title url)))
@@ -106,7 +106,7 @@
              query)))
 
 ;;; CLiki search
-(defcommand cliki (query) "(.*)"
+(defcommand cliki ("(.*)" query)
   (multiple-value-bind (links numlinks)
       (cliki-urls query)
     (cmd-reply "I found ~D result~:P.~@[ Check out <~A>.~]" numlinks (car links))))
@@ -127,12 +127,12 @@
                 0))))
 
 ;;; kiloseconds
-(defcommand kiloseconds (zone) "(.*)"
+(defcommand kiloseconds ("(.*)" zone)
   (let* ((parsed-zone (if (= 0 (length zone))
                           0
                           (parse-integer zone :junk-allowed t)))
          (ks-time (get-ks-time parsed-zone)))
-    (cmd-reply "The time in GMT~A is ~3$ ks."                         
+    (cmd-reply "The time in GMT~A is ~3$ ks."
                (if (or (= parsed-zone 0) (plusp parsed-zone))
                    (format nil "+~A" parsed-zone)
                    (format nil "~A" parsed-zone))
@@ -149,7 +149,7 @@
        1000)))
 
 ;;; Memos
-(defcommand memo (recipient memo) "for (\\S+): (.*)"
+(defcommand memo ("for (\\S+): (.*)" recipient memo)
   (add-memo recipient memo *sender*)
   (cmd-msg "Tada! Added memo for ~A. ~
             I'll let them know next time they speak"
@@ -187,9 +187,9 @@
 ;;; Parrot
 (deflistener parrot
   (cmd-msg *message*))
-(defcommand parrot () ""
+(defcommand parrot ()
   (activate-listener 'parrot))
-(defcommand noparrot () ""
+(defcommand noparrot ()
   (deactivate-listener 'parrot))
 
 ;;; Facts
@@ -217,7 +217,7 @@
              statement)
           (set-fact noun (format nil "~A ~A ~A ~A" article noun verb info)))))
 
-(defcommand fact (topic) "(\\S+)*"
+(defcommand fact ("(\\S+)*" topic)
   (cmd-msg (get-fact topic)))
 
 ;;; URLs
