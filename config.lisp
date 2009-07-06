@@ -6,6 +6,7 @@
 (defvar *nickserv-password* nil)
 (defvar *nickname* nil)
 (defvar *bot-dir* nil)
+(defvar *default-listeners* '(command-listener send-memos scan-for-fact scan-for-more scan-for-url))
 
 (defvar *home* (merge-pathnames ".sykobot/" (user-homedir-pathname)))
 
@@ -18,14 +19,13 @@
     (handler-bind ((cl-irc:no-such-reply (lambda (c)
                                            (let ((r (find-restart 'continue c)))
                                              (when r (invoke-restart r))))))
-      (apply #'activate-listeners bot '(command-listener send-memos scan-for-fact
-                                        scan-for-url scan-for-more))
       (when *bot-dir*
         (setf (dir bot) *bot-dir*))
       (let ((init-file (merge-pathnames "init" (bot-dir bot))))
         (when (probe-file init-file)
           (handler-case (load init-file)
             (end-of-file () (error "You missed a paren somewhere")))))
+      (apply #'activate-listeners bot *default-listeners*)
       (when *nickname*
         (setf (nickname bot) *nickname*))
       (when *server*

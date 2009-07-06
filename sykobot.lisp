@@ -4,7 +4,8 @@
            :identify :nick :send-notice :send-msg :topic :add-command
            :remove-command :connection :nickname :server :password
            :*default-channels* :*server* :*identify-with-nickserv?*
-           :*nickserv-password* :*nickname* :*cmd-prefix*))
+           :*nickserv-password* :*nickname* :*cmd-prefix* :*default-listeners*
+           :command-listener :send-memos :scan-for-fact :scan-for-more :scan-for-url))
 
 (defpackage #:sykobot-user
   (:use :cl :sykobot :sheeple :cl-ppcre))
