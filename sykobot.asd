@@ -10,7 +10,8 @@
                sheeple
                cl-store)
   :serial t
-  :components ((:file "sykobot")
+  :components ((:file "packages")
+               (:file "sykobot")
                (:file "alref")
                (:file "listeners")
                (:file "commands")
