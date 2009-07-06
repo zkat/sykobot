@@ -16,23 +16,25 @@
    (nickname "sykobot")
    (server "irc.freenode.net")
    (password nil)
-   (mode :normal)))
+   (silentp nil)))
 
-(defvar *active-bots* nil)
+(defvar *active-bot* nil)
 
 ;;;
 ;;; IRC connection
 ;;;
-(defmessage run-bot (bot))
+(defmessage init-bot (bot))
 (defmessage connect (bot server &optional password))
 (defmessage disconnect (bot &optional message))
 (defmessage join (bot channel))
 (defmessage part (bot channel))
 (defmessage identify (bot password))
 
-(defreply run-bot ((bot (proto 'sykobot)))
+(defreply init-bot ((bot (proto 'sykobot)))
+  (when *active-bot*
+    (error "There is already a bot running. Disconnect the current *active-bot* and try again."))
   (connect bot (server bot) (password bot))
-  (pushnew bot *active-bots*))
+  (setf *active-bot* bot))
 
 (defreply connect ((bot (proto 'sykobot)) server &optional password)
   (setf (connection bot) (irc:connect :nickname (nickname bot) :server server :password password))
@@ -53,7 +55,7 @@
 
 (defreply disconnect ((bot (proto 'sykobot)) &optional message)
   (bt:destroy-thread (msg-loop-thread bot))
-  (setf *active-bots* (delete bot *active-bots*))
+  (setf *active-bot* nil)
   (irc:quit (connection bot) (or message (values))))
 
 (defreply join ((bot (proto 'sykobot)) channel)
@@ -83,7 +85,8 @@
   (irc:notice (connection bot) target message))
 
 (defreply send-msg ((bot (proto 'sykobot)) channel message)
-  (irc:privmsg (connection bot) channel (or message "")))
+  (unless (silentp bot)
+   (irc:privmsg (connection bot) channel (or message ""))))
 
 (defreply send-reply ((bot (proto 'sykobot)) target channel message)
   (send-msg bot channel (format nil "~A: ~A" target message)))
@@ -101,7 +104,7 @@
 ;;; Message processing
 ;;;
 (defmessage msg-hook (bot msg))
-(defmessage process-message (mode bot sender channel message))
+(defmessage process-message (bot sender channel message))
 (defmessage shut-up (bot))
 (defmessage un-shut-up (bot))
 (defmessage respond-to-message (bot sender channel message))
@@ -111,27 +114,17 @@
   (let ((sender (irc:source msg))
         (channel (car (irc:arguments msg)))
         (message (second (irc:arguments msg))))
-    (process-message (mode bot) bot sender channel message)))
+    (process-message bot sender channel message)))
 
-(defreply process-message ((mode :normal) (bot (proto 'sykobot))
+(defreply process-message ((bot (proto 'sykobot))
                            sender channel message)
-  (declare (ignore mode))
   (call-listeners bot sender channel message))
 
-(defreply process-message ((mode :silent) (bot (proto 'sykobot))
-                           sender channel message)
-  (declare (ignore mode))
-  (when (sent-to-me-p bot channel message)
-    (let ((command (car (split "\\s+" (scan-string-for-direct-message bot channel message) :limit 2))))
-      (when (string-equal command "talk")
-        (send-reply bot sender channel "bla bla bla bla. There, happy?")
-        (un-shut-up bot)))))
-
 (defreply shut-up ((bot (proto 'sykobot)))
-  (setf (mode bot) :silent))
+  (setf (silentp bot) t))
 
 (defreply un-shut-up ((bot (proto 'sykobot)))
-  (setf (mode bot) :normal))
+  (setf (silentp bot) nil))
 
 (defreply respond-to-message ((bot (proto 'sykobot)) sender channel message)
   (let* ((string (scan-string-for-direct-message bot channel message))
