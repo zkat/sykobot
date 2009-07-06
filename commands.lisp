@@ -145,8 +145,8 @@
          (ks-time (get-ks-time parsed-zone)))
     (cmd-reply "The time in GMT~A is ~3$ ks."
                (if (or (= parsed-zone 0) (plusp parsed-zone))
-                   (format nil "+~A" parsed-zone)
-                   (format nil "~A" parsed-zone))
+                   (format nil "+~A" (mod parsed-zone 24))
+                   (format nil "~A" (- (mod parsed-zone 24) 24)))
                ks-time)))
 
 (defun get-ks-time (&optional (gmt-diff 0))
