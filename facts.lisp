@@ -1,33 +1,49 @@
 (in-package :sykobot)
 
 ;;; Facts
+(defcommand fact ("(\\S+)*" topic)
+  (cmd-msg (get-fact topic)))
+
 (defparameter *facts-file-path* (ensure-directories-exist
                                  (merge-pathnames ".sykobot/fact-table.db" (user-homedir-pathname))))
-(let ((fact-table (make-hash-table :test #'equalp)))
 
-  (defun set-fact (noun info)
-    (setf (gethash noun fact-table) info)
-    (save-facts))
-  
-  (defun get-fact (noun)
-    (multiple-value-bind (info hasp)
-        (gethash noun fact-table)
-      (if hasp
-          info
-          (format nil "I know nothing about ~A" noun))))
+(defproto fact ()
+  ((noun "")
+   (info "")))
 
-  (defun erase-all-facts ()
-    (clrhash fact-table)
-    (save-facts))
+(defmessage load-facts (bot))
+(defmessage save-facts (bot))
+(defmessage set-fact (bot noun info))
+(defmessage get-fact (bot noun))
+(defmessage erase-all-facts (bot))
 
-  (defun save-facts ()
-    (cl-store:store fact-table *facts-file-path*))
+(defreply load-facts ((bot (proto 'sykobot)))
+  (when (probe-file *facts-file-path*)
+    (setf (facts bot)
+          (cl-store:restore *facts-file-path*))))
 
-  (defun load-facts ()
-    (setf fact-table (if (probe-file *facts-file-path*)
-                         (cl-store:restore *facts-file-path*)
-                         (make-hash-table :test #'equalp))))
-  ) ;end fact table
+(defreply save-facts ((bot (proto 'sykobot)))
+  (cl-store:store (facts bot) *facts-file-path*))
+
+(defreply set-fact ((bot (proto 'sykobot))
+                    noun info)
+  (setf (gethash noun (facts bot)) info))
+(defreply set-fact :after ((bot (proto 'sykobot))
+                           noun info)
+  (declare (ignore noun info))
+  (save-facts bot))
+
+(defreply get-fact ((bot (proto 'sykobot)) noun)
+  (multiple-value-bind (info hasp)
+      (gethash noun (facts bot))
+    (if hasp
+        info
+        (format nil "I know nothing about ~A" noun))))
+
+(defreply erase-all-facts ((bot (proto 'sykobot)))
+  (clrhash (facts bot)))
+(defreply erase-all-facts :after ((bot (proto 'sykobot)))
+  (save-facts bot))
 
 (defun split-into-sub-statements (statement)
   (split "\\s*(,|but|however|whereas|although|\\;|\\.)\\s*" statement))
@@ -37,8 +53,7 @@
      do (do-register-groups (article noun verb info)
             (".*?([a|an|the|this|that]*)\\s*(\\w+)\\s+(is|are|isn't|ain't)\\s+(.+)"
              statement)
-          (set-fact noun (format nil "~A ~A ~A ~A" article noun verb info)))))
+          (set-fact *bot* noun (format nil "~A ~A ~A ~A" article noun verb info)))))
 
-(defcommand fact ("(\\S+)*" topic)
-  (cmd-msg (get-fact topic)))
+
 
