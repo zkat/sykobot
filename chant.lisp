@@ -25,7 +25,7 @@
       *default-alref-value* "MONEY")
 
 ;;; This command is used to chant.
-(defcommand "chant"
+(defcommand chant () ""
   (send-msg *bot* *channel*
             (format nil "MORE ~:@(~A~)"
                     (alref *channel* *more*))))
