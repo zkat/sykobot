@@ -68,7 +68,7 @@
     (values (multiple-value-bind (match vec)
                 (scan-to-strings
                  (create-scanner
-                  "<title\\s*>\\s*(.+)\\s*</title\\s*>"
+                  "<title[.\\s]*>\\s*(.+)\\s*</title[\\s.]*>"
                   :case-insensitive-mode t) body)
               (declare (ignore match))
               (if (< 0 (length vec))
@@ -88,7 +88,7 @@
   (multiple-value-bind (title url)
       (google-search query)
     (send-reply *bot* *sender* *channel*
-                (format nil "~A <~A>" title url))))
+                (format nil "~:[~;~A ~]<~A>" title url))))
 
 (defun google-search (query)
   (url-info (search-url
@@ -221,7 +221,7 @@
     (handler-case
         (multiple-value-bind (title url)
             (url-info (grab-url *message*))
-          (send-msg *bot* *channel* (format nil "Title: ~A (at ~A)" title (puri:uri-host (puri:uri url)))))
+          (send-msg *bot* *channel* (format nil "Title: ~A (at ~A)" (or title "<unknown title>") (puri:uri-host (puri:uri url)))))
       (error ()
         (values)))))
 
