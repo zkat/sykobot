@@ -47,6 +47,10 @@
 ;;; base commands
 (defcommand echo ("(.*)" string)
   (cmd-reply string))
+(defcommand source ()
+  (cmd-reply "http://github.com/zkat/sykobot"))
+(defcommand help ()
+  (cmd-reply "No."))
 (defcommand topic ("(.*)" new-topic)
   (if (< 0 (length new-topic))
       (topic *bot* *channel* new-topic)
@@ -58,6 +62,9 @@
     (cmd-reply "Fine. Be that way. Tell me to talk when you realize ~
                 just how lonely and pathetic you really are.")
     (shut-up *bot*)))
+(defcommand talk ()
+  (un-shut-up *bot*)
+  (cmd-reply "bla bla bla bla. There, happy?"))
 (defcommand hi ()
   (cmd-reply "Go away."))
 (defcommand give ("(\\S+) (\\S+) (.*)$" new-target new-command new-args)
@@ -159,12 +166,23 @@
             I'll let them know next time they speak."
            recipient))
 
+(defparameter *memos-file-path* (ensure-directories-exist
+                                 (merge-pathnames ".sykobot/memo-table.db" (user-homedir-pathname))))
 (let ((memo-table (make-hash-table :test #'equalp)))
+
+  (defun reload-memos-from-file (filename)
+    (setf memo-table (cl-store:restore filename)))
+
+  (defun reload-memos ()
+    (reload-memos-from-file *memos-file-path*))
+  
   (defun add-memo (recipient memo sender)
-    (setf (gethash recipient memo-table) (list memo sender)))
+    (setf (gethash recipient memo-table) (list memo sender))
+    (save-memo-table *memos-file-path*))
 
   (defun remove-memo (recipient)
-    (remhash recipient memo-table))
+    (remhash recipient memo-table)
+    (save-memo-table *memos-file-path*))
 
   (defun get-memo (recipient)
     (multiple-value-bind (memo hasp)
@@ -179,7 +197,13 @@
       memo))
 
   (defun erase-all-memos ()
-    (clrhash memo-table)))
+    (clrhash memo-table)
+    (save-memo-table *memos-file-path*))
+
+  (defun save-memo-table (file)
+    (cl-store:store memo-table file))
+  
+)
 
 (deflistener send-memos
   (let* ((recipient *sender*)
@@ -197,10 +221,14 @@
   (deactivate-listener 'parrot))
 
 ;;; Facts
+(defparameter *facts-file-path* (ensure-directories-exist
+                                 (merge-pathnames ".sykobot/fact-table.db" (user-homedir-pathname))))
 (let ((fact-table (make-hash-table :test #'equalp)))
-  (defun set-fact (noun info)
-    (setf (gethash noun fact-table) info))
 
+  (defun set-fact (noun info)
+    (setf (gethash noun fact-table) info)
+    (save-facts))
+  
   (defun get-fact (noun)
     (multiple-value-bind (info hasp)
         (gethash noun fact-table)
@@ -209,7 +237,17 @@
           (format nil "I know nothing about ~A" noun))))
 
   (defun erase-all-facts ()
-    (clrhash fact-table)))
+    (clrhash fact-table)
+    (save-facts))
+
+  (defun save-facts ()
+    (cl-store:store fact-table *facts-file-path*))
+
+  (defun load-facts ()
+    (setf fact-table (if (probe-file *facts-file-path*)
+                         (cl-store:restore *facts-file-path*)
+                         (make-hash-table :test #'equalp))))
+  ) ;end fact table
 
 (defun split-into-sub-statements (statement)
   (split "\\s*(,|but|however|whereas|although|\\;|\\.)\\s*" statement))
