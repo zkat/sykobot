@@ -51,7 +51,7 @@
 
 (deflistener send-memos
   (let ((memos (memos-for *bot* *sender*)))
-    (loop for memo in memos
+    (loop for memo in (reverse memos)
        do (destructuring-bind (recipient sender text time-added) memo
             (declare (ignore recipient time-added))
             (cmd-reply "Memo from ~A - \"~A\"" sender text))
