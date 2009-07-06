@@ -140,16 +140,10 @@
 
 (defmessage answer-command (bot cmd args sender channel))
 (defreply answer-command ((bot (proto 'sykobot)) (cmd (proto 'string)) args sender channel)
-  (print cmd)
-  (answer-command bot (read-from-string cmd) args sender channel))
+  (answer-command bot (intern (string-upcase cmd) :sykobot) args sender channel))
 
 (defreply answer-command ((bot (proto 'sykobot)) (cmd (proto 'symbol)) args sender channel)
   (let ((fn (command-function cmd)))
-    (print cmd)
-    (print fn)
-    (print args)
-    (print sender)
-    (print channel)
     (funcall fn bot args sender channel)))
 
 (defun sent-to-me-p (bot channel message)

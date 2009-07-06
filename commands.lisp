@@ -1,7 +1,7 @@
 (in-package :sykobot)
 
 ;;; Command definition
-(let ((command-table (make-hash-table :test #'eql)))
+(let ((command-table (make-hash-table :test #'eq)))
   (defun add-command (cmd fn)
     (setf (gethash cmd command-table) fn))
 
@@ -19,13 +19,6 @@
   (defun erase-all-commands ()
     (clrhash command-table)))
 
-#+nil(defmacro defcommand (name &body body)
-  `(add-command ,name
-                (lambda (*bot* *args* *sender* *channel*)
-                  (declare (special *bot* *args* *sender* *channel*))
-                  (declare (ignorable *args* *bot* *sender* *channel*))
-                  ,@body)))
-
 (defmacro defcommand (name vars regex &body body)
   `(add-command ',name
                 (lambda (*bot* *message* *sender* *channel*)
@@ -38,34 +31,31 @@
 
 ;;; base commands
 (defcommand echo (string) "(.*)"
-  (print "in echo body")
-  (send-msg *bot* *channel* string))
+  (send-reply *bot* *sender* *channel* string))
 (defcommand ping () ""
   (send-reply *bot* *sender* *channel* "pong"))
-(defcommand shut
-  (when (scan "up" *message*)
+(defcommand shut (arg1) "(\\S+)*"
+  (when (equalp arg1 "up")
     (send-reply *bot* *sender* *channel*
                 (format nil "Fine. Be that way. Tell me to talk when you realize ~
                            just how lonely and pathetic you really are."))
     (shut-up *bot*)))
-(defcommand hi
+(defcommand hi () ""
   (send-reply *bot* *sender* *channel* "Go away."))
-(defcommand "give"
-  (register-groups-bind (new-target new-command new-args)
-      ("(\\S+) (\\S+) (.*)$" *message*)
-    (answer-command *bot* new-command new-args new-target *channel*)))
+(defcommand give (new-target new-command new-args) "(\\S+) (\\S+) (.*)$"
+  (answer-command *bot* new-command new-args new-target *channel*))
 
 ;;; Character Decoding
-(defcommand "code->char"
+(defcommand code->char (code-string) "(\\S+)*"
   (send-msg *bot* *channel*
-            (let* ((str  (car (split "\\s+" (or *message* "") :limit 2)))
-                   (code (parse-integer str :junk-allowed T)))
+            (let ((code (if code-string (parse-integer code-string :junk-allowed T) 0)))
               (format nil "~:[Invalid code~;~:*~A~]"
                       (and (integerp code) (/= code 127) (>= code 32)
-                              (code-char code))))))
-(defcommand "char->code"
+                           (code-char code))))))
+
+(defcommand char->code (char-string) "(\\S+)*"
   (send-msg *bot* *channel*
-            (let ((code (and *message* (char-code (elt *message* 0)))))
+            (let ((code (and char-string (char-code (elt char-string 0)))))
               (format nil "~:[Invalid character~;~A~]"
                       (and (integerp code) (/= code 127) (>= code 32))
                       code))))
@@ -94,9 +84,9 @@
   (format nil engine (regex-replace-all "\\s+" query "+")))
 
 ;;; Google
-(defcommand "google"
+(defcommand google (query) "(.*)"
   (multiple-value-bind (title url)
-      (google-search *message*)
+      (google-search query)
     (send-reply *bot* *sender* *channel*
                 (format nil "~A <~A>" title url))))
 
@@ -106,10 +96,10 @@
              query)))
 
 ;;; CLiki search
-(defcommand "cliki"
+(defcommand cliki (query) "(.*)"
   (send-reply *bot* *sender* *channel*
               (multiple-value-bind (links numlinks)
-                  (cliki-urls *message*)
+                  (cliki-urls query)
                 (format nil "I found ~D result~:P.~@[ Check out <~A>.~]"
                         numlinks (car links)))))
 
@@ -129,9 +119,17 @@
                 0))))
 
 ;;; kiloseconds
-(defcommand "kiloseconds"
-  (send-reply *bot* *sender* *channel*
-              (format nil "the time is GMT ~3$ ks." (get-ks-time))))
+(defcommand kiloseconds (zone) "(.*)"
+  (let* ((parsed-zone (if (= 0 (length zone))
+                          0
+                          (parse-integer zone :junk-allowed t)))
+         (ks-time (get-ks-time parsed-zone)))
+    (send-reply *bot* *sender* *channel*
+                (format nil "The time in GMT~A is ~3$ ks." 
+                        (if (or (= parsed-zone 0) (plusp parsed-zone))
+                            (format nil "+~A" parsed-zone)
+                            (format nil "~A" parsed-zone))
+                        ks-time))))
 
 (defun get-ks-time (&optional (gmt-diff 0))
   (multiple-value-bind
@@ -144,15 +142,12 @@
        1000)))
 
 ;;; Memos
-(defcommand "memo"
-  (destructuring-bind (recipient memo)
-      (split "\\s+" *message* :limit 2)
-    (progn
-      (add-memo recipient memo *sender*)
-      (send-msg *bot* *channel*
-                (format nil "Tada! Added memo for ~A. ~
+(defcommand memo (recipient memo) "for (\\S+): (.*)"
+  (add-memo recipient memo *sender*)
+  (send-msg *bot* *channel*
+            (format nil "Tada! Added memo for ~A. ~
                              I'll let them know next time they speak"
-                        recipient)))))
+                    recipient)))
 
 (let ((memo-table (make-hash-table :test #'equalp)))
   (defun add-memo (recipient memo sender)
@@ -186,9 +181,9 @@
 ;;; Parrot
 (deflistener parrot
   (send-msg *bot* *channel* *message*))
-(defcommand "parrot"
+(defcommand parrot () ""
   (activate-listener 'parrot))
-(defcommand "noparrot"
+(defcommand noparrot () ""
   (deactivate-listener 'parrot))
 
 ;;; Facts
@@ -216,8 +211,8 @@
              statement)
           (set-fact noun (format nil "~A ~A ~A ~A" article noun verb info)))))
 
-(defcommand "fact"
-  (send-msg *bot* *channel* (get-fact *message*)))
+(defcommand fact (topic) "(\\S+)*"
+  (send-msg *bot* *channel* (get-fact topic)))
 
 ;;; URLs
 (deflistener scan-for-url
