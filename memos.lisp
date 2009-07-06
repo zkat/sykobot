@@ -2,18 +2,16 @@
 
 ;;; Memos
 (defcommand memo ("for (\\S+): (.*)" recipient memo)
-  (add-memo recipient memo *sender*)
+  (add-memo *bot* recipient memo *sender*)
   (cmd-msg "Tada! Added memo for ~A. ~
             I'll let them know next time they speak."
            recipient))
 
 (defparameter *memos-file-path* (ensure-directories-exist
                                  (merge-pathnames ".sykobot/memo-table.db" (user-homedir-pathname))))
-(defproto memo ()
-  ((recipient "")
-   (sender "")
-   (text "")
-   (time-added (get-universal-time))))
+
+(defun make-memo (recipient sender text)
+  (list recipient sender text (get-universal-time)))
 
 (defmessage load-memos (bot))
 (defreply load-memos ((bot (proto 'sykobot)))
@@ -27,23 +25,17 @@
 
 (defmessage add-memo (bot recipient memo-text sender))
 (defreply add-memo ((bot (proto 'sykobot)) recipient text sender)
-  (pushnew (gethash recipient (memos bot))
-           (defclone ((proto 'memo))
-               ((recipient recipient)
-                (sender sender)
-                (memo memo)
-                (time-added (get-universal-time))))))
+  (pushnew (make-memo recipient sender text) (gethash recipient (memos bot)) :test #'equalp))
+
 (defreply add-memo :after ((bot (proto 'sykobot)) recipient text sender)
   (declare (ignore recipient text sender))
   (save-memos bot))
 
 (defmessage remove-memo (bot memo))
-(defreply remove-memo ((bot (proto 'sykobot))
-                       (memo (proto 'memo)))
-  (setf (gethash (recipient memo) (memos bot))
-        (delete memo (gethash (recipient memo) (memos bot)))))
-(defreply remove-memo :after ((bot (proto 'sykobot))
-                              (memo (proto 'memo)))
+(defreply remove-memo ((bot (proto 'sykobot)) memo)
+  (setf (gethash (car memo) (memos bot))
+        (delete memo (gethash (car memo) (memos bot)) :test #'equalp)))
+(defreply remove-memo :after ((bot (proto 'sykobot)) memo)
   (declare (ignore memo))
   (save-memos bot))
 
@@ -53,10 +45,15 @@
 (defreply erase-all-memos :after ((bot (proto 'sykobot)))
   (save-memos bot))
 
+(defmessage memos-for (bot recipient))
+(defreply memos-for ((bot (proto 'sykobot)) recipient)
+  (gethash recipient (memos bot)))
+
 (deflistener send-memos
-  (let ((memos (get-memos *bot* *sender*)))
-    (when memos
-      (loop for memo in memos
-         do (with-properties (text sender) memo
-              (cmd-reply "Memo from ~A - \"~A\"" sender text))
-           (remove-memo *bot* memo)))))
+  (let ((memos (memos-for *bot* *sender*)))
+    (loop for memo in memos
+       do (destructuring-bind (recipient sender text time-added) memo
+            (declare (ignore recipient time-added))
+            (cmd-reply "Memo from ~A - \"~A\"" sender text))
+       (remove-memo *bot* memo))))
+

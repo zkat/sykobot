@@ -19,11 +19,13 @@
    (silentp nil)
    (memos (make-hash-table :test #'equalp))
    (facts (make-hash-table :test #'equalp))
+   (quotes (make-hash-table :test #'equalp))
    (active-listeners nil)))
 
 (defreply init-sheep :after ((sheep (proto 'sykobot)) &key)
   (setf (memos sheep) (make-hash-table :test #'equalp))
-  (setf (facts sheep) (make-hash-table :test #'equalp)))
+  (setf (facts sheep) (make-hash-table :test #'equalp))
+  (setf (quotes sheep) (make-hash-table :test #'equalp)))
 
 (defvar *active-bot* nil)
 
@@ -45,7 +47,7 @@
 
 (defreply connect ((bot (proto 'sykobot)) server &optional password)
   (setf (connection bot) (irc:connect :nickname (nickname bot) :server server :password password))
-  (irc:add-hook (connection bot) 'cl-irc:irc-privmsg-message
+  (irc:add-hook (connection bot) 'irc:irc-privmsg-message
                 (lambda (msg)
                   (handler-bind ((cl-irc:no-such-reply (lambda (c)
                                                          (let ((r (find-restart 'continue c)))
@@ -125,7 +127,7 @@
 
 (defreply process-message ((bot (proto 'sykobot))
                            sender channel message)
-  (call-listeners bot sender channel message))
+  (call-all-listeners bot sender channel message))
 
 (defreply shut-up ((bot (proto 'sykobot)))
   (setf (silentp bot) t))

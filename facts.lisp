@@ -2,14 +2,10 @@
 
 ;;; Facts
 (defcommand fact ("(\\S+)*" topic)
-  (cmd-msg (get-fact topic)))
+  (cmd-msg (get-fact *bot* topic)))
 
 (defparameter *facts-file-path* (ensure-directories-exist
                                  (merge-pathnames ".sykobot/fact-table.db" (user-homedir-pathname))))
-
-(defproto fact ()
-  ((noun "")
-   (info "")))
 
 (defmessage load-facts (bot))
 (defmessage save-facts (bot))
