@@ -26,9 +26,7 @@
 
 ;;; This command is used to chant.
 (defcommand chant () ""
-  (send-msg *bot* *channel*
-            (format nil "MORE ~:@(~A~)"
-                    (alref *channel* *more*))))
+  (cmd-msg "MORE ~:@(~A~)" (alref *channel* *more*)))
 
 ;;; This is where the cookie crumbles.
 ;;;
