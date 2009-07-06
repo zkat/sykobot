@@ -1,8 +1,22 @@
 (in-package :sykobot)
 
+(defmessage activate-listener (bot name))
+(defmessage deactivate-listener (bot name))
+(defmessage call-all-listeners (bot sender channel message))
+
+(defreply activate-listener ((bot (proto 'sykobot)) name)
+  (pushnew name (active-listeners bot)))
+(defreply deactivate-listener ((bot (proto 'sykobot)) name)
+  (with-properties (active-listeners) bot
+    (setf active-listeners (delete name active-listeners))))
+
+(defreply call-all-listeners ((bot (proto 'sykobot)) sender channel message)
+  (loop for name in (active-listeners bot)
+     do (call-listener bot name sender channel message)))
+
 ;;; Listeners
-(let ((listener-table (make-hash-table :test #'eq))
-      (active-listeners ()))
+(let ((listener-table (make-hash-table :test #'eq)))
+
   (defun add-listener (name function)
     (assert (symbolp name))
     (setf (gethash name listener-table) function))
@@ -19,24 +33,13 @@
             (declare (ignore bot sender channel message))
             (print "listener doesn't exist")))))
 
-  (defun activate-listener (name)
-    (pushnew name active-listeners :test #'equalp))
-
-  (defun deactivate-listener (name)
-    (setf active-listeners (remove name active-listeners :test #'equalp)))
-
-  (defun call-listener (name bot sender channel message)
+  (defun call-listener (bot name sender channel message)
     (funcall (listener-function name) bot sender channel message))
-
-  (defun call-listeners (bot sender channel message)
-    (loop for name in active-listeners
-       do (call-listener name bot sender channel message)))
 
   (defun get-listener-table ()
     listener-table)
 
-  (defun get-active-listeners ()
-    active-listeners))
+  ) ;end listener table
 
 (defmacro deflistener (name &body body)
   `(add-listener ',name

@@ -18,7 +18,8 @@
    (password nil)
    (silentp nil)
    (memos (make-hash-table :test #'equalp))
-   (facts (make-hash-table :test #'equalp))))
+   (facts (make-hash-table :test #'equalp))
+   (active-listeners nil)))
 
 (defreply init-sheep :after ((sheep (proto 'sykobot)) &key)
   (setf (memos sheep) (make-hash-table :test #'equalp))
