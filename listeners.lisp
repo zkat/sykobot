@@ -14,6 +14,10 @@
   (loop for name in (active-listeners bot)
      do (call-listener bot name sender channel message)))
 
+(defun activate-listeners (bot &rest listener-names)
+  (loop for listener in listener-names
+       do (activate-listener bot listener)))
+
 ;;; Listeners
 (let ((listener-table (make-hash-table :test #'eq)))
 
