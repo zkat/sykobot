@@ -99,13 +99,17 @@
 ;;; Message processing
 ;;;
 (defmessage msg-hook (bot msg))
+(defmessage process-message (mode bot sender channel message))
+(defmessage shut-up (bot))
+(defmessage un-shut-up (bot))
+(defmessage respond-to-message (bot sender channel message))
+(defmessage answer-command (bot cmd args sender channel))
+
 (defreply msg-hook ((bot (proto 'sykobot)) msg)
   (let ((sender (irc:source msg))
         (channel (car (irc:arguments msg)))
         (message (second (irc:arguments msg))))
     (process-message (mode bot) bot sender channel message)))
-
-(defmessage process-message (mode bot sender channel message))
 
 (defreply process-message ((mode :normal) (bot (proto 'sykobot))
                            sender channel message)
@@ -121,14 +125,12 @@
         (send-reply bot sender channel "bla bla bla bla. There, happy?")
         (un-shut-up bot)))))
 
-(defmessage shut-up (bot))
 (defreply shut-up ((bot (proto 'sykobot)))
   (setf (mode bot) :silent))
-(defmessage un-shut-up (bot))
+
 (defreply un-shut-up ((bot (proto 'sykobot)))
   (setf (mode bot) :normal))
 
-(defmessage respond-to-message (bot sender channel message))
 (defreply respond-to-message ((bot (proto 'sykobot)) sender channel message)
   (let* ((string (scan-string-for-direct-message bot channel message))
          (command+args (split "\\s+" string :limit 2)))
@@ -137,7 +139,6 @@
       (error (e)
         (send-reply bot sender channel (format nil "An error occurred: ~A" e))))))
 
-(defmessage answer-command (bot cmd args sender channel))
 (defreply answer-command ((bot (proto 'sykobot)) (cmd (proto 'string)) args sender channel)
   (answer-command bot (intern (string-upcase cmd) :sykobot) args sender channel))
 
