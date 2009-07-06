@@ -18,8 +18,10 @@
       (when (probe-file *init-file*)
         (handler-case (load *init-file*)
           (end-of-file () (error "You missed a paren somewhere"))))
-      (when *nickname* (setf (nickname bot) *nickname*))
-      (when *server*   (setf (server   bot) *server*))
+      (when *nickname* 
+        (setf (nickname bot) *nickname*))
+      (when *server*
+        (setf (server bot) *server*))
       (load-memos bot)
       (load-facts bot)
       (init-bot bot)
