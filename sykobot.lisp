@@ -16,7 +16,10 @@
    (nickname "sykobot")
    (server "irc.freenode.net")
    (password nil)
-   (silentp nil)))
+   (silentp nil)
+   (memos (make-hash-table :test #'equalp))))
+(defreply init-sheep :after ((sheep (proto 'sykobot)) &key)
+  (setf (memos sheep) (make-hash-table :test #'equalp)))
 
 (defvar *active-bot* nil)
 
