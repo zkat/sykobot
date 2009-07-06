@@ -8,8 +8,8 @@
 (defvar *init-file*
   (merge-pathnames ".sykobotrc" (user-homedir-pathname)))
 
-(defun run-sykobot (&optional (*init-file* *init-file*))
-  (let ((bot (clone (proto 'sykobot))))
+(defun run-bot (&optional (bot-prototype (proto 'sykobot)))
+  (let ((bot (clone bot-prototype)))
     (handler-bind ((cl-irc:no-such-reply (lambda (c)
                                            (let ((r (find-restart 'continue c)))
                                              (when r (invoke-restart r))))))
@@ -23,9 +23,10 @@
           (end-of-file () (error "You missed a paren somewhere"))))
       (when *nickname* (setf (nickname bot) *nickname*))
       (when *server*   (setf (server   bot) *server*))
-      (run-bot bot)
+      (reload-memos)
+      (load-facts)
+      (init-bot bot)
       (when *identify-with-nickserv?*
         (identify bot *nickserv-password*))
       (dolist (channel *default-channels* bot)
-        (join bot channel)))
-    bot))
+        (join bot channel)))))
