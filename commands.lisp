@@ -236,3 +236,9 @@
 
 (defun grab-url (string)
   (find-if #'has-url-p (split "[\\s+><,]" string)))
+
+;;; Aliasing commands
+;;; This bug-ridden filth does not work.
+#|(defcommand alias ("(\\S+) (.*)" alias expansion)
+  (add-alias *bot* (format nil "(?i)~A(?:\\s|$)" alias) expansion)
+  (cmd-msg "Yes master."))|#

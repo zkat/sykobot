@@ -16,7 +16,8 @@
    (nickname "sykobot")
    (server "irc.freenode.net")
    (password nil)
-   (mode :normal)))
+   (mode :normal)
+   (aliases nil)))
 (defvar *active-bots* nil)
 
 ;;;
@@ -115,7 +116,8 @@
 (defreply process-message ((mode :normal) (bot (proto 'sykobot))
                            sender channel message)
   (declare (ignore mode))
-  (call-listeners bot sender channel message))
+  (call-listeners bot sender channel
+                  (expand-aliases bot message)))
 
 (defreply process-message ((mode :silent) (bot (proto 'sykobot))
                            sender channel message)
@@ -162,3 +164,29 @@
          (regex-replace (format nil "^~A, " (nickname bot)) message ""))
         ((scan (format nil "^~A+" *cmd-prefix*) message)
          (regex-replace (format nil "^~A+" *cmd-prefix*) message ""))))
+
+;;;
+;;; Aliases
+;;;
+(defmessage add-alias (bot alias expansion))
+(defmessage remove-alias (bot alias))
+(defmessage expand-aliases (bot message))
+
+(defreply add-alias ((bot (proto 'sykobot)) alias expansion)
+  (setf (aliases bot) (acons alias expansion (aliases bot))))
+
+(defreply remove-alias ((bot (proto 'sykobot)) alias)
+  (setf (aliases bot) (delete alias (aliases bot) :count 1
+                              :test #'string-equal :key #'car)))
+
+(defreply expand-aliases ((bot (proto 'sykobot)) message)
+  (loop while
+       (loop for (alias . expansion) in (aliases bot)
+          for (new changedp) =
+            (multiple-value-list (regex-replace-all alias message
+                                                    expansion
+                                                    :preserve-case t))
+          when changedp do
+            (setf message new)
+            (return t))
+       finally (return message)))
