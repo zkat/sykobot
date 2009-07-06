@@ -17,6 +17,7 @@
    (server "irc.freenode.net")
    (password nil)
    (mode :normal)))
+
 (defvar *active-bots* nil)
 
 ;;;
@@ -35,7 +36,7 @@
 
 (defreply connect ((bot (proto 'sykobot)) server &optional password)
   (setf (connection bot) (irc:connect :nickname (nickname bot) :server server :password password))
-  (irc:add-hook (connection bot) 'irc:irc-privmsg-message
+  (irc:add-hook (connection bot) 'cl-irc:irc-privmsg-message
                 (lambda (msg)
                   (handler-bind ((cl-irc:no-such-reply (lambda (c)
                                                          (let ((r (find-restart 'continue c)))

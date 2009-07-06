@@ -47,6 +47,10 @@
 ;;; base commands
 (defcommand echo ("(.*)" string)
   (cmd-reply string))
+(defcommand topic ("(.*)" new-topic)
+  (if (< 0 (length new-topic))
+      (topic *bot* *channel* new-topic)
+      (cmd-msg (topic *bot* *channel*))))
 (defcommand ping ()
   (cmd-reply "pong"))
 (defcommand shut ("(\\S+)*" arg1)
