@@ -18,6 +18,7 @@
 (defreply listener-active-p ((bot (proto 'sykobot)) name)
   (if (member name (active-listeners bot))
       t nil))
+
 (defun activate-listeners (bot &rest listener-names)
   (loop for listener in listener-names
        do (activate-listener bot listener)))

@@ -29,7 +29,9 @@
   (cl-store:store (memos bot) *memos-file-path*))
 
 (defreply add-memo ((bot (proto 'sykobot)) recipient text sender)
-  (pushnew (make-memo recipient sender text) (gethash recipient (memos bot)) :test #'equalp))
+  (pushnew (make-memo recipient sender text)
+           (gethash recipient (memos bot))
+           :test #'equalp))
 (defreply add-memo :after ((bot (proto 'sykobot)) recipient text sender)
   (declare (ignore recipient text sender))
   (save-memos bot))
@@ -47,7 +49,7 @@
   (save-memos bot))
 
 (defreply memos-for ((bot (proto 'sykobot)) recipient)
-  (gethash recipient (memos bot)))
+  (nth-value 0 (gethash recipient (memos bot))))
 
 (deflistener send-memos
   (let ((memos (memos-for *bot* *sender*)))
