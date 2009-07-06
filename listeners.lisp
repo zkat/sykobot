@@ -41,7 +41,6 @@
 (defmacro deflistener (name &body body)
   `(add-listener ',name
                 (lambda (*bot* *sender* *channel* *message*)
-                  (declare (special *bot* *sender* *channel* *message*))
                   (declare (ignorable *bot* *sender* *channel* *message*))
                   ,@body)))
 
