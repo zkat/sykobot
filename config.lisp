@@ -7,12 +7,11 @@
 (defvar *nickname* nil)
 (defvar *bot-dir* nil)
 
-(defconstant +home+
-  (merge-pathnames ".sykobot/" (user-homedir-pathname)))
+(defvar *home* (merge-pathnames ".sykobot/" (user-homedir-pathname)))
 
 (defmessage bot-dir (bot))
 (defreply bot-dir ((bot (proto 'sykobot)))
-  (ensure-directories-exist (merge-pathnames (dir bot) +home+)))
+  (ensure-directories-exist (merge-pathnames (dir bot) *home*)))
 
 (defun run-bot (&optional (bot-prototype (proto 'sykobot)))
   (let ((bot (clone bot-prototype)))
