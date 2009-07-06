@@ -3,9 +3,10 @@
   (:export :sykobot :run-bot :connect :disconnect :join :part
            :identify :nick :send-notice :send-msg :topic :add-command
            :remove-command :connection :nickname :server :password
-           :*default-channels* :*server* :*identify-with-nickserv?*
+           :*default-channels* :*server* :*port* :*identify-with-nickserv?*
            :*nickserv-password* :*nickname* :*cmd-prefix* :*default-listeners*
-           :command-listener :send-memos :scan-for-fact :scan-for-more :scan-for-url))
+           :*username* :*realname* :*bot-dir* :command-listener :send-memos
+           :scan-for-fact :scan-for-more :scan-for-url))
 
 (defpackage #:sykobot-user
   (:use :cl :sykobot :sheeple :cl-ppcre))
@@ -15,7 +16,10 @@
   ((connection nil)
    (msg-loop-thread nil)
    (nickname "sykobot")
+   (username "sykobot")
+   (realname "sykobot")
    (server "irc.freenode.net")
+   (port 6667)
    (dir "default-bot/")
    (password nil)
    (silentp nil)
@@ -44,11 +48,16 @@
 (defreply init-bot ((bot (proto 'sykobot)))
   (when *active-bot*
     (error "There is already a bot running. Disconnect the current *active-bot* and try again."))
-  (connect bot (server bot) (password bot))
+  (connect bot)
   (setf *active-bot* bot))
 
-(defreply connect ((bot (proto 'sykobot)) server &optional password)
-  (setf (connection bot) (irc:connect :nickname (nickname bot) :server server :password password))
+(defreply connect ((bot (proto 'sykobot)))
+  (setf (connection bot) (irc:connect :nickname (nickname bot) 
+                                      :server (server bot)
+                                      :port (port bot)
+                                      :password (password bot)
+                                      :username (username bot)
+                                      :realname (realname bot)))
   (irc:add-hook (connection bot) 'irc:irc-privmsg-message
                 (lambda (msg)
                   (handler-bind ((cl-irc:no-such-reply (lambda (c)
