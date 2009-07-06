@@ -4,7 +4,7 @@
            :identify :nick :send-notice :send-msg :topic :add-command
            :remove-command :connection :nickname :server :password
            :*default-channels* :*server* :*identify-with-nickserv?*
-           :*nickserv-password* :*nickname*))
+           :*nickserv-password* :*nickname* :*cmd-prefix*))
 
 (defpackage #:sykobot-user
   (:use :cl :sykobot :sheeple :cl-ppcre))
