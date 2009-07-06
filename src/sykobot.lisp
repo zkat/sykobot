@@ -27,7 +27,7 @@
 ;;; IRC connection
 ;;;
 (defmessage init-bot (bot))
-(defmessage connect (bot server &optional password))
+(defmessage connect (bot))
 (defmessage disconnect (bot &optional message))
 (defmessage join (bot channel))
 (defmessage part (bot channel))
