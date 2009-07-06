@@ -14,12 +14,12 @@
   ((:module "src"
             :serial t
             :components
-            ((:module "utils"
+            ((:file "packages")
+             (:module "utils"
                       :serial t
                       :components
                       ((:file "utils")
                        (:file "alref")))
-             (:file "packages")
              (:file "sykobot")
              (:file "listeners")
              (:module "commands"
