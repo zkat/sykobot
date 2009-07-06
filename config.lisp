@@ -2,9 +2,12 @@
 
 (defvar *default-channels* nil)
 (defvar *server* nil)
+(defvar *port* nil)
 (defvar *identify-with-nickserv?* nil)
 (defvar *nickserv-password* nil)
 (defvar *nickname* nil)
+(defvar *username* nil)
+(defvar *realname* nil)
 (defvar *bot-dir* nil)
 (defvar *default-listeners* '(command-listener send-memos scan-for-fact scan-for-more scan-for-url))
 
@@ -28,8 +31,14 @@
       (apply #'activate-listeners bot *default-listeners*)
       (when *nickname*
         (setf (nickname bot) *nickname*))
+      (when *username*
+        (setf (username bot) *username*))
+      (when *realname*
+        (setf (realname bot) *realname*))
       (when *server*
         (setf (server bot) *server*))
+      (when *port*
+        (setf (port bot) *port*))
       (load-memos bot)
       (load-facts bot)
       (init-bot bot)
