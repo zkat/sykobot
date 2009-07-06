@@ -17,9 +17,12 @@
    (server "irc.freenode.net")
    (password nil)
    (silentp nil)
-   (memos (make-hash-table :test #'equalp))))
+   (memos (make-hash-table :test #'equalp))
+   (facts (make-hash-table :test #'equalp))))
+
 (defreply init-sheep :after ((sheep (proto 'sykobot)) &key)
-  (setf (memos sheep) (make-hash-table :test #'equalp)))
+  (setf (memos sheep) (make-hash-table :test #'equalp))
+  (setf (facts sheep) (make-hash-table :test #'equalp)))
 
 (defvar *active-bot* nil)
 

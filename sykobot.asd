@@ -15,4 +15,6 @@
                (:file "listeners")
                (:file "commands")
                (:file "config")
+               (:file "memos")
+               (:file "facts")
                (:file "chant")))

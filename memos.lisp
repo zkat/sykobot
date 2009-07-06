@@ -10,15 +10,13 @@
 (defparameter *memos-file-path* (ensure-directories-exist
                                  (merge-pathnames ".sykobot/memo-table.db" (user-homedir-pathname))))
 (defproto memo ()
-  ((recipient nil)
-   (sender nil)
-   (text nil)
+  ((recipient "")
+   (sender "")
+   (text "")
    (time-added (get-universal-time))))
 
 (defmessage load-memos (bot))
 (defreply load-memos ((bot (proto 'sykobot)))
-  (unless (has-property-p bot 'memos)
-    (add-property bot 'memos (make-hash-table :test #'equalp)))
   (when (probe-file *memos-file-path*)
     (setf (memos bot)
           (cl-store:restore *memos-file-path*))))
@@ -56,9 +54,9 @@
   (save-memos bot))
 
 (deflistener send-memos
-  (let ((memos (get-memos *sender*)))
+  (let ((memos (get-memos *bot* *sender*)))
     (when memos
       (loop for memo in memos
-         do (destructuring-bind (text who-from) memo
-              (cmd-reply "Memo from ~A - \"~A\"" who-from text))
-           (remove-memo memo)))))
+         do (with-properties (text sender) memo
+              (cmd-reply "Memo from ~A - \"~A\"" sender text))
+           (remove-memo *bot* memo)))))
