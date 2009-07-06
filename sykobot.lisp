@@ -68,28 +68,29 @@
 ;;; irc functions
 ;;;
 (defmessage nick (bot new-nick))
+(defmessage send-notice (bot target message))
+(defmessage send-msg (bot channel message))
+(defmessage send-reply (bot target channel message))
+(defmessage send-action (bot channel action))
+(defmessage topic (bot channel &optional new-topic))
+
 (defreply nick ((bot (proto 'sykobot)) new-nick)
   (setf (nickname bot) new-nick)
   (irc:nick (connection bot) new-nick))
 
-(defmessage send-notice (bot target message))
 (defreply send-notice ((bot (proto 'sykobot)) target message)
   (irc:notice (connection bot) target message))
 
-(defmessage send-msg (bot channel message))
 (defreply send-msg ((bot (proto 'sykobot)) channel message)
   (irc:privmsg (connection bot) channel (or message "")))
 
-(defmessage send-reply (bot target channel message))
 (defreply send-reply ((bot (proto 'sykobot)) target channel message)
   (send-msg bot channel (format nil "~A: ~A" target message)))
 
-(defmessage send-action (bot channel action))
 (defreply send-action ((bot (proto 'sykobot)) channel action)
   (send-msg bot channel (format nil "~AACTION ~A~A"
                                 (code-char 1) action (code-char 1))))
 
-(defmessage topic (bot channel &optional new-topic))
 (defreply topic ((bot (proto 'sykobot)) channel &optional new-topic)
   (if new-topic
       (irc:topic- (connection bot) channel new-topic)
