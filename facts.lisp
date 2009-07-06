@@ -4,8 +4,8 @@
 (defcommand fact ("(\\S+)*" topic)
   (cmd-msg (get-fact *bot* topic)))
 
-(defparameter *facts-file-path* (ensure-directories-exist
-                                 (merge-pathnames ".sykobot/fact-table.db" (user-homedir-pathname))))
+(defun facts-db (bot)
+  (merge-pathnames "fact-table.db" (bot-dir bot)))
 
 (defmessage load-facts (bot))
 (defmessage save-facts (bot))
@@ -14,12 +14,12 @@
 (defmessage erase-all-facts (bot))
 
 (defreply load-facts ((bot (proto 'sykobot)))
-  (when (probe-file *facts-file-path*)
+  (when (probe-file (facts-db bot))
     (setf (facts bot)
-          (cl-store:restore *facts-file-path*))))
+          (cl-store:restore (facts-db bot)))))
 
 (defreply save-facts ((bot (proto 'sykobot)))
-  (cl-store:store (facts bot) *facts-file-path*))
+  (cl-store:store (facts bot) (facts-db bot)))
 
 (defreply set-fact ((bot (proto 'sykobot))
                     noun info)

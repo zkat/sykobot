@@ -15,6 +15,7 @@
    (msg-loop-thread nil)
    (nickname "sykobot")
    (server "irc.freenode.net")
+   (dir "default-bot/")
    (password nil)
    (silentp nil)
    (memos (make-hash-table :test #'equalp))
