@@ -159,59 +159,6 @@
                    (* 60 (mod (+ hours zone gmt-diff) 24)))))
        1000)))
 
-;;; Memos
-(defcommand memo ("for (\\S+): (.*)" recipient memo)
-  (add-memo recipient memo *sender*)
-  (cmd-msg "Tada! Added memo for ~A. ~
-            I'll let them know next time they speak."
-           recipient))
-
-(defparameter *memos-file-path* (ensure-directories-exist
-                                 (merge-pathnames ".sykobot/memo-table.db" (user-homedir-pathname))))
-(let ((memo-table (make-hash-table :test #'equalp)))
-
-  (defun reload-memos-from-file (filename)
-    (setf memo-table (cl-store:restore filename)))
-
-  (defun reload-memos ()
-    (reload-memos-from-file *memos-file-path*))
-  
-  (defun add-memo (recipient memo sender)
-    (setf (gethash recipient memo-table) (list memo sender))
-    (save-memo-table *memos-file-path*))
-
-  (defun remove-memo (recipient)
-    (remhash recipient memo-table)
-    (save-memo-table *memos-file-path*))
-
-  (defun get-memo (recipient)
-    (multiple-value-bind (memo hasp)
-        (gethash recipient memo-table)
-      (if hasp
-          memo
-          nil)))
-
-  (defun get-and-remove-memo (recipient)
-    (let ((memo (get-memo recipient)))
-      (remove-memo recipient)
-      memo))
-
-  (defun erase-all-memos ()
-    (clrhash memo-table)
-    (save-memo-table *memos-file-path*))
-
-  (defun save-memo-table (file)
-    (cl-store:store memo-table file))
-  
-)
-
-(deflistener send-memos
-  (let* ((recipient *sender*)
-         (memo (get-and-remove-memo recipient)))
-    (when memo
-      (destructuring-bind (text who-from) memo
-        (cmd-reply "Memo from ~A - \"~A\"" who-from text)))))
-
 ;;; Parrot
 (deflistener parrot
   (cmd-msg *message*))
