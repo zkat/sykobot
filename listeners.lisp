@@ -3,6 +3,7 @@
 (defmessage activate-listener (bot name))
 (defmessage deactivate-listener (bot name))
 (defmessage call-all-listeners (bot sender channel message))
+(defmessage listener-active-p (bot name))
 
 (defreply activate-listener ((bot (proto 'sykobot)) name)
   (pushnew name (active-listeners bot)))
@@ -14,6 +15,9 @@
   (loop for name in (active-listeners bot)
      do (call-listener bot name sender channel message)))
 
+(defreply listener-active-p ((bot (proto 'sykobot)) name)
+  (if (member name (active-listeners bot))
+      t nil))
 (defun activate-listeners (bot &rest listener-names)
   (loop for listener in listener-names
        do (activate-listener bot listener)))

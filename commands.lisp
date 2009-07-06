@@ -163,9 +163,16 @@
 (deflistener parrot
   (cmd-msg *message*))
 (defcommand parrot ()
-  (activate-listener 'parrot))
+  (if (listener-active-p *bot* 'parrot)
+      (progn
+        (deactivate-listener *bot* 'parrot)
+        (cmd-msg "NODOUCHE"))
+      (progn
+        (activate-listener *bot* 'parrot)
+        (cmd-msg "TIME TO BE A DOUCHEBAG"))))
 (defcommand noparrot ()
-  (deactivate-listener 'parrot))
+  (deactivate-listener *bot* 'parrot)
+  (cmd-msg "NODOUCHE"))
 
 ;;; URLs
 (deflistener scan-for-url
