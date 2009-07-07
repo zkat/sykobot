@@ -20,13 +20,9 @@
 ;;;  could have a different fad.
 (defvar *more* NIL)
 
-;;; These customizations help with the use of :ALREF
-(setf *default-alref-test* #'string-equal
-      *default-alref-value* "MONEY")
-
 ;;; This command is used to chant.
 (defcommand chant ()
-  (cmd-msg "MORE ~:@(~A~)" (alref *channel* *more*)))
+  (cmd-msg "MORE ~:@(~A~)" (alref *channel* *more* :default "MONEY")))
 
 ;;; This is where the cookie crumbles.
 ;;;
