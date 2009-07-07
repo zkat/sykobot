@@ -15,6 +15,8 @@
 ** TODO Stability
    Don't want this fucker crashing.
 
+* TODO Other Features
+** TODO 'log last five minutes and post to wiki...'
 
 * TODO Bugfixes
 ** TODO the fact regex fails for quotes like "thewizord is a tree" 
