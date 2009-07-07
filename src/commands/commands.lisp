@@ -49,6 +49,8 @@
   (cmd-reply string))
 (defcommand source ()
   (cmd-reply "http://github.com/zkat/sykobot"))
+(defcommand version ()
+  (cmd-reply "Pfft. I have no versions. I'm 100% git"))
 (defcommand help ()
   (cmd-reply "No."))
 (defcommand topic ("(.*)" new-topic)
