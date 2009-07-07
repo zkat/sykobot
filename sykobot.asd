@@ -28,7 +28,8 @@
                       ((:file "commands")
                        (:file "memos")
                        (:file "facts")
-                       (:file "chant")))
+                       (:file "chant")
+		       (:file "quotegrabs")))
              (:file "config")))))
 
 (asdf:defsystem sykobot-tests
