@@ -144,7 +144,7 @@
 
 (defun aur-search (query)
   (url-info (search-url
-             "http://aur.archlinux.org/packages.php?O=0&L=0&C=0&K=~A"
+             "http://aur.archlinux.org/rpc.php?type=search&arg=~A"
              query)))
 
 ;;; BBS 
@@ -153,11 +153,13 @@
       (bbs-search query)
     (cmd-reply "~:[~;~A ~]<~A>" title title url)))
 
+
 (defun bbs-search (query)
   (url-info (search-url
              "http://bbs.archlinux.org/search.php?action=search&keywords=~A"
              query)))
 
+;;; CLIKI
 (defun cliki-urls (query)
   (let ((links NIL)
         (page (drakma:http-request
