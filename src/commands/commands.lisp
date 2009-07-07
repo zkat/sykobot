@@ -47,6 +47,14 @@
 ;;; base commands
 (defcommand echo ("(.*)" string)
   (cmd-reply string))
+(defcommand source ()
+  (cmd-reply "http://github.com/zkat/sykobot"))
+(defcommand help ()
+  (cmd-reply "No."))
+(defcommand topic ("(.*)" new-topic)
+  (if (< 0 (length new-topic))
+      (topic *bot* *channel* new-topic)
+      (cmd-msg (topic *bot* *channel*))))
 (defcommand ping ()
   (cmd-reply "pong"))
 (defcommand shut ("(\\S+)*" arg1)
@@ -54,6 +62,9 @@
     (cmd-reply "Fine. Be that way. Tell me to talk when you realize ~
                 just how lonely and pathetic you really are.")
     (shut-up *bot*)))
+(defcommand talk ()
+  (un-shut-up *bot*)
+  (cmd-reply "bla bla bla bla. There, happy?"))
 (defcommand hi ()
   (cmd-reply "Go away."))
 (defcommand give ("(\\S+) (\\S+) (.*)$" new-target new-command new-args)
@@ -134,8 +145,8 @@
          (ks-time (get-ks-time parsed-zone)))
     (cmd-reply "The time in GMT~A is ~3$ ks."
                (if (or (= parsed-zone 0) (plusp parsed-zone))
-                   (format nil "+~A" parsed-zone)
-                   (format nil "~A" parsed-zone))
+                   (format nil "+~A" (mod parsed-zone 24))
+                   (format nil "~A" (- (mod parsed-zone 24) 24)))
                ks-time)))
 
 (defun get-ks-time (&optional (gmt-diff 0))
@@ -148,77 +159,20 @@
                    (* 60 (mod (+ hours zone gmt-diff) 24)))))
        1000)))
 
-;;; Memos
-(defcommand memo ("for (\\S+): (.*)" recipient memo)
-  (add-memo recipient memo *sender*)
-  (cmd-msg "Tada! Added memo for ~A. ~
-            I'll let them know next time they speak"
-           recipient))
-
-(let ((memo-table (make-hash-table :test #'equalp)))
-  (defun add-memo (recipient memo sender)
-    (setf (gethash recipient memo-table) (list memo sender)))
-
-  (defun remove-memo (recipient)
-    (remhash recipient memo-table))
-
-  (defun get-memo (recipient)
-    (multiple-value-bind (memo hasp)
-        (gethash recipient memo-table)
-      (if hasp
-          memo
-          nil)))
-
-  (defun get-and-remove-memo (recipient)
-    (let ((memo (get-memo recipient)))
-      (remove-memo recipient)
-      memo))
-
-  (defun erase-all-memos ()
-    (clrhash memo-table)))
-
-(deflistener send-memos
-  (let* ((recipient *sender*)
-         (memo (get-and-remove-memo recipient)))
-    (when memo
-      (destructuring-bind (text who-from) memo
-        (cmd-reply "Memo from ~A - \"~A\"" who-from text)))))
-
 ;;; Parrot
 (deflistener parrot
   (cmd-msg *message*))
 (defcommand parrot ()
-  (activate-listener 'parrot))
+  (if (listener-active-p *bot* 'parrot)
+      (progn
+        (deactivate-listener *bot* 'parrot)
+        (cmd-msg "NODOUCHE"))
+      (progn
+        (activate-listener *bot* 'parrot)
+        (cmd-msg "TIME TO BE A DOUCHEBAG"))))
 (defcommand noparrot ()
-  (deactivate-listener 'parrot))
-
-;;; Facts
-(let ((fact-table (make-hash-table :test #'equalp)))
-  (defun set-fact (noun info)
-    (setf (gethash noun fact-table) info))
-
-  (defun get-fact (noun)
-    (multiple-value-bind (info hasp)
-        (gethash noun fact-table)
-      (if hasp
-          info
-          (format nil "I know nothing about ~A" noun))))
-
-  (defun erase-all-facts ()
-    (clrhash fact-table)))
-
-(defun split-into-sub-statements (statement)
-  (split "\\s*(,|but|however|whereas|although|\\;|\\.)\\s*" statement))
-
-(deflistener scan-for-fact
-  (loop for statement in (split-into-sub-statements *message*)
-     do (do-register-groups (article noun verb info)
-            (".*?([a|an|the|this|that]*)\\s*(\\w+)\\s+(is|are|isn't|ain't)\\s+(.+)"
-             statement)
-          (set-fact noun (format nil "~A ~A ~A ~A" article noun verb info)))))
-
-(defcommand fact ("(\\S+)*" topic)
-  (cmd-msg (get-fact topic)))
+  (deactivate-listener *bot* 'parrot)
+  (cmd-msg "NODOUCHE"))
 
 ;;; URLs
 (deflistener scan-for-url
