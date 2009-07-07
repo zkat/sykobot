@@ -45,11 +45,17 @@
   (split "\\s*(,|but|however|whereas|although|\\;|\\.)\\s*" statement))
 
 (deflistener scan-for-fact
-  (loop for statement in (split-into-sub-statements *message*)
-     do (do-register-groups (article noun verb info)
-            (".*?([a|an|the|this|that]*)\\s*(\\w+)\\s+(is|are|isn't|ain't)\\s+(.+)"
-             statement)
-          (set-fact *bot* noun (format nil "~A ~A ~A ~A" article noun verb info)))))
+
+  (let* ((articles '("a" "an" "the" "this" "that"))
+	 (verbs '(" am" " is" " are" " isn\\'t" " ain\\'t" "\\'s"
+		  " likes" " uses" " has" " fails"))
+	 (regex (format nil ".*?(~{~A~^|~})*\\s*(\\w+)(~{~A~^|~})\\s+(.+)" articles verbs)))
+    (loop for statement in (split-into-sub-statements *message*)
+       do (do-register-groups (article noun verb info)
+	      (regex statement)
+	    (if article
+		(set-fact *bot* noun (format nil "~A ~A~A ~A" article noun verb info))
+		(set-fact *bot* noun (format nil "~A~A ~A" noun verb info)))))))
 
 
 
