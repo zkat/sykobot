@@ -6,6 +6,27 @@
 (defvar *sender*)
 (defvar *channel*)
 
+;;; Command processing
+(deflistener command-listener
+  (when (sent-to-me-p *bot* *channel* *message*)
+    (respond-to-message *bot* *sender* *channel* *message*)))
+(defmessage respond-to-message (bot sender channel message))
+(defmessage answer-command (bot cmd args sender channel))
+(defreply respond-to-message ((bot (proto 'sykobot)) sender channel message)
+  (let* ((string (scan-string-for-direct-message bot channel message))
+         (command+args (split "\\s+" string :limit 2)))
+    (handler-case
+        (answer-command bot (car command+args) (cadr command+args) sender channel)
+      (error (e)
+        (send-reply bot sender channel (format nil "An error occurred: ~A" e))))))
+
+(defreply answer-command ((bot (proto 'sykobot)) (cmd (proto 'string)) args sender channel)
+  (answer-command bot (intern (string-upcase cmd) :sykobot) args sender channel))
+
+(defreply answer-command ((bot (proto 'sykobot)) (cmd (proto 'symbol)) args sender channel)
+  (let ((fn (command-function cmd)))
+    (funcall fn bot args sender channel)))
+
 ;;; Command definition
 (let ((command-table (make-hash-table :test #'eq)))
   (defun add-command (cmd fn)
@@ -37,9 +58,25 @@
                             ,@body))
                        `(,@body)))))
 
-(deflistener command-listener
-  (when (sent-to-me-p *bot* *channel* *message*)
-    (respond-to-message *bot* *sender* *channel* *message*)))
+
+(defun sent-to-me-p (bot channel message)
+  (when (scan-string-for-direct-message bot channel message)
+    t))
+
+(defparameter *cmd-prefix* "@")
+(defmessage scan-string-for-direct-message (bot channel message))
+(defreply scan-string-for-direct-message ((bot (proto 'sykobot)) channel message)
+  (cond ((equal channel (nickname bot))
+         message)
+        ((scan (format nil "^~A: " (nickname bot)) message)
+         (regex-replace (format nil "^~A: " (nickname bot)) message ""))
+        ((scan (format nil "^~A, " (nickname bot)) message)
+         (regex-replace (format nil "^~A, " (nickname bot)) message ""))
+        ((scan (format nil "^~A+" *cmd-prefix*) message)
+         (regex-replace (format nil "^~A+" *cmd-prefix*) message ""))))
+
+
+
 
 (defun cmd-reply (message &rest format-args)
   (send-reply *bot* *sender* *channel* (apply #'format nil message format-args)))
