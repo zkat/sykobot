@@ -17,7 +17,6 @@
    (last-said (make-hash-table :test #'equalp))
    (active-listeners nil)))
 
-
 (defreply init-sheep :after ((sheep (proto 'sykobot)) &key)
   (setf (memos sheep) (make-hash-table :test #'equalp))
   (setf (facts sheep) (make-hash-table :test #'equalp))
