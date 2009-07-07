@@ -48,7 +48,7 @@
 
   (let* ((articles '("a" "an" "the" "this" "that"))
 	 (verbs '(" am" " is" " are" " isn\\'t" " ain\\'t" "\\'s"
-		  " likes" " uses" " has" " fails"))
+		  " likes" " uses" " has" " fails" " wins" " can" " can't"))
 	 (regex (format nil ".*?(~{~A~^|~})*\\s*(\\w+)(~{~A~^|~})\\s+(.+)" articles verbs)))
     (loop for statement in (split-into-sub-statements *message*)
        do (do-register-groups (article noun verb info)
