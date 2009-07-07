@@ -7,9 +7,11 @@
   (if (equalp nick *sender*)
       (cmd-msg "*swat* No grabbing yourself in public. That's rude.")
       (let ((to-grab (get-last-said-for-nick *bot* nick *channel*)))
-	(when to-grab
-	  (add-quote *bot* nick *sender* *channel* to-grab)
-	  (cmd-msg "Tada!")))))
+	(if to-grab
+	    (progn
+	      (add-quote *bot* nick *sender* *channel* to-grab)
+	      (cmd-msg "Tada!"))
+	    (cmd-msg "Nothing to grab")))))
 
 
 (defcommand random-quote ("(.*)" nick)
