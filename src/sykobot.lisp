@@ -14,12 +14,15 @@
    (memos (make-hash-table :test #'equalp))
    (facts (make-hash-table :test #'equalp))
    (quotes (make-hash-table :test #'equalp))
+   (last-said (make-hash-table :test #'equalp))
    (active-listeners nil)))
+
 
 (defreply init-sheep :after ((sheep (proto 'sykobot)) &key)
   (setf (memos sheep) (make-hash-table :test #'equalp))
   (setf (facts sheep) (make-hash-table :test #'equalp))
-  (setf (quotes sheep) (make-hash-table :test #'equalp)))
+  (setf (quotes sheep) (make-hash-table :test #'equalp))
+  (setf (last-said sheep) (make-hash-table :test #'equalp)))
 
 (defvar *active-bot* nil)
 
@@ -68,6 +71,9 @@
 
 (defreply join ((bot (proto 'sykobot)) channel)
   (irc:join (connection bot) channel))
+(defreply join :after ((bot (proto 'sykobot)) channel)
+	  (setf (gethash channel (last-said bot)) (make-hash-table :test #'equalp)))
+
 
 (defreply part ((bot (proto 'sykobot)) channel)
   (irc:part (connection bot) channel))
