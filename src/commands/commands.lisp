@@ -52,6 +52,8 @@
   (cmd-reply string))
 (defcommand source ()
   (cmd-reply "http://github.com/zkat/sykobot"))
+(defcommand maker ()
+  (cmd-reply "God and my name is jezus"))
 (defcommand version ()
   (cmd-reply "Pfft. I have no versions. I'm 100% git"))
 (defcommand help ()
@@ -123,11 +125,38 @@
              "http://google.com/search?filter=1&safe=on&q=~A&btnI"
              query)))
 
-;;; CLiki search
-(defcommand cliki ("(.*)" query)
-  (multiple-value-bind (links numlinks)
-      (cliki-urls query)
-    (cmd-reply "I found ~D result~:P.~@[ Check out <~A>.~]" numlinks (car links))))
+;;; ArchWiki 
+(defcommand wiki ("(.*)" query)
+  (multiple-value-bind (title url)
+      (wiki-search query)
+    (cmd-reply "~:[~;~A ~]<~A>" title title url)))
+
+(defun wiki-search (query)
+  (url-info (search-url
+             "http://wiki.archlinux.org/index.php/Special:Search?search=~A"
+             query)))
+
+;;; AUR 
+(defcommand aursearch ("(.*)" query)
+  (multiple-value-bind (title url)
+      (aur-search query)
+    (cmd-reply "~:[~;~A ~]<~A>" title title url)))
+
+(defun aur-search (query)
+  (url-info (search-url
+             "http://aur.archlinux.org/packages.php?O=0&L=0&C=0&K=~A"
+             query)))
+
+;;; BBS 
+(defcommand bbs ("(.*)" query)
+  (multiple-value-bind (title url)
+      (bbs-search query)
+    (cmd-reply "~:[~;~A ~]<~A>" title title url)))
+
+(defun bbs-search (query)
+  (url-info (search-url
+             "http://bbs.archlinux.org/search.php?action=search&keywords=~A"
+             query)))
 
 (defun cliki-urls (query)
   (let ((links NIL)
