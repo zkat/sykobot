@@ -4,20 +4,22 @@
 
 ;;; Commands
 (defcommand grab ("(.*)" nick)
-  (let ((to-grab (get-last-said-for-nick nick)))
+  (let ((to-grab (get-last-said-for-nick *bot* nick *channel*)))
     (when to-grab
       (add-quote *bot* nick *sender* *channel* to-grab)
       (cmd-msg "Tada!"))))
 
 
-(defcommand rq ("(.*)" nick)
+(defcommand random-quote ("(.*)" nick)
   (cmd-msg "~A,  ~A" 
 	   *sender*
 	   (pretty-print-quote (get-random-quote *bot* nick))))
 	   
 
-(defcommand q ("(.*)" nick)
-  (cmd-msg "getting last quote for ~A (not really)" nick))
+(defcommand quote ("(.*)" nick)
+  (cmd-msg "~A,  ~A"
+	   *sender*
+	   (pretty-print-quote (get-last-quote *bot* nick))))
 
 ;;; utility
 
@@ -57,6 +59,9 @@
 (defun get-random-quote (bot nick)
   (random-elt (get-quotes bot nick)))
 
+(defun get-last-quote (bot nick)
+  (car (get-quotes bot nick)))
+
 (defun pretty-print-quote (quote)
   (destructuring-bind (speaker grabber channel text time-grabbed) quote
     (declare (ignore grabber channel time-grabbed))
@@ -64,14 +69,17 @@
 
 ;;; Listener for grabbing
 
-(let ((last-said-table (make-hash-table :test #'equalp)))
-  (defun update-last-said-for-nick (nick text)
-    (setf (gethash nick last-said-table) text))
-  (defun get-last-said-for-nick (nick)
-    (gethash nick last-said-table)))
+(defreply join :after ((bot (proto 'sykobot)) channel)
+	  (setf (gethash channel (last-said bot)) (make-hash-table :test #'equalp)))
+
+(defun update-last-said-for-nick (bot nick channel text)
+  (setf (gethash nick (gethash channel (last-said bot))) text))
+(defun get-last-said-for-nick (bot nick channel)
+  (gethash nick (gethash channel (last-said bot))))
+
 
 (deflistener remember-last-thing-said
-  (update-last-said-for-nick *sender* *message*))
+  (update-last-said-for-nick *bot* *sender* *channel* *message*))
 
 
 ;;; Notes
