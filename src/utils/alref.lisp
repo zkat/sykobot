@@ -8,20 +8,17 @@
 
 (in-package :sykobot)
 
-(defvar *default-alref-test* #'eql)
-(defvar *default-alref-value* NIL)
 (defmacro with-gensyms (vars &body body)
   `(let ,(loop for x in vars collect `(,x (gensym)))
      ,@body))
 (defun alref (item alist &key
-              (test *default-alref-test*)
-              (key #'identity)
-              (default *default-alref-value*))
+              (test #'string-equal)
+              (key #'identity) default)
   "Retreive the value corresponding to ITEM in ALIST."
   (or (cdr (assoc item alist :test test :key key))
       default))
 (define-setf-expander alref (item alist
-                             &key (test '*default-alref-test*)
+                             &key (test '#'string-equal)
                                   (key '#'identity)
                              &environment env)
   "Set the value corresponding to ITEM in ALIST."

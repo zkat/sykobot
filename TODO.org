@@ -14,3 +14,8 @@
    *shrug*
 ** TODO Stability
    Don't want this fucker crashing.
+
+
+* TODO Bugfixes
+** TODO the fact regex fails for quotes like "thewizord is a tree" 
+   because it reads the 'the' and then goes OH NOES  - need to fix the regex
