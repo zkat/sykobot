@@ -23,7 +23,10 @@
             (send-notice bot sender (format nil "I don't know how to ~A." cmd))))))
 
   (defun erase-all-commands ()
-    (clrhash command-table)))
+    (clrhash command-table))
+
+  (defun get-commands ()
+    (hash-table-keys command-table)))
 
 (defmacro defcommand (name (&optional (regex "") &rest vars) &body body)
   `(add-command ',name
@@ -53,6 +56,8 @@
   (cmd-reply "Pfft. I have no versions. I'm 100% git"))
 (defcommand help ()
   (cmd-reply "No."))
+(defcommand commands ()
+  (cmd-reply "~A: available commands are ~{~A~^ ~}" *sender* (get-commands)))
 (defcommand topic ("(.*)" new-topic)
   (if (< 0 (length new-topic))
       (topic *bot* *channel* new-topic)
