@@ -1,5 +1,16 @@
 (in-package :sykobot)
 
+
+;;; Limiting
+;;; With 110 facts the size is 4467 bytes.
+;;; Assuming linear growth (is this valid?) that's 40 bytes per fact.
+;;; the average human knows 200k words (apparently)
+;;; so limit this to 100k facts = 3.8mb ~
+(defvar *max-facts-to-store* 100000)
+(defvar *facts-to-remove* 1000)
+(defvar *facts-write-interval* 5)
+;;;;;;;;;;;;;;
+
 ;;; Facts
 (defcommand fact ("(\\S+)*" topic)
   (cmd-msg (get-fact *bot* topic)))
@@ -11,6 +22,7 @@
 (defmessage save-facts (bot))
 (defmessage set-fact (bot noun info))
 (defmessage get-fact (bot noun))
+(defmessage erase-some-facts (bot))
 (defmessage erase-all-facts (bot))
 
 (defreply load-facts ((bot (proto 'sykobot)))
@@ -19,11 +31,15 @@
           (cl-store:restore (facts-db bot)))))
 
 (defreply save-facts ((bot (proto 'sykobot)))
-  (cl-store:store (facts bot) (facts-db bot)))
+  (when (zerop (mod (hash-table-count (facts bot)) *facts-write-interval*))
+    (cl-store:store (facts bot) (facts-db bot))))
 
 (defreply set-fact ((bot (proto 'sykobot))
                     noun info)
+  (when (> (hash-table-count (facts bot)) *max-facts-to-store*)
+    (erase-some-facts bot))
   (setf (gethash noun (facts bot)) info))
+
 (defreply set-fact :after ((bot (proto 'sykobot))
                            noun info)
   (declare (ignore noun info))
@@ -36,6 +52,13 @@
         info
         (format nil "I know nothing about ~A" noun))))
 
+(defreply erase-some-facts ((bot (proto 'sykobot)))
+  (send-msg bot "#sykosomatic" "deleting facts")
+  (let ((keys (hash-table-keys (facts bot))))
+    (dotimes (n *facts-to-remove*) ;;remove approximately *facts-to-remove* facts
+      (remhash (random-elt keys) (facts bot)))))
+
+
 (defreply erase-all-facts ((bot (proto 'sykobot)))
   (clrhash (facts bot)))
 (defreply erase-all-facts :after ((bot (proto 'sykobot)))
@@ -45,11 +68,16 @@
   (split "\\s*(,|but|however|whereas|although|\\;|\\.)\\s*" statement))
 
 (deflistener scan-for-fact
-  (loop for statement in (split-into-sub-statements *message*)
-     do (do-register-groups (article noun verb info)
-            (".*?([a|an|the|this|that]*)\\s*(\\w+)\\s+(is|are|isn't|ain't)\\s+(.+)"
-             statement)
-          (set-fact *bot* noun (format nil "~A ~A ~A ~A" article noun verb info)))))
+  (let* ((articles '("a" "an" "the" "this" "that"))
+	 (verbs '(" am" " is" " are" " isn\\'t" " ain\\'t" "\\'s"
+		  " likes" " uses" " has" " fails" " wins" " can" " can't"))
+	 (regex (format nil ".*?(~{~A~^|~})*\\s*(\\w+)(~{~A~^|~})\\s+(.+)" articles verbs)))
+    (loop for statement in (split-into-sub-statements *message*)
+       do (do-register-groups (article noun verb info)
+	      (regex statement)
+	    (if article
+		(set-fact *bot* noun (format nil "~A ~A~A ~A" article noun verb info))
+		(set-fact *bot* noun (format nil "~A~A ~A" noun verb info)))))))
 
 
 

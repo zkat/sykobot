@@ -4,16 +4,27 @@
 
 ;;; Commands
 (defcommand grab ("(.*)" nick)
-  (let ((to-grab (get-last-said-for-nick *bot* nick *channel*)))
-    (when to-grab
-      (add-quote *bot* nick *sender* *channel* to-grab)
-      (cmd-msg "Tada!"))))
+  (if (equalp nick *sender*)
+      (cmd-msg "*swat* No grabbing yourself in public. That's rude.")
+      (let ((to-grab (get-last-said-for-nick *bot* nick *channel*)))
+	(if to-grab
+	    (progn
+	      (add-quote *bot* nick *sender* *channel* to-grab)
+	      (cmd-msg "Tada!"))
+	    (cmd-msg "Nothing to grab")))))
 
 
 (defcommand random-quote ("(.*)" nick)
-  (cmd-msg "~A,  ~A" 
-	   *sender*
-	   (pretty-print-quote (get-random-quote *bot* nick))))
+  (if nick
+      (cmd-msg "~A,  ~A" 
+  	       *sender*
+  	       (pretty-print-quote (get-random-quote *bot* nick)))
+      (cmd-msg "~A,  ~A"
+	       *sender*
+	       (pretty-print-quote 
+		(get-random-quote *bot*
+				  (random-elt (hash-table-keys (quotes *bot*))))))))
+  
 	   
 
 (defcommand quote ("(.*)" nick)
@@ -63,14 +74,13 @@
   (car (get-quotes bot nick)))
 
 (defun pretty-print-quote (quote)
-  (destructuring-bind (speaker grabber channel text time-grabbed) quote
-    (declare (ignore grabber channel time-grabbed))
-    (format nil "~A: ~A" speaker text)))
+  (if quote
+      (destructuring-bind (speaker grabber channel text time-grabbed) quote
+	(declare (ignore grabber channel time-grabbed))
+	(format nil "~A: ~A" speaker text))
+      "That person evidently never said anything worthy of note"))
 
 ;;; Listener for grabbing
-
-(defreply join :after ((bot (proto 'sykobot)) channel)
-	  (setf (gethash channel (last-said bot)) (make-hash-table :test #'equalp)))
 
 (defun update-last-said-for-nick (bot nick channel text)
   (setf (gethash nick (gethash channel (last-said bot))) text))
