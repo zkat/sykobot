@@ -2,7 +2,7 @@
   I guess if we actually get these features built into sykobot, it may actually
   replace supybot as phrik's backend.
 ** DONE google search
-** TODO quotegrabs
+** DONE quotegrabs
    Persistent quotegrabs, including being able to !grab, !rq, and !q <someone>
 ** TODO Aliases
    Entire commands should be aliasable, i.e. !alias wiki google site:en.wikipedia.org
@@ -14,6 +14,8 @@
    *shrug*
 ** TODO Stability
    Don't want this fucker crashing.
+** DONE Command piping
+** TODO give commands
 
 * TODO Other Features
 ** TODO 'log last five minutes and post to wiki...'
