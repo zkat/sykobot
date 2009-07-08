@@ -11,22 +11,20 @@
   (when (sent-to-me-p *bot* *channel* *message*)
     (respond-to-message *bot* *sender* *channel* *message*)))
 (defmessage respond-to-message (bot sender channel message))
-(defmessage answer-command (bot cmd args sender channel))
 (defmessage get-responses (bot cmd args sender channel))
+(defmessage process-command-string (bot string sender channel))
 
 (defreply respond-to-message ((bot (proto 'sykobot)) sender channel message)
   (let* ((string (scan-string-for-direct-message bot channel message))
-         (command+args (split "\\s+" string :limit 2)))
+         (commands (split "\\s*\\|\\s*" string)))
     (handler-case
-        (answer-command bot (car command+args) (cadr command+args) sender channel)
+        ;; map the commands into each other and shit or whatever
       (error (e)
         (send-reply bot sender channel (format nil "An error occurred: ~A" e))))))
 
-(defreply answer-command ((bot (proto 'sykobot)) (cmd (proto 'string)) args sender channel)
-  (answer-command bot (intern (string-upcase cmd) :sykobot) args sender channel))
-
-(defreply answer-command ((bot (proto 'sykobot)) (cmd (proto 'symbol)) args sender channel)
-  (let ((responses (get-responses bot cmd args sender channel)))
+(defreply process-command-string ((bot (proto 'sykobot)) string sender channel)
+  (let* ((cmd+args (command+args (split "\\s+" string :limit 2)))
+         (responses (get-responses bot (car cmd+args) (cadr cmd+args) sender channel)))
     (loop for response in responses
        do (send-reply bot sender channel response))))
 
@@ -35,7 +33,7 @@
     (funcall fn bot args sender channel)))
 
 ;;; Command definition
-(let ((command-table (make-hash-table :test #'eq)))
+(let ((command-table (make-hash-table :test #'equalp)))
   (defun add-command (cmd fn)
     (setf (gethash cmd command-table) fn))
 
@@ -57,7 +55,7 @@
     (hash-table-keys command-table)))
 
 (defmacro defcommand (name (&optional (regex "") &rest vars) &body body)
-  `(add-command ',name
+  `(add-command (symbol-name ',name)
                 (lambda (*bot* *message* *sender* *channel*)
                   (declare (ignorable *message* *bot* *sender* *channel*))
                   (let ((*responses* nil))
