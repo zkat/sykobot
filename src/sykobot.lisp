@@ -195,4 +195,3 @@
             (setf message new)
             (return t))
        finally (return message)))
-
