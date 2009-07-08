@@ -78,6 +78,8 @@
   (cmd-reply "Go away."))
 (defcommand give ("(\\S+) (\\S+) (.*)$" new-target new-command new-args)
   (answer-command *bot* new-command new-args new-target *channel*))
+(defcommand you ("(.*)" string)
+  (cmd-reply (concatenate 'string "NO, YOU " string)))
 
 ;;; Character Decoding
 (defcommand code->char ("(\\S+)*" code-string)
@@ -90,8 +92,6 @@
     (cmd-msg  "~:[Invalid character~;~A~]"
               (and (integerp code) (/= code 127) (>= code 32))
               code)))
-(defcommand you ("(.*)" string)
-  (cmd-reply (concatenate 'string "NO, YOU " string)))
 
 ;;; General web functionality
 (defun url-info (url)
