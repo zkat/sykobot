@@ -114,7 +114,7 @@
   (cmd-msg "bla bla bla bla. There, happy?"))
 (defcommand hi ()
   (cmd-msg "Go away."))
-(defcommand give ("(\\S+) (\\S+) (.*)$" new-target new-command new-args)
+#+nil(defcommand give ("(\\S+) (\\S+) (.*)$" new-target new-command new-args)
   (answer-command *bot* new-command new-args new-target *channel*))
 
 ;;; Character Decoding
