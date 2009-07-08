@@ -229,7 +229,10 @@
     (handler-case
         (multiple-value-bind (title url)
             (url-info (grab-url *message*))
-          (cmd-msg (format nil "Title: ~A (at ~A)" (or title "<unknown title>") (puri:uri-host (puri:uri url)))))
+          (send-msg *bot* *channel*
+                    (format nil "Title: ~A (at ~A)"
+                            (or title "<unknown title>")
+                            (puri:uri-host (puri:uri url)))))
       (error ()
         (values)))))
 
