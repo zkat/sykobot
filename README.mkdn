@@ -50,6 +50,6 @@ Please refer to #P"doc;user-guide.org" for a full guide to sykobot
 As usual, you can contact the developpers directly at the follow irc channel #sykosomatic@freenode.  
 
 
-[1] http://github.com/zkat/sheeple
-[2] http://github.com/zkat/sykobot
-[3] http://bavardage.github.com/Kiloseconds
+[1]: http://github.com/zkat/sheeple
+[2]: http://github.com/zkat/sykobot
+[3]: http://bavardage.github.com/Kiloseconds
