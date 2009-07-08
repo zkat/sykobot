@@ -16,3 +16,12 @@
   (format nil (format nil "~~{~~A~~^~A~~}"
                       (regex-replace-all "~" separator "~~"))
           strings))
+
+(defun flatten (x)
+  "Flattens a list."
+  (labels ((rec (x acc)
+	     (cond ((null x) acc)
+		   ((atom x) (cons x acc))
+		   (t (rec (car x) (rec (cdr x) acc))))))
+    (rec x nil)))
+
