@@ -1,4 +1,55 @@
 About
 =====
 
-Sykobot is a next-gen AI, programmed in a next-gen language.
+Vision
+------
+
+Sykobot is a next-gen AI, programmed in a next-gen language. Designed to be a irc bot for #archlinux , #archlinux-offtopic or any other irc channel. Supporting main bot functions , and flexbile code.
+
+
+Supported Platforms
+-------------------
+Confirmed to work (pass all tests):
+
+* SBCL
+* GNU Lisp
+* Sheeple [1]
+* HTML-Entities
+* RC-CLI
+
+Sykobot is developed on GNU/Linux x86, so it could also work on OSX, only Linux is confirmed to work atm.
+If you run sykobot on a platform not listed above please e-mail me. So i can add the platform.
+
+
+Notes
+-----
+
+Sykobot is still in development , although simple bot functions work. The code can be rewritting and there is no stable branch atm. If you want to help the project for the code from [2]
+
+
+Features
+--------
+
+* Google / Arch Wiki  search 
+
+* Factoids -- they are still being tested
+
+* Grabs -- also still in testing peroid
+
+* Kiloseconds -- display the current time in kiloseconds [3]
+
+* Memo's =  --adding memo's to people in the channel
+	    --usage:  sykobot: memo for foo :  bar.
+
+
+Using Sykobot
+-------------
+
+Please refer to #P"doc;user-guide.org" for a full guide to sykobot
+
+As usual, you can contact the developpers directly at the follow irc channel #sykosomatic@freenode.  
+
+
+[1] http://github.com/zkat/sheeple
+[2] http://github.com/zkat/sykobot
+[3] http://bavardage.github.com/Kiloseconds
