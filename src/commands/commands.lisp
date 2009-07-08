@@ -243,10 +243,20 @@
   (find-if #'has-url-p (split "[\\s+><,]" string)))
 
 ;;; Aliasing commands
-;;; This bug-ridden filth does not work.
-#|(defcommand alias ("(\\S+) (.*)" alias expansion)
-  (add-alias *bot* (format nil "(?i)~A(?:\\s|$)" alias) expansion)
-  (cmd-msg "Yes master."))|#
+;;; Don't stress this with crazy regexp aliases. It only works
+;;;   for text-to-text aliases, without any regex stuff.
+(defcommand alias ("(\\S+) (.*)$" alias expansion)
+  (add-alias *bot*
+             (format nil "(?i)(~A[:,] |~A)~A"
+                     (nickname *bot*) *cmd-prefix* alias)
+             (format nil "\\1~A" expansion))
+  (cmd-msg "Yes master."))
+
+(defcommand remove-alias ("(\\S+)" alias)
+  (remove-alias *bot*
+                (print (format nil "(?i)(~A[:,] |~A)~A"
+                               (nickname *bot*) *cmd-prefix* alias)))
+  (cmd-msg "Done."))
 
 ;;;'Filters'
 (defparameter *english->l33t* '(("a" . "4") ("b" . "|3") ("c" . "<") ("d" . "|)") ("e" . "3")
