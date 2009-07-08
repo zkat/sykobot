@@ -90,6 +90,8 @@
     (cmd-msg  "~:[Invalid character~;~A~]"
               (and (integerp code) (/= code 127) (>= code 32))
               code)))
+(defcommand you ("(.*)" string)
+  (cmd-reply (concatenate 'string "NO, YOU " string)))
 
 ;;; General web functionality
 (defun url-info (url)
