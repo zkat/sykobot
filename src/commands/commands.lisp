@@ -239,8 +239,22 @@
   (find-if #'has-url-p (split "[\\s+><,]" string)))
 
 ;;;'Filters'
+(defparameter *english->l33t* '(("a" . "4") ("b" . "|3") ("c" . "<") ("d" . "|)") ("e" . "3")
+                                ("f" . "|=") ("g" . "9") ("h" . "|-|") ("i" . "1") ("j" . "_|")
+                                ("k" . "|<") ("l" . "|_") ("m" . "/\\/\\") ("n" . "|\\|")
+                                ("o" . "0") ("p" . "p") ("q" . "q") ("r" . "|2") ("s" . "5")
+                                ("t" . "7") ("u" . "|_|") ("v" . "\\/") ("w" . "\\/\\/") ("x" . "><")
+                                ("y" . "y") ("z" . "z")))
+
 (defcommand leet ("(.*)" input)
-  (cmd-msg (regex-replace "e" (regex-replace "o" input "0") "3")))
+  (let ((translated-string input))
+    (loop for translation in *english->l33t*
+       when translation
+       do (setf translated-string (regex-replace-all (ppcre:create-scanner (car translation)
+                                                                           :case-insensitive-mode t)
+                                                     translated-string
+                                                     (cdr translation))))    
+    (cmd-msg translated-string)))
 
 (defcommand capitalise ("(.*)" input)
   (cmd-msg (string-upcase input)))
