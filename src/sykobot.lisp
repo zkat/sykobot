@@ -18,7 +18,6 @@
    (last-said (make-hash-table :test #'equalp))
    (active-listeners nil)))
 
-
 (defreply init-sheep :after ((sheep (proto 'sykobot)) &key)
   (setf (memos sheep) (make-hash-table :test #'equalp))
   (setf (facts sheep) (make-hash-table :test #'equalp))
@@ -122,8 +121,6 @@
 (defmessage process-message (bot sender channel message))
 (defmessage shut-up (bot))
 (defmessage un-shut-up (bot))
-(defmessage respond-to-message (bot sender channel message))
-(defmessage answer-command (bot cmd args sender channel))
 
 (defreply msg-hook ((bot (proto 'sykobot)) msg)
   (let ((sender (irc:source msg))
@@ -198,3 +195,4 @@
             (setf message new)
             (return t))
        finally (return message)))
+
