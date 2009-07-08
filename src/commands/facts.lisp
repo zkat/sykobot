@@ -68,7 +68,6 @@
   (split "\\s*(,|but|however|whereas|although|\\;|\\.)\\s*" statement))
 
 (deflistener scan-for-fact
-
   (let* ((articles '("a" "an" "the" "this" "that"))
 	 (verbs '(" am" " is" " are" " isn\\'t" " ain\\'t" "\\'s"
 		  " likes" " uses" " has" " fails" " wins" " can" " can't"))
