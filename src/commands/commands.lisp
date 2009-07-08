@@ -208,7 +208,7 @@
 
 ;;; Parrot
 (deflistener parrot
-  (cmd-msg *message*))
+  (send-msg *bot* *channel* *message*))
 (defcommand parrot ()
   (if (listener-active-p *bot* 'parrot)
       (progn
