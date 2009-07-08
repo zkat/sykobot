@@ -21,7 +21,7 @@
 
 (defreply process-command-string ((bot (proto 'sykobot)) string sender channel &optional pipe-input)
   (let* ((head+tail (split "\\s*\\|\\s*" string :limit 2))
-	 (command (if pipe-input (concatenate 'string string " " pipe-input) (car head+tail)))
+	 (command (if pipe-input (concatenate 'string (car head+tail) " " pipe-input) (car head+tail)))
 	 (cmd+args (split "\\s+" command :limit 2))
 	 (responses (get-responses bot (car cmd+args) (cadr cmd+args) sender channel))
 	 (results (if (cadr head+tail)
@@ -241,3 +241,6 @@
 ;;;'Filters'
 (defcommand leet ("(.*)" input)
   (cmd-msg (regex-replace "e" (regex-replace "o" input "0") "3")))
+
+(defcommand capitalise ("(.*)" input)
+  (cmd-msg (string-upcase input)))
