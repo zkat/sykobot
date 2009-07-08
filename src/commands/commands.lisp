@@ -12,22 +12,24 @@
     (respond-to-message *bot* *sender* *channel* *message*)))
 (defmessage respond-to-message (bot sender channel message))
 (defmessage get-responses (bot cmd args sender channel))
-(defmessage process-command-string (bot string sender channel))
+(defmessage process-command-string (bot string sender channel &optional pipe-input))
 
 (defreply respond-to-message ((bot (proto 'sykobot)) sender channel message)
   (let* ((string (scan-string-for-direct-message bot channel message))
-         (commands (split "\\s*\\|\\s*" string)))
-    (handler-case
-        ;; map the commands into each other and shit or whatever
-      (error (e)
-        (send-reply bot sender channel (format nil "An error occurred: ~A" e))))))
+	 (results (process-command-string bot string sender channel)))
+    (send-reply bot sender channel (format nil "~A" (car results)))))
 
-(defreply process-command-string ((bot (proto 'sykobot)) string sender channel)
-  (let* ((cmd+args (command+args (split "\\s+" string :limit 2)))
-         (responses (get-responses bot (car cmd+args) (cadr cmd+args) sender channel)))
-    (loop for response in responses
-       do (send-reply bot sender channel response))))
-
+(defreply process-command-string ((bot (proto 'sykobot)) string sender channel &optional pipe-input)
+  (let* ((head+tail (split "\\s*\\|\\s*" string :limit 2))
+	 (command (if pipe-input (concatenate 'string string " " pipe-input) (car head+tail)))
+	 (cmd+args (split "\\s+" command :limit 2))
+	 (responses (get-responses bot (car cmd+args) (cadr cmd+args) sender channel))
+	 (results (if (cadr head+tail)
+		      (loop for response in responses collect (process-command-string bot (cadr head+tail) sender channel response))
+		      responses)))
+    (flatten results)))
+      
+	   
 (defreply get-responses ((bot (proto 'sykobot)) cmd args sender channel)
   (let ((fn (command-function cmd)))
     (funcall fn bot args sender channel)))
@@ -235,3 +237,7 @@
 
 (defun grab-url (string)
   (find-if #'has-url-p (split "[\\s+><,]" string)))
+
+;;;'Filters'
+(defcommand leet ("(.*)" input)
+  (cmd-msg (regex-replace "e" (regex-replace "o" input "0") "3")))
