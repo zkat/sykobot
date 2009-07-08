@@ -29,7 +29,6 @@
 		      (loop for response in responses collect (process-command-string bot (cadr head+tail) sender channel response))
 		      responses)))
     (flatten results)))
-      
 	   
 (defreply get-responses ((bot (proto 'sykobot)) cmd args sender channel)
   (let ((fn (command-function cmd)))
@@ -49,7 +48,8 @@
       (if hasp fn
           (lambda (bot args sender channel)
             (declare (ignore channel args))
-            (send-notice bot sender (format nil "I don't know how to ~A." cmd))))))
+            (send-notice bot sender (format nil "I don't know how to ~A." cmd))
+            nil))))
 
   (defun erase-all-commands ()
     (clrhash command-table))
