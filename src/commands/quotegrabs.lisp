@@ -20,21 +20,17 @@
 	      (cmd-msg "Tada!"))
 	    (cmd-msg "Nothing to grab")))))
 
-
 (defcommand random-quote ("(.*)" nick)
-  (if nick
+  (if (> 0 (length nick))
       (cmd-msg (pretty-print-quote (get-random-quote *bot* nick)))
       (cmd-msg (pretty-print-quote 
 		(get-random-quote *bot*
 				  (random-elt (hash-table-keys (quotes *bot*))))))))
-  
-	   
 
 (defcommand quote ("(.*)" nick)
   (cmd-msg (pretty-print-quote (get-last-quote *bot* nick))))
 
 ;;; utility
-
 (defun quotes-db (bot)
   (merge-pathnames "quote-table.db" (bot-dir bot)))
 
@@ -42,7 +38,6 @@
   (list speaker grabber channel text (get-universal-time)))
 
 ;;; messages
-
 (defmessage save-quotes (bot))
 (defmessage load-quotes (bot))
 (defmessage add-quote (bot speaker grabber channel text))
@@ -67,7 +62,6 @@
   (gethash nick (quotes bot)))
 
 ;;;
-
 (defun get-random-quote (bot nick)
   (random-elt (get-quotes bot nick)))
 
@@ -82,16 +76,13 @@
       "That person evidently never said anything worthy of note"))
 
 ;;; Listener for grabbing
-
 (defun update-last-said-for-nick (bot nick channel text)
   (setf (gethash nick (gethash channel (last-said bot))) text))
 (defun get-last-said-for-nick (bot nick channel)
   (gethash nick (gethash channel (last-said bot))))
 
-
 (deflistener remember-last-thing-said
   (update-last-said-for-nick *bot* *sender* *channel* *message*))
-
 
 ;;; Notes
 ;; (member element list :test #'string-equal) <-- case-insensitive string comparison.
