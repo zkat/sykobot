@@ -81,7 +81,7 @@
   (when (scan-string-for-direct-message bot channel message)
     t))
 
-(defparameter *cmd-prefix* "@")
+;;; (defparameter *cmd-prefix* "@")
 (defmessage scan-string-for-direct-message (bot channel message))
 (defreply scan-string-for-direct-message ((bot (proto 'sykobot)) channel message)
   (cond ((equal channel (nickname bot))
@@ -90,7 +90,7 @@
          (regex-replace (format nil "^~A: " (nickname bot)) message ""))
         ((scan (format nil "^~A, " (nickname bot)) message)
          (regex-replace (format nil "^~A, " (nickname bot)) message ""))
-        ((scan (format nil "^~A+" *cmd-prefix*) message)
+        #+nil ((scan (format nil "^~A+" *cmd-prefix*) message)
          (regex-replace (format nil "^~A+" *cmd-prefix*) message ""))))
 
 (defun cmd-msg (message &rest format-args)
