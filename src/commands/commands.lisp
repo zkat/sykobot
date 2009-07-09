@@ -22,10 +22,13 @@
 (defmessage process-command-string (bot string sender channel &optional pipe-input))
 
 (defreply respond-to-message ((bot (proto 'sykobot)) sender channel message)
-  (let* ((string (scan-string-for-direct-message bot channel message))
-         (results (process-command-string bot string sender channel)))
-    (loop for result in results
-       do (send-reply bot sender channel (format nil "~A" result)))))
+  (handler-case
+      (let* ((string (scan-string-for-direct-message bot channel message))
+             (results (process-command-string bot string sender channel)))
+        (loop for result in results
+           do (send-reply bot sender channel (format nil "~A" result))))
+    (t (e)
+      (send-reply bot sender channel (format nil "An error occurred: ~A" e)))))
 
 (defreply process-command-string ((bot (proto 'sykobot)) string sender channel &optional pipe-input)
   (let* ((head+tail (split "\\s*\\|\\s*" string :limit 2))
