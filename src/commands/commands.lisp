@@ -144,6 +144,9 @@
               (and (integerp code) (/= code 127) (>= code 32))
               code)))
 
+(defcommand error ()
+  (signal 'error))
+
 ;;; General web functionality
 (defun url-info (url)
   (multiple-value-bind (body status-code headers uri)
