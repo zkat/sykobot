@@ -254,9 +254,9 @@
 ;;;   for text-to-text aliases, without any regex stuff.
 (defcommand alias ("(\\S+) (.*)$" alias expansion)
   (add-alias *bot*
-             (format nil "(?i)(~A[:,] |~A)~A"
+             (format nil "(?i)(~A[:,] |~A)~A(?: |$)"
                      (nickname *bot*) *cmd-prefix* alias)
-             (format nil "\\1~A" expansion))
+             (format nil "\\1~A " expansion))
   (cmd-msg "Yes master."))
 
 (defcommand remove-alias ("(\\S+)" alias)
