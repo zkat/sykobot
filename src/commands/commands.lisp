@@ -105,7 +105,7 @@
 (defcommand help ()
   (cmd-msg "No."))
 (defcommand commands ()
-  (cmd-msg "~A: available commands are ~{~A~^ ~}" *sender* (get-commands)))
+  (cmd-msg "available commands are ~{~A~^ ~}" (get-commands)))
 (defcommand topic ("(.*)" new-topic)
   (if (< 0 (length new-topic))
       (topic *bot* *channel* new-topic)
@@ -257,13 +257,13 @@
              (format nil "(?i)(~A[:,] |~A)~A(?: |$)"
                      (nickname *bot*) *cmd-prefix* alias)
              (format nil "\\1~A " expansion))
-  (cmd-msg "Yes master."))
+  (cmd-msg "Alright, alias added."))
 
 (defcommand remove-alias ("(\\S+)" alias)
   (remove-alias *bot*
                 (print (format nil "(?i)(~A[:,] |~A)~A"
                                (nickname *bot*) *cmd-prefix* alias)))
-  (cmd-msg "Done."))
+  (cmd-msg "Done. Alias removed."))
 
 ;;;'Filters'
 (defparameter *english->l33t* '(("a" . "4") ("b" . "|3") ("c" . "<") ("d" . "|)") ("e" . "3")
