@@ -295,7 +295,7 @@
   (cmd-msg "about the moon-a and a june-a and a spring-a")
   (cmd-msg "I love to singa"))
 
-(defcommand translate ("(\\w{2})\\s(\\w{2})\\s(.*)" input-lang output-lang text)
+(defcommand translate ("(\\S+) (\\S+) (.*)" input-lang output-lang text)
   (let* ((lang-pair (merge-strings "|" input-lang output-lang))
          (json-result
           (drakma:http-request "http://ajax.googleapis.com/ajax/services/language/translate"
