@@ -36,23 +36,26 @@ Sykobot is still in development , although simple bot functions work. The code c
 Features
 --------
 
-* Search -- with @google <keyword> 
-	For searching other sites for example the archlinux wiki , add this alias: " @alias wiki google site:wiki.archlinux.org "
+* Search --  For searching other sites for example the archlinux wiki , add this alias: " @alias wiki google site:wiki.archlinux.org "
+		usage: @google <keyword> 
 	
 
 * Facts -- facts are a nice AI feature of sykobot, if someone says  "foo is bar" in an irc channel, then sykobot stores this. You can review the fact with @fact foo. Support for showing random facts is being added. Sidenote facts are overwritten all the time.
+		usage: @fact foo
 
 * Grabs -- usage: @grab nick . You can't grab yourself or the bot itself. Grabs can be viewed by doing: "@q nick" or for an random grab: "@rq nick"
 	
 
 * Kiloseconds -- display the current time in [kiloseconds][3] 
-		usage: "@kiloseconds 1"  for kiloseconds GMT +1
+		usage: @kiloseconds 1  
+ 		-- this will display  time GMT +1 in kiloseconds
 
 * Memo's   --adding memo's to people in the channel
-		usage:  sykobot: memo for foo :  bar.
+		usage:  sykobot: memo for foo :  you memo 
 
 * Alias  -- add an alias 
 		usage: @alias fun fun is banned in #archlinux
+	 -- @fun  will display  "fun is banned in #archlinux"
 
 
 Using Sykobot
