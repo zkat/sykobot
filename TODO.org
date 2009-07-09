@@ -6,7 +6,7 @@
    Persistent quotegrabs, including being able to !grab, !rq, and !q <someone>
 ** DONE Aliases
    Entire commands should be aliasable, i.e. !alias wiki google site:en.wikipedia.org
-** TODO Factoids
+** DONE Factoids
    ability to define simple persistent factoids that can be called up with just !factname
 ** TODO Admin access
    Maybe later? Register users, etc.
