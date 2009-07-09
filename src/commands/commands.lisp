@@ -33,7 +33,9 @@
          (cmd+args (split "\\s+" command :limit 2))
          (responses (get-responses bot (car cmd+args) (cadr cmd+args) sender channel))
          (results (if (cadr head+tail)
-                      (loop for response in responses collect (process-command-string bot (cadr head+tail) sender channel response))
+                      (loop for response in responses
+                         collect (process-command-string bot (cadr head+tail)
+                                                         sender channel response))
                       responses)))
     (flatten results)))
 
@@ -122,8 +124,9 @@
   (cmd-msg "bla bla bla bla. There, happy?"))
 (defcommand hi ()
   (cmd-msg "Go away."))
-#+nil(defcommand give ("(\\S+) (\\S+) (.*)$" new-target new-command new-args)
-  (answer-command *bot* new-command new-args new-target *channel*))
+(defcommand give ("(\\S+) (\\S+) (.*)$" new-target new-command new-args)
+  (setf *sender* new-target)
+  (setf *responses* (get-responses *bot* new-command new-args new-target *channel*)))
 (defcommand language ()
   (cmd-msg "(((((()())))(((()()(OMFG)))()))(((()))))"))
 ;;; Character Decoding
