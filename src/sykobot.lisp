@@ -153,10 +153,7 @@
 (defreply respond-to-message ((bot (proto 'sykobot)) sender channel message)
   (let* ((string (scan-string-for-direct-message bot channel message))
          (command+args (split "\\s+" string :limit 2)))
-    (handler-case
-        (answer-command bot (car command+args) (cadr command+args) sender channel)
-      (t (e)
-        (send-reply bot sender channel (format nil "An error occurred: ~A" e))))))
+    (answer-command bot (car command+args) (cadr command+args) sender channel)))
 
 (defreply answer-command ((bot (proto 'sykobot)) (cmd (proto 'string)) args sender channel)
   (answer-command bot (intern (string-upcase cmd) :sykobot) args sender channel))
@@ -164,10 +161,6 @@
 (defreply answer-command ((bot (proto 'sykobot)) (cmd (proto 'symbol)) args sender channel)
   (let ((fn (command-function cmd)))
     (funcall fn bot args sender channel)))
-
-(defun sent-to-me-p (bot channel message)
-  (when (scan-string-for-direct-message bot channel message)
-    t))
 
 (defparameter *cmd-prefix* "@")
 (defmessage scan-string-for-direct-message (bot channel message))
