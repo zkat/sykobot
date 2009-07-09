@@ -124,11 +124,14 @@
   (cmd-msg "bla bla bla bla. There, happy?"))
 (defcommand hi ()
   (cmd-msg "Go away."))
-(defcommand give ("(\\S+) (\\S+) (.*)$" new-target new-command new-args)
-  (setf *sender* new-target)
-  (setf *responses* (get-responses *bot* new-command new-args new-target *channel*)))
 (defcommand language ()
   (cmd-msg "(((((()())))(((()()(OMFG)))()))(((()))))"))
+
+;;; Give is currently broken
+;; (defcommand give ("(\\S+) (\\S+) (.*)$" new-target new-command new-args)
+;;   (setf *sender* new-target)
+;;   (setf *responses* (get-responses *bot* new-command new-args new-target *channel*)))
+
 ;;; Character Decoding
 (defcommand code->char ("(\\S+)*" code-string)
   (let ((code (if code-string (parse-integer code-string :junk-allowed T) 0)))
