@@ -76,8 +76,14 @@
       "That person evidently never said anything worthy of note"))
 
 ;;; Listener for grabbing
+(defun get-last-said-in-channel-hash (bot channel)
+  (let ((hashtable (gethash channel (last-said bot))))
+    (if hashtable
+	hashtable
+	(setf (gethash channel (last-said bot)) (make-hash-table :test #'equalp)))))
+
 (defun update-last-said-for-nick (bot nick channel text)
-  (setf (gethash nick (gethash channel (last-said bot))) text))
+  (setf (gethash nick (get-last-said-in-channel-hash bot channel)) text))
 (defun get-last-said-for-nick (bot nick channel)
   (gethash nick (gethash channel (last-said bot))))
 
