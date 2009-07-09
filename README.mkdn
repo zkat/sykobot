@@ -43,12 +43,12 @@ Features
 * Facts -- facts are a nice AI feature of sykobot, if someone says  "foo is bar" in an irc channel, then sykobot stores this. You can review the fact with @fact foo. Support for showing random facts is being added. Sidenote facts are overwritten all the time.
 		usage: @fact foo
 
-* Grabs -- usage: @grab nick . You can't grab yourself or the bot itself. Grabs can be viewed by doing: "@q nick" or for an random grab: "@rq nick"
-	
+* Grabs -- This command will store an quote of someone. Note: you can't grab yourself or the bot . Grabs can be viewed by doing: "@q nick" or for an random grab: "@rq nick"
+		usage: @grab nick	
 
 * Kiloseconds -- display the current time in [kiloseconds][3] 
 		usage: @kiloseconds 1  
- 		-- this will display  time GMT +1 in kiloseconds
+	-- this will display  time GMT +1 in kiloseconds
 
 * Memo's   --adding memo's to people in the channel
 		usage:  sykobot: memo for foo :  you memo 
