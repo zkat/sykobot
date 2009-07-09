@@ -81,6 +81,9 @@
 
 (defreply join ((bot (proto 'sykobot)) channel)
   (irc:join (connection bot) channel))
+(defreply join :after ((bot (proto 'sykobot)) channel)
+  (setf (gethash channel (last-said bot))
+        (make-hash-table :test #'equalp)))
 
 (defreply part ((bot (proto 'sykobot)) channel)
   (irc:part (connection bot) channel))
