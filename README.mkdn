@@ -13,9 +13,14 @@ Confirmed to work (pass all tests):
 
 * SBCL
 * GNU Lisp
-* Sheeple [1]
-* HTML-Entities
-* RC-CLI
+* [Sheeple][1]
+* html-entities
+* cl-irc
+* cl-pprce
+* bordeaux-threads
+* drakma
+* cl-store
+
 
 Sykobot is developed on GNU/Linux x86, so it could also work on OSX, only Linux is confirmed to work atm.
 If you run sykobot on a platform not listed above please e-mail me. So i can add the platform.
@@ -24,7 +29,7 @@ If you run sykobot on a platform not listed above please e-mail me. So i can add
 Notes
 -----
 
-Sykobot is still in development , although simple bot functions work. The code can be rewritting and there is no stable branch atm. If you want to help the project for the code from [2]
+Sykobot is still in development , although simple bot functions work. The code can be rewritting and there is no stable branch atm. The code is on [github][2]
 
 
 Features
@@ -36,10 +41,12 @@ Features
 
 * Grabs -- also still in testing peroid
 
-* Kiloseconds -- display the current time in kiloseconds [3]
+* Kiloseconds -- display the current time in [kiloseconds][3]
 
 * Memo's =  --adding memo's to people in the channel
 	    --usage:  sykobot: memo for foo :  bar.
+
+* Aliasses 
 
 
 Using Sykobot
