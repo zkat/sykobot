@@ -198,15 +198,15 @@
 
 ;;; kiloseconds
 (defcommand kiloseconds ("(.*)" zone)
-  (let* ((parsed-zone (if (= 0 (length zone))
-                          0
-                          (parse-integer zone :junk-allowed t)))
-         (ks-time (get-ks-time parsed-zone)))
-    (cmd-msg "The time in GMT~A is ~3$ ks."
-               (if (or (= parsed-zone 0) (plusp parsed-zone))
-                   (format nil "+~A" (mod parsed-zone 24))
-                   (format nil "~A" (- (mod parsed-zone 24) 24)))
-               ks-time)))
+  (let ((parsed-zone (parse-integer zone :junk-allowed t)))
+    (if parsed-zone
+        (let ((ks-time (get-ks-time parsed-zone)))
+          (cmd-msg "The time in GMT~A is ~3$ ks."
+                   (if (or (= parsed-zone 0) (plusp parsed-zone))
+                       (format nil "+~A" (mod parsed-zone 24))
+                       (format nil "~A" (- (mod parsed-zone 24) 24)))
+                   ks-time))
+        (cmd-msg "Invalid timezone."))))
 
 (defun get-ks-time (&optional (gmt-diff 0))
   (multiple-value-bind
@@ -294,3 +294,26 @@
   (cmd-msg "I love to singa")
   (cmd-msg "about the moon-a and a june-a and a spring-a")
   (cmd-msg "I love to singa"))
+
+(defcommand translate ("(\\S+) (\\S+) (.*)" input-lang output-lang text)
+  (if (and (= (length output-lang) 2)
+           (or (= (length input-lang) 2)
+               (string= input-lang "*")))
+      (let* ((lang-pair (merge-strings "|" (if (string= input-lang "*") ""
+                                               input-lang)
+                                       output-lang))
+             (json-result
+              (drakma:http-request "http://ajax.googleapis.com/ajax/services/language/translate"
+                                   :parameters `(("v" . "1.0") ("q" . ,text) ("langpair" . ,lang-pair))))
+             (response (json:decode-json-from-string json-result)))
+        (case (alref :response-status response)
+          (200 (cmd-msg (decode-html-string
+                         (alref :translated-text
+                                (alref :response-data response)))))
+          (T (cmd-msg "Error: ~A"
+                      (alref :response-details response)))))
+      (cmd-msg "Language specifications need to be 2 letters long.")))
+
+
+(defcommand reverse ("(.*)" input)
+  (cmd-msg (reverse input)))

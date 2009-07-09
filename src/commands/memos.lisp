@@ -8,7 +8,7 @@
 (in-package :sykobot)
 
 ;;; Memos
-(defcommand memo ("for (\\S+)\\s+: (.*)" recipient memo)
+(defcommand memo ("for (\\S+)\\s*: (.*)" recipient memo)
   (add-memo *bot* recipient memo *sender*)
   (cmd-msg "Tada! Added memo for ~A. ~
             I'll let them know next time they speak."
