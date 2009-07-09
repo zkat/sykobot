@@ -1,4 +1,25 @@
-* TODO Features requested by wizzo
+* TODO [#A] Goals for new command system
+  These are the requirements specified by zkat for the new command
+  system to be a viable alternative to the current one.
+** TODO [#A] Simple DEFCOMMAND Macro
+   Sykopomp likes simple macros (who doesn't?). Also, it should be
+   transparent enough that if it breaks, it'll be easy for anybody
+   to understand and fix, regardless of who wrote it.
+** TODO [#C] Pipes
+   Pipes are neat, because they enable filters such as translation.
+   Some commands such as give and echo could also be seen as pipes.
+** TODO [#A] Aliases
+   Aliases are one of the features requested by wizzo, and thus are a
+   high-priority item. They would also help with some things like the
+   command prefix.
+** TODO [#B] Proper Reporting of Incorrect Syntax
+   This is not present in the current system, however, it is highly
+   desired by zkat. This could actually just be a hook into a
+   help system.
+** TODO [#C] Compatibility with Existing Commands
+   The transition should be smooth. This can be worked on once there
+   is something to transition _to_.
+* TODO [#C] Features requested by wizzo
   I guess if we actually get these features built into sykobot, it may actually
   replace supybot as phrik's backend.
 ** DONE google search
@@ -17,9 +38,10 @@
 ** DONE Command piping
 ** TODO give commands
 
-* TODO Other Features
+* TODO [#C] Other Features
 ** TODO 'log last five minutes and post to wiki...'
 
-* TODO Bugfixes
-** TODO the fact regex fails for quotes like "thewizord is a tree" 
+* TODO [#B] Bugfixes
+** TODO the fact regex fails for quotes like "thewizord is a tree"
    because it reads the 'the' and then goes OH NOES  - need to fix the regex
+

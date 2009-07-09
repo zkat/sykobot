@@ -222,40 +222,40 @@
                    (* 60 (mod (+ hours zone gmt-diff) 24)))))
        1000)))
 
-;;; Parrot
-(deflistener parrot
-  (send-msg *bot* *channel* *message*))
-(defcommand parrot ()
-  (if (listener-active-p *bot* 'parrot)
-      (progn
-        (deactivate-listener *bot* 'parrot)
-        (cmd-msg "NODOUCHE"))
-      (progn
-        (activate-listener *bot* 'parrot)
-        (cmd-msg "TIME TO BE A DOUCHEBAG"))))
-(defcommand noparrot ()
-  (deactivate-listener *bot* 'parrot)
-  (cmd-msg "NODOUCHE"))
+;; ;;; Parrot
+;; (deflistener parrot
+;;   (send-msg *bot* *channel* *message*))
+;; (defcommand parrot ()
+;;   (if (listener-active-p *bot* 'parrot)
+;;       (progn
+;;         (deactivate-listener *bot* 'parrot)
+;;         (cmd-msg "NODOUCHE"))
+;;       (progn
+;;         (activate-listener *bot* 'parrot)
+;;         (cmd-msg "TIME TO BE A DOUCHEBAG"))))
+;; (defcommand noparrot ()
+;;   (deactivate-listener *bot* 'parrot)
+;;   (cmd-msg "NODOUCHE"))
 
-;;; URLs
-(deflistener scan-for-url
-  (when (and (has-url-p *message*)
-             (not (string-equal *sender* (nickname *bot*))))
-    (handler-case
-        (multiple-value-bind (title url)
-            (url-info (grab-url *message*))
-          (send-msg *bot* *channel*
-                    (format nil "Title: ~A (at ~A)"
-                            (or title "<unknown title>")
-                            (puri:uri-host (puri:uri url)))))
-      (error ()
-        (values)))))
+;; ;;; URLs
+;; (deflistener scan-for-url
+;;   (when (and (has-url-p *message*)
+;;              (not (string-equal *sender* (nickname *bot*))))
+;;     (handler-case
+;;         (multiple-value-bind (title url)
+;;             (url-info (grab-url *message*))
+;;           (send-msg *bot* *channel*
+;;                     (format nil "Title: ~A (at ~A)"
+;;                             (or title "<unknown title>")
+;;                             (puri:uri-host (puri:uri url)))))
+;;       (error ()
+;;         (values)))))
 
-(defun has-url-p (string)
-  (when (scan "https?://.*[.$| |>]" string) t))
+;; (defun has-url-p (string)
+;;   (when (scan "https?://.*[.$| |>]" string) t))
 
-(defun grab-url (string)
-  (find-if #'has-url-p (split "[\\s+><,]" string)))
+;; (defun grab-url (string)
+;;   (find-if #'has-url-p (split "[\\s+><,]" string)))
 
 ;;; Aliasing commands
 ;;; Don't stress this with crazy regexp aliases. It only works
@@ -269,55 +269,55 @@
 
 (defcommand remove-alias ("(\\S+)" alias)
   (remove-alias *bot*
-                (print (format nil "(?i)(~A[:,] |~A)~A"
+                (print (format nil "(?i)(~A[:,] |~A)~A(?: |$)"
                                (nickname *bot*) *cmd-prefix* alias)))
   (cmd-msg "Done. Alias removed."))
 
-;;;'Filters'
-(defparameter *english->l33t* '(("a" . "4") ("b" . "|3") ("c" . "<") ("d" . "|)") ("e" . "3")
-                                ("f" . "|=") ("g" . "9") ("h" . "|-|") ("i" . "1") ("j" . "_|")
-                                ("k" . "|<") ("l" . "|_") ("m" . "/\\/\\") ("n" . "|\\|")
-                                ("o" . "0") ("p" . "p") ("q" . "q") ("r" . "|2") ("s" . "5")
-                                ("t" . "7") ("u" . "|_|") ("v" . "\\/") ("w" . "\\/\\/") ("x" . "><")
-                                ("y" . "y") ("z" . "z")))
+;; ;;;'Filters'
+;; (defparameter *english->l33t* '(("a" . "4") ("b" . "|3") ("c" . "<") ("d" . "|)") ("e" . "3")
+;;                                 ("f" . "|=") ("g" . "9") ("h" . "|-|") ("i" . "1") ("j" . "_|")
+;;                                 ("k" . "|<") ("l" . "|_") ("m" . "/\\/\\") ("n" . "|\\|")
+;;                                 ("o" . "0") ("p" . "p") ("q" . "q") ("r" . "|2") ("s" . "5")
+;;                                 ("t" . "7") ("u" . "|_|") ("v" . "\\/") ("w" . "\\/\\/") ("x" . "><")
+;;                                 ("y" . "y") ("z" . "z")))
 
-(defcommand leet ("(.*)" input)
-  (let ((translated-string input))
-    (loop for translation in *english->l33t*
-       when translation
-       do (setf translated-string (regex-replace-all (ppcre:create-scanner (car translation)
-                                                                           :case-insensitive-mode t)
-                                                     translated-string
-                                                     (cdr translation))))
-    (cmd-msg translated-string)))
+;; (defcommand leet ("(.*)" input)
+;;   (let ((translated-string input))
+;;     (loop for translation in *english->l33t*
+;;        when translation
+;;        do (setf translated-string (regex-replace-all (ppcre:create-scanner (car translation)
+;;                                                                            :case-insensitive-mode t)
+;;                                                      translated-string
+;;                                                      (cdr translation))))
+;;     (cmd-msg translated-string)))
 
-(defcommand capitalise ("(.*)" input)
-  (cmd-msg (string-upcase input)))
+;; (defcommand capitalise ("(.*)" input)
+;;   (cmd-msg (string-upcase input)))
 
-(defcommand singa ()
-  (cmd-msg "I love to singa")
-  (cmd-msg "about the moon-a and a june-a and a spring-a")
-  (cmd-msg "I love to singa"))
+;; (defcommand singa ()
+;;   (cmd-msg "I love to singa")
+;;   (cmd-msg "about the moon-a and a june-a and a spring-a")
+;;   (cmd-msg "I love to singa"))
 
-(defcommand translate ("(\\S+) (\\S+) (.*)" input-lang output-lang text)
-  (if (and (= (length output-lang) 2)
-           (or (= (length input-lang) 2)
-               (string= input-lang "*")))
-      (let* ((lang-pair (merge-strings "|" (if (string= input-lang "*") ""
-                                               input-lang)
-                                       output-lang))
-             (json-result
-              (drakma:http-request "http://ajax.googleapis.com/ajax/services/language/translate"
-                                   :parameters `(("v" . "1.0") ("q" . ,text) ("langpair" . ,lang-pair))))
-             (response (json:decode-json-from-string json-result)))
-        (case (alref :response-status response)
-          (200 (cmd-msg (decode-html-string
-                         (alref :translated-text
-                                (alref :response-data response)))))
-          (T (cmd-msg "Error: ~A"
-                      (alref :response-details response)))))
-      (cmd-msg "Language specifications need to be 2 letters long.")))
+;; (defcommand translate ("(\\S+) (\\S+) (.*)" input-lang output-lang text)
+;;   (if (and (= (length output-lang) 2)
+;;            (or (= (length input-lang) 2)
+;;                (string= input-lang "*")))
+;;       (let* ((lang-pair (merge-strings "|" (if (string= input-lang "*") ""
+;;                                                input-lang)
+;;                                        output-lang))
+;;              (json-result
+;;               (drakma:http-request "http://ajax.googleapis.com/ajax/services/language/translate"
+;;                                    :parameters `(("v" . "1.0") ("q" . ,text) ("langpair" . ,lang-pair))))
+;;              (response (json:decode-json-from-string json-result)))
+;;         (case (alref :response-status response)
+;;           (200 (cmd-msg (decode-html-string
+;;                          (alref :translated-text
+;;                                 (alref :response-data response)))))
+;;           (T (cmd-msg "Error: ~A"
+;;                       (alref :response-details response)))))
+;;       (cmd-msg "Language specifications need to be 2 letters long.")))
 
 
-(defcommand reverse ("(.*)" input)
-  (cmd-msg (reverse input)))
+;; (defcommand reverse ("(.*)" input)
+;;   (cmd-msg (reverse input)))
