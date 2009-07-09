@@ -296,7 +296,7 @@
   (cmd-msg "I love to singa"))
 
 (defcommand translate ("(\\w{2})\\s(\\w{2})\\s(.*)" input-lang output-lang text)
-  (let* ((lang-pair (format nil "~A|~A" input-lang output-lang))
+  (let* ((lang-pair (merge-strings "|" input-lang output-lang))
          (json-result
           (drakma:http-request "http://ajax.googleapis.com/ajax/services/language/translate"
            :parameters `(("v" . "1.0") ("q" . ,text) ("langpair" . ,lang-pair))))
