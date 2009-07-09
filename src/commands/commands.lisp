@@ -300,8 +300,13 @@
          (json-result
           (drakma:http-request "http://ajax.googleapis.com/ajax/services/language/translate"
            :parameters `(("v" . "1.0") ("q" . ,text) ("langpair" . ,lang-pair))))
-         (result-alist (json:decode-json-from-string json-result)))
-    (cmd-msg (decode-html-string (alref :translated-text (alref :response-data result-alist))))))
+         (response (json:decode-json-from-string json-result)))
+    (case (alref :response-status response)
+      (200 (cmd-msg (decode-html-string
+                     (alref :translated-text
+                            (alref :response-data response)))))
+      (T (cmd-msg "Error: ~A"
+                  (alref :response-details response))))))
 
 
 (defcommand reverse ("(.*)" input)
