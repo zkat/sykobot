@@ -198,6 +198,7 @@
 
 ;;; kiloseconds
 (defcommand kiloseconds ("(.*)" zone)
+  (when (zerop (length zone)) (setf zone "0"))
   (let ((parsed-zone (parse-integer zone :junk-allowed t)))
     (if parsed-zone
         (let ((ks-time (get-ks-time parsed-zone)))
