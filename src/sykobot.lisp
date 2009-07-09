@@ -33,6 +33,9 @@
 
 (defvar *active-bot* nil)
 
+;;; Convince DRAKMA to use UTF-8
+(setf drakma:*drakma-default-external-format* :utf-8)
+
 ;;;
 ;;; IRC connection
 ;;;
