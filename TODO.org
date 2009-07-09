@@ -4,7 +4,7 @@
 ** DONE google search
 ** DONE quotegrabs
    Persistent quotegrabs, including being able to !grab, !rq, and !q <someone>
-** TODO Aliases
+** DONE Aliases
    Entire commands should be aliasable, i.e. !alias wiki google site:en.wikipedia.org
 ** TODO Factoids
    ability to define simple persistent factoids that can be called up with just !factname
