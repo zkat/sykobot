@@ -9,8 +9,13 @@ Sykobot is a next-gen AI, programmed in a next-gen language. Designed to be a ir
 
 Supported Platforms
 -------------------
-Confirmed to work (pass all tests):
 
+Sykobot is developed on GNU/Linux, for UNIX. It should also work on any Linux distro or OSX wich has installed the dependencies of sykobot. 
+If you run sykobot on a platform not listed above please e-mail me. So i can add the platform to our list.
+
+
+Dependencies
+------------
 * SBCL
 * GNU Lisp
 * [Sheeple][1]
@@ -22,10 +27,6 @@ Confirmed to work (pass all tests):
 * cl-store
 
 
-Sykobot is developed on GNU/Linux x86, so it could also work on OSX, only Linux is confirmed to work atm.
-If you run sykobot on a platform not listed above please e-mail me. So i can add the platform.
-
-
 Notes
 -----
 
@@ -35,18 +36,23 @@ Sykobot is still in development , although simple bot functions work. The code c
 Features
 --------
 
-* Google / Arch Wiki  search 
+* Search -- with @google <keyword> 
+	For searching other sites for example the archlinux wiki , add this alias: " @alias wiki google site:wiki.archlinux.org "
+	
 
-* Factoids -- they are still being tested
+* Facts -- facts are a nice AI feature of sykobot, if someone says  "foo is bar" in an irc channel, then sykobot stores this. You can review the fact with @fact foo. Support for showing random facts is being added. Sidenote facts are overwritten all the time.
 
-* Grabs -- also still in testing peroid
+* Grabs -- usage: @grab nick . You can't grab yourself or the bot itself. Grabs can be viewed by doing: "@q nick" or for an random grab: "@rq nick"
+	
 
-* Kiloseconds -- display the current time in [kiloseconds][3]
+* Kiloseconds -- display the current time in [kiloseconds][3] 
+		usage: "@kiloseconds 1"  for kiloseconds GMT +1
 
-* Memo's =  --adding memo's to people in the channel
-	    --usage:  sykobot: memo for foo :  bar.
+* Memo's   --adding memo's to people in the channel
+		usage:  sykobot: memo for foo :  bar.
 
-* Aliasses 
+* Alias  -- add an alias 
+		usage: @alias fun fun is banned in #archlinux
 
 
 Using Sykobot
