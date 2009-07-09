@@ -1,0 +1,8 @@
+# Whenever an "off-the-shelf" version of sykobot is tagged, this
+#  file should be deleted from each directory. It mainly helps
+#  with making git status reports more readable by hiding binaries.
+ccl-*
+sbcl-*
+*.fasl
+*~
+# .gitignore*
