@@ -154,7 +154,7 @@
          (command+args (split "\\s+" string :limit 2)))
     (handler-case
         (answer-command bot (car command+args) (cadr command+args) sender channel)
-      (error (e)
+      (condition (e)
         (send-reply bot sender channel (format nil "An error occurred: ~A" e))))))
 
 (defreply answer-command ((bot (proto 'sykobot)) (cmd (proto 'string)) args sender channel)

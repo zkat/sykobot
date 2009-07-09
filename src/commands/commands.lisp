@@ -171,9 +171,12 @@
     (cmd-msg "~:[~;~A ~]<~A>" title title url)))
 
 (defun google-search (query)
-  (url-info (search-url
-             "http://google.com/search?filter=1&safe=on&q=~A&btnI"
-             query)))
+  (handler-case
+   (url-info (search-url
+              "http://google.com/search?filter=1&safe=on&q=~A&btnI"
+              query))
+    (error ()
+      "Error fetching URL.")))
 
 ;;; CLiki search
 (defcommand cliki ("(.*)" query)
