@@ -9,9 +9,9 @@
                html-entities
                sheeple
                cl-store
-	       cl-json)
+               cl-json)
   :serial t
-  :components 
+  :components
   ((:module "src"
             :serial t
             :components
@@ -27,10 +27,10 @@
                       :serial t
                       :components
                       ((:file "commands")
-                       (:file "memos")
-                       (:file "facts")
-                       (:file "chant")
-		       (:file "quotegrabs")))
+                       #+nil (:file "memos")
+                       #+nil (:file "facts")
+                       #+nil (:file "chant")
+                       #+nil (:file "quotegrabs")))
              (:file "config")))))
 
 (asdf:defsystem sykobot-tests
