@@ -23,20 +23,20 @@
 
 (defreply respond-to-message ((bot (proto 'sykobot)) sender channel message)
   (let* ((string (scan-string-for-direct-message bot channel message))
-	 (results (process-command-string bot string sender channel)))
+         (results (process-command-string bot string sender channel)))
     (loop for result in results
        do (send-reply bot sender channel (format nil "~A" result)))))
 
 (defreply process-command-string ((bot (proto 'sykobot)) string sender channel &optional pipe-input)
   (let* ((head+tail (split "\\s*\\|\\s*" string :limit 2))
-	 (command (if pipe-input (concatenate 'string (car head+tail) " " pipe-input) (car head+tail)))
-	 (cmd+args (split "\\s+" command :limit 2))
-	 (responses (get-responses bot (car cmd+args) (cadr cmd+args) sender channel))
-	 (results (if (cadr head+tail)
-		      (loop for response in responses collect (process-command-string bot (cadr head+tail) sender channel response))
-		      responses)))
+         (command (if pipe-input (concatenate 'string (car head+tail) " " pipe-input) (car head+tail)))
+         (cmd+args (split "\\s+" command :limit 2))
+         (responses (get-responses bot (car cmd+args) (cadr cmd+args) sender channel))
+         (results (if (cadr head+tail)
+                      (loop for response in responses collect (process-command-string bot (cadr head+tail) sender channel response))
+                      responses)))
     (flatten results)))
-	   
+
 (defreply get-responses ((bot (proto 'sykobot)) cmd args sender channel)
   (let ((fn (command-function cmd)))
     (funcall fn bot args sender channel)))
@@ -250,6 +250,22 @@
 (defun grab-url (string)
   (find-if #'has-url-p (split "[\\s+><,]" string)))
 
+;;; Aliasing commands
+;;; Don't stress this with crazy regexp aliases. It only works
+;;;   for text-to-text aliases, without any regex stuff.
+(defcommand alias ("(\\S+) (.*)$" alias expansion)
+  (add-alias *bot*
+             (format nil "(?i)(~A[:,] |~A)~A(?: |$)"
+                     (nickname *bot*) *cmd-prefix* alias)
+             (format nil "\\1~A " expansion))
+  (cmd-msg "Alright, alias added."))
+
+(defcommand remove-alias ("(\\S+)" alias)
+  (remove-alias *bot*
+                (print (format nil "(?i)(~A[:,] |~A)~A"
+                               (nickname *bot*) *cmd-prefix* alias)))
+  (cmd-msg "Done. Alias removed."))
+
 ;;;'Filters'
 (defparameter *english->l33t* '(("a" . "4") ("b" . "|3") ("c" . "<") ("d" . "|)") ("e" . "3")
                                 ("f" . "|=") ("g" . "9") ("h" . "|-|") ("i" . "1") ("j" . "_|")
@@ -265,7 +281,7 @@
        do (setf translated-string (regex-replace-all (ppcre:create-scanner (car translation)
                                                                            :case-insensitive-mode t)
                                                      translated-string
-                                                     (cdr translation))))    
+                                                     (cdr translation))))
     (cmd-msg translated-string)))
 
 (defcommand capitalise ("(.*)" input)
