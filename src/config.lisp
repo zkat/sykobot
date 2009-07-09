@@ -48,6 +48,7 @@
         (setf (port bot) *port*))
       (load-memos bot)
       (load-facts bot)
+      (load-quotes bot)
       (init-bot bot)
       (when *identify-with-nickserv?*
         (identify bot *nickserv-password*))
