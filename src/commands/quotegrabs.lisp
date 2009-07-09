@@ -1,3 +1,10 @@
+;;;; Copyright 2009 Kat Marchan
+;;;;
+;;;; This file is part of sykobot.
+;;;;
+;;;; For licensing and warranty information, refer to COPYING
+;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (in-package :sykobot)
 
 ;;; Quotes
@@ -16,21 +23,15 @@
 
 (defcommand random-quote ("(.*)" nick)
   (if nick
-      (cmd-msg "~A,  ~A" 
-  	       *sender*
-  	       (pretty-print-quote (get-random-quote *bot* nick)))
-      (cmd-msg "~A,  ~A"
-	       *sender*
-	       (pretty-print-quote 
+      (cmd-msg (pretty-print-quote (get-random-quote *bot* nick)))
+      (cmd-msg (pretty-print-quote 
 		(get-random-quote *bot*
 				  (random-elt (hash-table-keys (quotes *bot*))))))))
   
 	   
 
 (defcommand quote ("(.*)" nick)
-  (cmd-msg "~A,  ~A"
-	   *sender*
-	   (pretty-print-quote (get-last-quote *bot* nick))))
+  (cmd-msg (pretty-print-quote (get-last-quote *bot* nick))))
 
 ;;; utility
 

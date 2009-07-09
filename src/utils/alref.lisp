@@ -1,10 +1,16 @@
-;;;; This is a stripped-down version of Adlai's ALREF Utility
-;;;; If you want to use the code in this file, please consider
-;;;;   using the full utility, available via git from:
-;;;;     <git://github.com/adlai/ALREF.git>
+;;;; Copyright 2009 Adlai Chandrasekhar
+;;;;
+;;;; This file, while part of sykobot, is derived from Adlai's ALREF
+;;;;   project, available via git from:
+;;;      <git://github.com/adlai/ALREF.git>
+;;;;
+;;;; For licensing and warranty information, please refer to the
+;;;;   project site, at <http://www.github.com/adlai/ALREF/>.
+;;;;
 ;;;; This version, because it's just for use within this one
 ;;;;   project, lacks some of the features (both convenience
 ;;;;   and bug-safety) that the full utility has.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (in-package :sykobot)
 

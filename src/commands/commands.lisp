@@ -1,3 +1,10 @@
+;;;; Copyright 2009 Kat Marchan
+;;;;
+;;;; This file is part of sykobot.
+;;;;
+;;;; For licensing and warranty information, refer to COPYING
+;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (in-package :sykobot)
 
 ;; These are only bound within the body of commands.
@@ -16,20 +23,22 @@
 
 (defreply respond-to-message ((bot (proto 'sykobot)) sender channel message)
   (let* ((string (scan-string-for-direct-message bot channel message))
-	 (results (process-command-string bot string sender channel)))
-    (send-reply bot sender channel (format nil "~A" (car results)))))
+         (results (process-command-string bot string sender channel)))
+    (loop for result in results
+       do (send-reply bot sender channel (format nil "~A" result)))))
 
 (defreply process-command-string ((bot (proto 'sykobot)) string sender channel &optional pipe-input)
   (let* ((head+tail (split "\\s*\\|\\s*" string :limit 2))
-	 (command (if pipe-input (concatenate 'string string " " pipe-input) (car head+tail)))
-	 (cmd+args (split "\\s+" command :limit 2))
-	 (responses (get-responses bot (car cmd+args) (cadr cmd+args) sender channel))
-	 (results (if (cadr head+tail)
-		      (loop for response in responses collect (process-command-string bot (cadr head+tail) sender channel response))
-		      responses)))
+         (command (if pipe-input (concatenate 'string (car head+tail) " " pipe-input) (car head+tail)))
+         (cmd+args (split "\\s+" command :limit 2))
+         (responses (get-responses bot (car cmd+args) (cadr cmd+args) sender channel))
+         (results (if (cadr head+tail)
+                      (loop for response in responses
+                         collect (process-command-string bot (cadr head+tail)
+                                                         sender channel response))
+                      responses)))
     (flatten results)))
-      
-	   
+
 (defreply get-responses ((bot (proto 'sykobot)) cmd args sender channel)
   (let ((fn (command-function cmd)))
     (funcall fn bot args sender channel)))
@@ -48,7 +57,8 @@
       (if hasp fn
           (lambda (bot args sender channel)
             (declare (ignore channel args))
-            (send-notice bot sender (format nil "I don't know how to ~A." cmd))))))
+            (send-notice bot sender (format nil "I don't know how to ~A." cmd))
+            nil))))
 
   (defun erase-all-commands ()
     (clrhash command-table))
@@ -92,18 +102,22 @@
   (cmd-msg string))
 (defcommand source ()
 <<<<<<< HEAD:src/commands/commands.lisp
+<<<<<<< HEAD:src/commands/commands.lisp
   (cmd-reply "http://github.com/zkat/sykobot"))
 (defcommand maker ()
   (cmd-reply "God and my name is jezus"))
 =======
   (cmd-msg "http://github.com/zkat/sykobot"))
 >>>>>>> 607a14a3b802faadbf4d5b8d659b105b250115cd:src/commands/commands.lisp
+=======
+  (cmd-msg "I'm licensed under the AGPL, you can find my source code at: http://github.com/zkat/sykobot"))
+>>>>>>> ff0c99e6d159e423a50d1b669f3ff3fa56fc48a5:src/commands/commands.lisp
 (defcommand version ()
   (cmd-msg "Pfft. I have no versions. I'm 100% git"))
 (defcommand help ()
   (cmd-msg "No."))
 (defcommand commands ()
-  (cmd-msg "~A: available commands are ~{~A~^ ~}" *sender* (get-commands)))
+  (cmd-msg "Available commands are ~{~A~^ ~}" *sender* (get-commands)))
 (defcommand topic ("(.*)" new-topic)
   (if (< 0 (length new-topic))
       (topic *bot* *channel* new-topic)
@@ -121,10 +135,17 @@
 (defcommand hi ()
   (cmd-msg "Go away."))
 (defcommand give ("(\\S+) (\\S+) (.*)$" new-target new-command new-args)
+<<<<<<< HEAD:src/commands/commands.lisp
   (answer-command *bot* new-command new-args new-target *channel*))
 (defcommand you ("(.*)" string)
   (cmd-reply (concatenate 'string "NO, YOU " string)))
 
+=======
+  (setf *sender* new-target)
+  (setf *responses* (get-responses *bot* new-command new-args new-target *channel*)))
+(defcommand language ()
+  (cmd-msg "(((((()())))(((()()(OMFG)))()))(((()))))"))
+>>>>>>> ff0c99e6d159e423a50d1b669f3ff3fa56fc48a5:src/commands/commands.lisp
 ;;; Character Decoding
 (defcommand code->char ("(\\S+)*" code-string)
   (let ((code (if code-string (parse-integer code-string :junk-allowed T) 0)))
@@ -253,7 +274,7 @@
 
 ;;; Parrot
 (deflistener parrot
-  (cmd-msg *message*))
+  (send-msg *bot* *channel* *message*))
 (defcommand parrot ()
   (if (listener-active-p *bot* 'parrot)
       (progn
@@ -273,7 +294,10 @@
     (handler-case
         (multiple-value-bind (title url)
             (url-info (grab-url *message*))
-          (cmd-msg (format nil "Title: ~A (at ~A)" (or title "<unknown title>") (puri:uri-host (puri:uri url)))))
+          (send-msg *bot* *channel*
+                    (format nil "Title: ~A (at ~A)"
+                            (or title "<unknown title>")
+                            (puri:uri-host (puri:uri url)))))
       (error ()
         (values)))))
 
@@ -283,6 +307,44 @@
 (defun grab-url (string)
   (find-if #'has-url-p (split "[\\s+><,]" string)))
 
+;;; Aliasing commands
+;;; Don't stress this with crazy regexp aliases. It only works
+;;;   for text-to-text aliases, without any regex stuff.
+(defcommand alias ("(\\S+) (.*)$" alias expansion)
+  (add-alias *bot*
+             (format nil "(?i)(~A[:,] |~A)~A(?: |$)"
+                     (nickname *bot*) *cmd-prefix* alias)
+             (format nil "\\1~A " expansion))
+  (cmd-msg "Alright, alias added."))
+
+(defcommand remove-alias ("(\\S+)" alias)
+  (remove-alias *bot*
+                (print (format nil "(?i)(~A[:,] |~A)~A"
+                               (nickname *bot*) *cmd-prefix* alias)))
+  (cmd-msg "Done. Alias removed."))
+
 ;;;'Filters'
+(defparameter *english->l33t* '(("a" . "4") ("b" . "|3") ("c" . "<") ("d" . "|)") ("e" . "3")
+                                ("f" . "|=") ("g" . "9") ("h" . "|-|") ("i" . "1") ("j" . "_|")
+                                ("k" . "|<") ("l" . "|_") ("m" . "/\\/\\") ("n" . "|\\|")
+                                ("o" . "0") ("p" . "p") ("q" . "q") ("r" . "|2") ("s" . "5")
+                                ("t" . "7") ("u" . "|_|") ("v" . "\\/") ("w" . "\\/\\/") ("x" . "><")
+                                ("y" . "y") ("z" . "z")))
+
 (defcommand leet ("(.*)" input)
-  (cmd-msg (regex-replace "e" (regex-replace "o" input "0") "3")))
+  (let ((translated-string input))
+    (loop for translation in *english->l33t*
+       when translation
+       do (setf translated-string (regex-replace-all (ppcre:create-scanner (car translation)
+                                                                           :case-insensitive-mode t)
+                                                     translated-string
+                                                     (cdr translation))))
+    (cmd-msg translated-string)))
+
+(defcommand capitalise ("(.*)" input)
+  (cmd-msg (string-upcase input)))
+
+(defcommand singa ()
+  (cmd-msg "I love to singa")
+  (cmd-msg "about the moon-a and a june-a and a spring-a")
+  (cmd-msg "I love to singa"))

@@ -1,7 +1,14 @@
+;;;; Copyright 2009 Kat Marchan
+;;;;
+;;;; This file is part of sykobot.
+;;;;
+;;;; For licensing and warranty information, refer to COPYING
+;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (in-package :sykobot)
 
 ;;; Memos
-(defcommand memo ("for (\\S+): (.*)" recipient memo)
+(defcommand memo ("for (\\S+)\\s+: (.*)" recipient memo)
   (add-memo *bot* recipient memo *sender*)
   (cmd-msg "Tada! Added memo for ~A. ~
             I'll let them know next time they speak."
@@ -56,6 +63,6 @@
     (loop for memo in (reverse memos)
        do (destructuring-bind (recipient sender text time-added) memo
             (declare (ignore recipient time-added))
-            (cmd-reply "Memo from ~A - \"~A\"" sender text))
+            (send-reply *bot* *sender* *channel* (format nil "Memo from ~A - \"~A\"" sender text)))
        (remove-memo *bot* memo))))
 
