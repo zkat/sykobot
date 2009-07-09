@@ -297,13 +297,12 @@
 
 (defcommand translate ("(\\w{2})\\s(\\w{2})\\s(.*)" input-lang output-lang text)
   (let* ((lang-pair (format nil "~A|~A" input-lang output-lang))
-	 (json-result 
-	  (drakma:http-request "http://ajax.googleapis.com/ajax/services/language/translate"
-	   :parameters `(("v" . "1.0") ("q" . ,text) ("langpair" . ,lang-pair))))
-	 (result-alist (json:decode-json-from-string json-result)))
-    (cmd-msg (alref :translated-text (alref :response-data result-alist)))))
+         (json-result
+          (drakma:http-request "http://ajax.googleapis.com/ajax/services/language/translate"
+           :parameters `(("v" . "1.0") ("q" . ,text) ("langpair" . ,lang-pair))))
+         (result-alist (json:decode-json-from-string json-result)))
+    (cmd-msg (decode-html-string (alref :translated-text (alref :response-data result-alist))))))
 
 
 (defcommand reverse ("(.*)" input)
   (cmd-msg (reverse input)))
-    
