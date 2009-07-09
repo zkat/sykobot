@@ -1,3 +1,10 @@
+;;;; Copyright 2009 Kat Marchan
+;;;;
+;;;; This file is part of sykobot.
+;;;;
+;;;; For licensing and warranty information, refer to COPYING
+;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (in-package :sykobot)
 
 
@@ -68,7 +75,6 @@
   (split "\\s*(,|but|however|whereas|although|\\;|\\.)\\s*" statement))
 
 (deflistener scan-for-fact
-
   (let* ((articles '("a" "an" "the" "this" "that"))
 	 (verbs '(" am" " is" " are" " isn\\'t" " ain\\'t" "\\'s"
 		  " likes" " uses" " has" " fails" " wins" " can" " can't"))
