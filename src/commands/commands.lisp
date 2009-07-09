@@ -198,15 +198,15 @@
 
 ;;; kiloseconds
 (defcommand kiloseconds ("(.*)" zone)
-  (let* ((parsed-zone (if (= 0 (length zone))
-                          0
-                          (parse-integer zone :junk-allowed t)))
-         (ks-time (get-ks-time parsed-zone)))
-    (cmd-msg "The time in GMT~A is ~3$ ks."
-               (if (or (= parsed-zone 0) (plusp parsed-zone))
-                   (format nil "+~A" (mod parsed-zone 24))
-                   (format nil "~A" (- (mod parsed-zone 24) 24)))
-               ks-time)))
+  (let ((parsed-zone (parse-integer zone :junk-allowed t)))
+    (if parsed-zone
+        (let ((ks-time (get-ks-time parsed-zone)))
+          (cmd-msg "The time in GMT~A is ~3$ ks."
+                   (if (or (= parsed-zone 0) (plusp parsed-zone))
+                       (format nil "+~A" (mod parsed-zone 24))
+                       (format nil "~A" (- (mod parsed-zone 24) 24)))
+                   ks-time))
+        (cmd-msg "Invalid timezone."))))
 
 (defun get-ks-time (&optional (gmt-diff 0))
   (multiple-value-bind
