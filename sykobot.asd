@@ -8,7 +8,8 @@
                drakma
                html-entities
                sheeple
-               cl-store)
+               cl-store
+	       cl-json)
   :serial t
   :components 
   ((:module "src"
