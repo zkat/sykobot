@@ -33,8 +33,9 @@
 
 (defvar *active-bot* nil)
 
-;;; Convince DRAKMA to use UTF-8
-(setf drakma:*drakma-default-external-format* :utf-8)
+;;; Good Medicine
+(setf drakma:*drakma-default-external-format* :utf-8
+      flexi-streams:*substitution-char* #\?)
 
 ;;;
 ;;; IRC connection
