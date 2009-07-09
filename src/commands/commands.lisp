@@ -107,7 +107,7 @@
 (defcommand help ()
   (cmd-msg "No."))
 (defcommand commands ()
-  (cmd-msg "Available commands are ~{~A~^ ~}" *sender* (get-commands)))
+  (cmd-msg "Available commands are ~{~A~^ ~}" (get-commands)))
 (defcommand topic ("(.*)" new-topic)
   (if (< 0 (length new-topic))
       (topic *bot* *channel* new-topic)
