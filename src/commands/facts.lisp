@@ -20,10 +20,11 @@
 
 ;;; Facts
 (defcommand fact ("(\\S+)*" topic)
-  (cmd-msg (get-fact *bot* topic)))
+  (cmd-msg "~A" (get-fact *bot* topic)))
 
 (defcommand random-fact nil
-  (cmd-msg (get-fact *bot*
+  (cmd-msg "~A"
+           (get-fact *bot*
                      (random-elt (hash-table-keys (facts *bot*))))))
 
 (defun facts-db (bot)
