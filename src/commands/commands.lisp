@@ -11,6 +11,53 @@
 ;;; Used to assist piping and multiple return values
 (defvar *responses*)
 
+;;; Modularization of commands
+(defproto sykobot-commands ((proto 'sykobot-listeners))
+  ((commands (make-hash-table :test #'equal))
+   (detection-regex nil)))
+
+(defreply init-sheep :after ((bot (proto 'sykobot-commands)) &key)
+   (setf (detection-regex bot)
+	 (create-scanner (format nil "^~A[:,] " (nickname bot))
+			 :case-insensitive-mode T)))
+
+(defmessage add-command (bot command function))
+(defmessage remove-command (bot command))
+(defmessage command-function (bot command))
+(defmessage erase-all-commands (bot))
+(defmessage list-all-commands (bot))
+
+(defreply add-command ((bot (proto 'sykobot-commands)) command function)
+  (setf (gethash command (commands bot)) function))
+
+(defreply remove-command ((bot (proto 'sykobot-commands)) command)
+  (remhash command (commands bot)))
+
+(defreply command-function ((bot (proto 'sykobot-commands)) command)
+  (gethash (string-upcase command) (commands bot)
+           (lambda (bot args sender channel)
+             (declare (ignore channel args))
+             (send-notice bot sender
+                          (format nil "I don't know how to ~A." command))
+	     (values))))
+
+(defreply erase-all-commands ((bot (proto 'sykobot-commands)))
+  (clrhash (commands bot)))
+
+(defreply list-all-commands ((bot (proto 'sykobot-commands)))
+  (hash-table-keys (commands bot)))
+
+(defmacro defcommand (name (&optional (regex "") &rest vars) &body body)
+  `(add-command (proto 'sykobot-commands) (symbol-name ',name)
+                (lambda (*bot* *message* *sender* *channel*)
+                  (declare (ignorable *message* *bot* *sender* *channel*))
+                  (let ((*responses* nil))
+                    ,@(if vars
+                          `((register-groups-bind ,vars (,regex *message*)
+                              ,@body))
+                          `(,@body))
+                    *responses*))))
+
 ;;; Command processing
 
 ;;; When a message is applicable for the bot, responds to it.
@@ -59,42 +106,8 @@
 ;;; CALLS: command-function
 ;;;  - Adlai
 (defreply get-responses ((bot (proto 'sykobot)) cmd args sender channel)
-  (let ((fn (command-function cmd)))
+  (let ((fn (command-function bot cmd)))
     (funcall fn bot args sender channel)))
-
-;;; Command definition
-(let ((command-table (make-hash-table :test #'equalp)))
-  (defun add-command (cmd fn)
-    (setf (gethash cmd command-table) fn))
-
-  (defun remove-command (cmd)
-    (remhash cmd command-table))
-
-  (defun command-function (cmd)
-    (multiple-value-bind (fn hasp)
-        (gethash cmd command-table)
-      (if hasp fn
-          (lambda (bot args sender channel)
-            (declare (ignore channel args))
-            (send-notice bot sender (format nil "I don't know how to ~A." cmd))
-            nil))))
-
-  (defun erase-all-commands ()
-    (clrhash command-table))
-
-  (defun get-commands ()
-    (hash-table-keys command-table)))
-
-(defmacro defcommand (name (&optional (regex "") &rest vars) &body body)
-  `(add-command (symbol-name ',name)
-                (lambda (*bot* *message* *sender* *channel*)
-                  (declare (ignorable *message* *bot* *sender* *channel*))
-                  (let ((*responses* nil))
-                    ,@(if vars
-                          `((register-groups-bind ,vars (,regex *message*)
-                              ,@body))
-                          `(,@body))
-                    *responses*))))
 
 ;;; (defparameter *cmd-prefix* "@")
 
@@ -142,7 +155,8 @@
 (defcommand help ()
   (cmd-msg "No."))
 (defcommand commands ()
-  (cmd-msg "Available commands are ~{~A~^ ~}" (get-commands)))
+  (cmd-msg "Available commands are ~{~A~^ ~}"
+           (list-all-commands *bot*)))
 (defcommand topic ("(.*)" new-topic)
   (if (< 0 (length new-topic))
       (topic *bot* *channel* new-topic)
