@@ -14,6 +14,11 @@
 (defvar *channel*)
 (defvar *responses*)
 ;;; Command processing
+
+;;; When a message is applicable for the bot, responds to it.
+;;; CALLED BY: call-all-listeners
+;;; CALLS: sent-to-me-p, respond-to-message
+;;;  - Adlai
 (deflistener command-listener
   (when (sent-to-me-p *bot* *channel* *message*)
     (respond-to-message *bot* *sender* *channel* *message*)))
@@ -21,12 +26,24 @@
 (defmessage get-responses (bot cmd args sender channel))
 (defmessage process-command-string (bot string sender channel &optional pipe-input))
 
+;;; Removes the direct message indicator from a message,
+;;;   and then splits it into a command and arguments.
+;;; CALLED BY: command-listener
+;;; CALLS: scan-string-for-direct-message, process-command-string
+;;; CONFLICT: redefines from sykobot.lisp
+;;;  - Adlai
 (defreply respond-to-message ((bot (proto 'sykobot)) sender channel message)
   (let* ((string (scan-string-for-direct-message bot channel message))
          (results (process-command-string bot string sender channel)))
     (loop for result in results
        do (send-reply bot sender channel (format nil "~A" result)))))
 
+;;; Parses a string into piped commands, and manages piping their
+;;;   inputs and outputs together, collecting their results.
+;;; RECURSIVE!!!
+;;; CALLED BY: respond-to-message, process-command-string
+;;; CALLS: get-responses, process-command-string
+;;;  - Adlai
 (defreply process-command-string ((bot (proto 'sykobot)) string sender channel &optional pipe-input)
   (let* ((head+tail (split "\\s*\\|\\s*" string :limit 2))
          (command (if pipe-input (concatenate 'string (car head+tail) " " pipe-input) (car head+tail)))
@@ -39,6 +56,10 @@
                       responses)))
     (flatten results)))
 
+;;; Calls the function representing a command.
+;;; CALLED BY: process-command-string
+;;; CALLS: command-function
+;;;  - Adlai
 (defreply get-responses ((bot (proto 'sykobot)) cmd args sender channel)
   (let ((fn (command-function cmd)))
     (funcall fn bot args sender channel)))
