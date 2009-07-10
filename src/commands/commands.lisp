@@ -7,12 +7,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (in-package :sykobot)
 
-;; These are only bound within the body of commands.
-(defvar *bot*)
-(defvar *message*)
-(defvar *sender*)
-(defvar *channel*)
-
 ;;; Response stack
 ;;; Used to assist piping and multiple return values
 (defvar *responses*)
@@ -20,7 +14,7 @@
 ;;; Command processing
 
 ;;; When a message is applicable for the bot, responds to it.
-;;; CALLED BY: call-all-listeners
+;;; CALLED BY: call-listeners
 ;;; CALLS: scan-string-for-direct-message, respond-to-message
 ;;;  - Adlai
 (deflistener command-listener
@@ -249,20 +243,20 @@
                    (* 60 (mod (+ hours zone gmt-diff) 24)))))
        1000)))
 
-;; ;;; Parrot
-;; (deflistener parrot
-;;   (send-msg *bot* *channel* *message*))
-;; (defcommand parrot ()
-;;   (if (listener-active-p *bot* 'parrot)
-;;       (progn
-;;         (deactivate-listener *bot* 'parrot)
-;;         (cmd-msg "NODOUCHE"))
-;;       (progn
-;;         (activate-listener *bot* 'parrot)
-;;         (cmd-msg "TIME TO BE A DOUCHEBAG"))))
-;; (defcommand noparrot ()
-;;   (deactivate-listener *bot* 'parrot)
-;;   (cmd-msg "NODOUCHE"))
+;;; Parrot
+(deflistener parrot
+  (send-msg *bot* *channel* *message*))
+(defcommand parrot ()
+  (if (listener-active-p *bot* 'parrot)
+      (progn
+        (listener-off *bot* 'parrot)
+        (cmd-msg "NODOUCHE"))
+      (progn
+        (listener-on *bot* 'parrot)
+        (cmd-msg "TIME TO BE A DOUCHEBAG"))))
+(defcommand noparrot ()
+  (listener-off *bot* 'parrot)
+  (cmd-msg "NODOUCHE"))
 
 ;; ;;; URLs
 ;; (deflistener scan-for-url

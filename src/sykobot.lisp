@@ -17,13 +17,7 @@
    (port 6667)
    (dir "default-bot/")
    (password nil)
-;;    (aliases nil)
-   (silentp nil)
-;;    (memos (make-hash-table :test #'equalp))
-;;    (facts (make-hash-table :test #'equalp))
-;;    (quotes (make-hash-table :test #'equalp))
-;;    (last-said (make-hash-table :test #'equalp))
-   (active-listeners nil)))
+   (silentp nil)))
 
 ;; (defreply init-sheep :after ((sheep (proto 'sykobot)) &key)
 ;;   (setf (memos sheep) (make-hash-table :test #'equalp))
@@ -149,7 +143,7 @@
 ;;;  - Adlai
 (defreply process-message ((bot (proto 'sykobot))
                            sender channel message)
-  (call-all-listeners bot sender channel message))
+  (call-listeners bot sender channel message))
 
 ;;; Shutting up works atm through a flag, (silentp bot)
 ;;;  - Adlai
