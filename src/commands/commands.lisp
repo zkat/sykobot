@@ -34,7 +34,6 @@
 ;;;   and then splits it into a command and arguments.
 ;;; CALLED BY: command-listener
 ;;; CALLS: scan-string-for-direct-message, process-command-string
-;;; CONFLICT: redefines from sykobot.lisp
 ;;;  - Adlai
 (defreply respond-to-message ((bot (proto 'sykobot)) sender channel message)
   (let* ((string (scan-string-for-direct-message bot channel message))
@@ -102,6 +101,10 @@
                           `(,@body))
                     *responses*))))
 
+;;; Checks if a message is directed at the bot
+;;; CALLED BY: command-listener
+;;; CALLS: scan-string-for-direct-message
+;;;  - Adlai
 (defun sent-to-me-p (bot channel message)
   (when (scan-string-for-direct-message bot channel message)
     t))
@@ -111,7 +114,6 @@
 ;;; Checks if the message is directed at the bot
 ;;; If so, strips out the header; if not, returns NIL.
 ;;; CALLED BY: respond-to-message, sent-to-me-p
-;;; CONFLICT: redefines from sykobot.lisp
 ;;;  - Adlai
 (defmessage scan-string-for-direct-message (bot channel message))
 (defreply scan-string-for-direct-message ((bot (proto 'sykobot)) channel message)
