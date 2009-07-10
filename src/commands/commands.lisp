@@ -18,7 +18,7 @@
 ;;; CALLS: scan-string-for-direct-message, respond-to-message
 ;;;  - Adlai
 (deflistener command-listener
-  (when (scan-string-for-direct-message *bot* *channel* *message*)
+  (when (scan-for-direct-message *bot* *channel* *message*)
     (respond-to-message *bot* *sender* *channel* *message*)))
 
 (defmessage respond-to-message (bot sender channel message))
@@ -31,7 +31,7 @@
 ;;; CALLS: scan-string-for-direct-message, process-command-string
 ;;;  - Adlai
 (defreply respond-to-message ((bot (proto 'sykobot)) sender channel message)
-  (let* ((string (scan-string-for-direct-message bot channel message))
+  (let* ((string (scan-for-direct-message bot channel message))
          (results (process-command-string bot string sender channel)))
     (loop for result in results
        do (send-reply bot sender channel (format nil "~A" result)))))
@@ -102,8 +102,8 @@
 ;;; If so, strips out the header; if not, returns NIL.
 ;;; CALLED BY: command-listener, respond-to-message
 ;;;  - Adlai
-(defmessage scan-string-for-direct-message (bot channel message))
-(defreply scan-string-for-direct-message ((bot (proto 'sykobot)) channel message)
+(defmessage scan-for-direct-message (bot channel message))
+(defreply scan-for-direct-message ((bot (proto 'sykobot)) channel message)
   (cond ((equal channel (nickname bot))
          message)
         ((scan (format nil "^~A: " (nickname bot)) message)
@@ -117,6 +117,20 @@
 (defun cmd-msg (message &rest format-args)
   (push (apply #'format nil message format-args)
         *responses*))
+
+;;; Deafness
+(defcommand shut ("(\\S+)*" arg1)
+  (when (equalp arg1 "up")
+    (cmd-msg "Fine. Be that way. Tell me to talk when you realize ~
+                just how lonely and pathetic you really are.")
+    (toggle-deafness *bot* *channel*)))
+(deflistener undeafen
+  (let ((cmd (scan-for-direct-message *bot* *channel* *message*)))
+    (when (and (stringp cmd)
+               (string-equal "talk" (subseq cmd 0 4)))
+      (toggle-deafness *bot* *channel*)
+      (send-reply *bot* *sender* *channel*
+                  "bla bla blah. Happy?"))))
 
 ;;; base commands
 (defcommand echo ("(.*)" string)
@@ -135,14 +149,6 @@
       (cmd-msg (topic *bot* *channel*))))
 (defcommand ping ()
   (cmd-msg "pong"))
-(defcommand shut ("(\\S+)*" arg1)
-  (when (equalp arg1 "up")
-    (cmd-msg "Fine. Be that way. Tell me to talk when you realize ~
-                just how lonely and pathetic you really are.")
-    (shut-up *bot*)))
-(defcommand talk ()
-  (un-shut-up *bot*)
-  (cmd-msg "bla bla bla bla. There, happy?"))
 (defcommand hi ()
   (cmd-msg "Go away."))
 (defcommand language ()
@@ -247,15 +253,15 @@
 (deflistener parrot
   (send-msg *bot* *channel* *message*))
 (defcommand parrot ()
-  (if (listener-active-p *bot* 'parrot)
+  (if (listener-active-p *bot* *channel* 'parrot)
       (progn
-        (listener-off *bot* 'parrot)
+        (listener-off *bot* *channel* 'parrot)
         (cmd-msg "NODOUCHE"))
       (progn
-        (listener-on *bot* 'parrot)
+        (listener-on *bot* *channel* 'parrot)
         (cmd-msg "TIME TO BE A DOUCHEBAG"))))
 (defcommand noparrot ()
-  (listener-off *bot* 'parrot)
+  (listener-off *bot* *channel* 'parrot)
   (cmd-msg "NODOUCHE"))
 
 ;; ;;; URLs

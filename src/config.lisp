@@ -25,7 +25,7 @@
 (defreply bot-dir ((bot (proto 'sykobot)))
   (ensure-directories-exist (merge-pathnames (dir bot) *home*)))
 
-(defun run-bot (&optional (bot-prototype (proto 'sykobot)))
+(defun run-bot (&optional (bot-prototype (proto 'sykobot-listeners)))
   (let ((bot (clone bot-prototype)))
     (handler-bind ((cl-irc:no-such-reply (lambda (c)
                                            (let ((r (find-restart 'continue c)))
@@ -36,7 +36,6 @@
         (when (probe-file init-file)
           (handler-case (load init-file)
             (end-of-file () (error "You missed a paren somewhere")))))
-      (apply #'activate-listeners bot *default-listeners*)
       (when *nickname*
         (setf (nickname bot) *nickname*))
       (when *username*
