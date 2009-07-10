@@ -44,9 +44,9 @@
 
 (defmacro deflistener (name &body body)
   `(set-listener (proto 'sykobot-listeners) ',name
-                (lambda (*bot* *sender* *channel* *message*)
-                  (declare (ignorable *bot* *sender* *channel* *message*))
-                  ,@body)))
+                 (lambda (*bot* *sender* *channel* *message*)
+                   (declare (ignorable *bot* *sender* *channel* *message*))
+                   ,@body)))
 
 ;;; Customization of listeners
 (defmessage listener-on (bot channel name))
