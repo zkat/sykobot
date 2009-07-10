@@ -200,11 +200,12 @@
   (when (scan-string-for-direct-message bot channel message)
     t))
 
-(defparameter *cmd-prefix* "@")
+;;; (defparameter *cmd-prefix* "@")
 
 ;;; Checks if the message is directed at the bot
 ;;; If so, strips out the header; if not, returns NIL.
 ;;; CALLED BY: respond-to-message, sent-to-me-p
+;;; CONFLICT: redefined in commands.lisp
 ;;;  - Adlai
 (defmessage scan-string-for-direct-message (bot channel message))
 (defreply scan-string-for-direct-message ((bot (proto 'sykobot)) channel message)
@@ -214,7 +215,7 @@
          (regex-replace (format nil "^~A: " (nickname bot)) message ""))
         ((scan (format nil "^~A, " (nickname bot)) message)
          (regex-replace (format nil "^~A, " (nickname bot)) message ""))
-        ((scan (format nil "^~A+" *cmd-prefix*) message)
+        #+nil ((scan (format nil "^~A+" *cmd-prefix*) message)
          (regex-replace (format nil "^~A+" *cmd-prefix*) message ""))))
 
 ;;;
