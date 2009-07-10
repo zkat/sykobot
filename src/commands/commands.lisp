@@ -12,7 +12,11 @@
 (defvar *message*)
 (defvar *sender*)
 (defvar *channel*)
+
+;;; Response stack
+;;; Used to assist piping and multiple return values
 (defvar *responses*)
+
 ;;; Command processing
 
 ;;; When a message is applicable for the bot, responds to it.
@@ -103,6 +107,12 @@
     t))
 
 ;;; (defparameter *cmd-prefix* "@")
+
+;;; Checks if the message is directed at the bot
+;;; If so, strips out the header; if not, returns NIL.
+;;; CALLED BY: respond-to-message, sent-to-me-p
+;;; CONFLICT: redefines from sykobot.lisp
+;;;  - Adlai
 (defmessage scan-string-for-direct-message (bot channel message))
 (defreply scan-string-for-direct-message ((bot (proto 'sykobot)) channel message)
   (cond ((equal channel (nickname bot))
@@ -114,6 +124,7 @@
         #+nil ((scan (format nil "^~A+" *cmd-prefix*) message)
          (regex-replace (format nil "^~A+" *cmd-prefix*) message ""))))
 
+;;; Puts message responses on the response stack
 (defun cmd-msg (message &rest format-args)
   (push (apply #'format nil message format-args)
         *responses*))
@@ -283,15 +294,15 @@
 ;;;   for text-to-text aliases, without any regex stuff.
 (defcommand alias ("(\\S+) (.*)$" alias expansion)
   (add-alias *bot*
-             (format nil "(?i)(~A[:,] |~A)~A(?: |$)"
-                     (nickname *bot*) *cmd-prefix* alias)
+             (format nil "(?i)(~A[:,])~A(?: |$)"
+                     (nickname *bot*) alias)
              (format nil "\\1~A " expansion))
   (cmd-msg "Alright, alias added."))
 
 (defcommand remove-alias ("(\\S+)" alias)
   (remove-alias *bot*
-                (print (format nil "(?i)(~A[:,] |~A)~A(?: |$)"
-                               (nickname *bot*) *cmd-prefix* alias)))
+                (print (format nil "(?i)(~A[:,])~A(?: |$)"
+                               (nickname *bot*) alias)))
   (cmd-msg "Done. Alias removed."))
 
 ;; ;;;'Filters'
