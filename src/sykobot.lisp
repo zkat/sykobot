@@ -17,7 +17,7 @@
    (port 6667)
    (dir "default-bot/")
    (password nil)
-   (aliases nil)
+;;    (aliases nil)
    (silentp nil)
 ;;    (memos (make-hash-table :test #'equalp))
 ;;    (facts (make-hash-table :test #'equalp))
@@ -143,15 +143,13 @@
         (message (second (irc:arguments msg))))
     (process-message bot sender channel message)))
 
-;;; This command expands aliases within the message, and then
-;;;   it calls all listeners applicable to the message.
+;;; Calls all listeners applicable to the message.
 ;;; CALLED BY: msg-hook
-;;; CALLS: expand-aliases, call-all-listeners
+;;; CALLS: call-all-listeners
 ;;;  - Adlai
 (defreply process-message ((bot (proto 'sykobot))
                            sender channel message)
-  (call-all-listeners bot sender channel
-                      (expand-aliases bot message)))
+  (call-all-listeners bot sender channel message))
 
 ;;; Shutting up works atm through a flag, (silentp bot)
 ;;;  - Adlai
@@ -161,28 +159,28 @@
 (defreply un-shut-up ((bot (proto 'sykobot)))
   (setf (silentp bot) nil))
 
-;;;
-;;; Aliases
-;;;
-(defmessage add-alias (bot alias expansion))
-(defmessage remove-alias (bot alias))
-(defmessage expand-aliases (bot message))
+;; ;;;
+;; ;;; Aliases
+;; ;;;
+;; (defmessage add-alias (bot alias expansion))
+;; (defmessage remove-alias (bot alias))
+;; (defmessage expand-aliases (bot message))
 
-(defreply add-alias ((bot (proto 'sykobot)) alias expansion)
-  (setf (aliases bot) (acons alias expansion (aliases bot))))
+;; (defreply add-alias ((bot (proto 'sykobot)) alias expansion)
+;;   (setf (aliases bot) (acons alias expansion (aliases bot))))
 
-(defreply remove-alias ((bot (proto 'sykobot)) alias)
-  (setf (aliases bot) (delete alias (aliases bot) :count 1
-                              :test #'string-equal :key #'car)))
+;; (defreply remove-alias ((bot (proto 'sykobot)) alias)
+;;   (setf (aliases bot) (delete alias (aliases bot) :count 1
+;;                               :test #'string-equal :key #'car)))
 
-(defreply expand-aliases ((bot (proto 'sykobot)) message)
-  (loop while
-       (loop for (alias . expansion) in (aliases bot)
-          for (new changedp) =
-            (multiple-value-list (regex-replace-all alias message
-                                                    expansion
-                                                    :preserve-case t))
-          when changedp do
-            (setf message new)
-            (return t))
-       finally (return message)))
+;; (defreply expand-aliases ((bot (proto 'sykobot)) message)
+;;   (loop while
+;;        (loop for (alias . expansion) in (aliases bot)
+;;           for (new changedp) =
+;;             (multiple-value-list (regex-replace-all alias message
+;;                                                     expansion
+;;                                                     :preserve-case t))
+;;           when changedp do
+;;             (setf message new)
+;;             (return t))
+;;        finally (return message)))

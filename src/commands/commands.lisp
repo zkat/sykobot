@@ -21,11 +21,12 @@
 
 ;;; When a message is applicable for the bot, responds to it.
 ;;; CALLED BY: call-all-listeners
-;;; CALLS: sent-to-me-p, respond-to-message
+;;; CALLS: scan-string-for-direct-message, respond-to-message
 ;;;  - Adlai
 (deflistener command-listener
-  (when (sent-to-me-p *bot* *channel* *message*)
+  (when (scan-string-for-direct-message *bot* *channel* *message*)
     (respond-to-message *bot* *sender* *channel* *message*)))
+
 (defmessage respond-to-message (bot sender channel message))
 (defmessage get-responses (bot cmd args sender channel))
 (defmessage process-command-string (bot string sender channel &optional pipe-input))
@@ -101,19 +102,11 @@
                           `(,@body))
                     *responses*))))
 
-;;; Checks if a message is directed at the bot
-;;; CALLED BY: command-listener
-;;; CALLS: scan-string-for-direct-message
-;;;  - Adlai
-(defun sent-to-me-p (bot channel message)
-  (when (scan-string-for-direct-message bot channel message)
-    t))
-
 ;;; (defparameter *cmd-prefix* "@")
 
 ;;; Checks if the message is directed at the bot
 ;;; If so, strips out the header; if not, returns NIL.
-;;; CALLED BY: respond-to-message, sent-to-me-p
+;;; CALLED BY: command-listener, respond-to-message
 ;;;  - Adlai
 (defmessage scan-string-for-direct-message (bot channel message))
 (defreply scan-string-for-direct-message ((bot (proto 'sykobot)) channel message)
@@ -291,21 +284,21 @@
 ;; (defun grab-url (string)
 ;;   (find-if #'has-url-p (split "[\\s+><,]" string)))
 
-;;; Aliasing commands
-;;; Don't stress this with crazy regexp aliases. It only works
-;;;   for text-to-text aliases, without any regex stuff.
-(defcommand alias ("(\\S+) (.*)$" alias expansion)
-  (add-alias *bot*
-             (format nil "(?i)(~A[:,])~A(?: |$)"
-                     (nickname *bot*) alias)
-             (format nil "\\1~A " expansion))
-  (cmd-msg "Alright, alias added."))
+;; ;;; Aliasing commands
+;; ;;; Don't stress this with crazy regexp aliases. It only works
+;; ;;;   for text-to-text aliases, without any regex stuff.
+;; (defcommand alias ("(\\S+) (.*)$" alias expansion)
+;;   (add-alias *bot*
+;;              (format nil "(?i)(~A[:,])~A(?: |$)"
+;;                      (nickname *bot*) alias)
+;;              (format nil "\\1~A " expansion))
+;;   (cmd-msg "Alright, alias added."))
 
-(defcommand remove-alias ("(\\S+)" alias)
-  (remove-alias *bot*
-                (print (format nil "(?i)(~A[:,])~A(?: |$)"
-                               (nickname *bot*) alias)))
-  (cmd-msg "Done. Alias removed."))
+;; (defcommand remove-alias ("(\\S+)" alias)
+;;   (remove-alias *bot*
+;;                 (print (format nil "(?i)(~A[:,])~A(?: |$)"
+;;                                (nickname *bot*) alias)))
+;;   (cmd-msg "Done. Alias removed."))
 
 ;; ;;;'Filters'
 ;; (defparameter *english->l33t* '(("a" . "4") ("b" . "|3") ("c" . "<") ("d" . "|)") ("e" . "3")
