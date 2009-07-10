@@ -17,7 +17,7 @@
    (port 6667)
    (dir "default-bot/")
    (password nil)
-   (silentp nil)))
+   (channels nil)))
 
 ;; (defreply init-sheep :after ((sheep (proto 'sykobot)) &key)
 ;;   (setf (memos sheep) (make-hash-table :test #'equalp))
@@ -75,13 +75,18 @@
   (irc:quit (connection bot) (or message (values))))
 
 (defreply join ((bot (proto 'sykobot)) channel)
-  (irc:join (connection bot) channel))
+  (irc:join (connection bot) channel)
+  (pushnew channel (channels bot) :test #'string-equal))
+;;; This commented-out part will probably belong in the methods
+;;;   for (proto 'sykobot-memos), sometime in the near future
 ;; (defreply join :after ((bot (proto 'sykobot)) channel)
 ;;   (setf (gethash channel (last-said bot))
 ;;         (make-hash-table :test #'equalp)))
 
 (defreply part ((bot (proto 'sykobot)) channel)
-  (irc:part (connection bot) channel))
+  (irc:part (connection bot) channel)
+  (with-properties (channels) bot
+    (setf channels (delete channels channel :test #'string-equal))))
 
 (defreply identify ((bot (proto 'sykobot)) password)
   (send-msg bot "nickserv" (format nil "identify ~A" password)))
@@ -104,8 +109,7 @@
   (irc:notice (connection bot) target message))
 
 (defreply send-msg ((bot (proto 'sykobot)) channel message)
-  (unless (silentp bot)
-   (irc:privmsg (connection bot) channel (or message ""))))
+  (irc:privmsg (connection bot) channel (or message "")))
 
 (defreply send-reply ((bot (proto 'sykobot)) target channel message)
   (send-msg bot channel (format nil "~A: ~A" target message)))
@@ -124,8 +128,6 @@
 ;;;
 (defmessage msg-hook (bot msg))
 (defmessage process-message (bot sender channel message))
-(defmessage shut-up (bot))
-(defmessage un-shut-up (bot))
 
 ;;; This command unpacks a message object from CL-IRC
 ;;; CALLED BY: CL-IRC Hook
@@ -143,15 +145,7 @@
 ;;;  - Adlai
 (defreply process-message ((bot (proto 'sykobot))
                            sender channel message)
-  (call-listeners bot sender channel message))
-
-;;; Shutting up works atm through a flag, (silentp bot)
-;;;  - Adlai
-(defreply shut-up ((bot (proto 'sykobot)))
-  (setf (silentp bot) t))
-
-(defreply un-shut-up ((bot (proto 'sykobot)))
-  (setf (silentp bot) nil))
+  (call-active-listeners bot channel sender message))
 
 ;; ;;;
 ;; ;;; Aliases

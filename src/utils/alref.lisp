@@ -28,13 +28,14 @@
                                   (key '#'identity)
                              &environment env)
   "Set the value corresponding to ITEM in ALIST."
-  (multiple-value-bind (foo bar stores setter)
+  (multiple-value-bind (orig-temps orig-vals stores setter)
       (get-setf-expansion alist env)
-    (declare (ignore foo bar))
     (with-gensyms (it g-item g-alist g-test g-key new)
-      (values (list g-item g-alist g-test g-key it)
-              (list item alist test key
-                    `(assoc ,item ,alist :test ,test :key ,key))
+      (values (append (list g-item g-alist g-test g-key it)
+                      orig-temps)
+              (append (list item alist test key
+                            `(assoc ,item ,alist :test ,test :key ,key))
+                      orig-vals)
               `(,new)
               `(cond ((eq ,new NIL)
                       (let ((,(car stores)
