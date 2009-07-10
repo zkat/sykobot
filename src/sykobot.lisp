@@ -133,23 +133,40 @@
 (defmessage shut-up (bot))
 (defmessage un-shut-up (bot))
 
+;;; This command unpacks a message object from CL-IRC
+;;; CALLED BY: CL-IRC Hook
+;;; CALLS: process-message
+;;;  - Adlai
 (defreply msg-hook ((bot (proto 'sykobot)) msg)
   (let ((sender (irc:source msg))
         (channel (car (irc:arguments msg)))
         (message (second (irc:arguments msg))))
     (process-message bot sender channel message)))
 
+;;; This command expands aliases within the message, and then
+;;;   it calls all listeners applicable to the message.
+;;; CALLED BY: msg-hook
+;;; CALLS: expand-aliases, call-all-listeners
+;;;  - Adlai
 (defreply process-message ((bot (proto 'sykobot))
                            sender channel message)
   (call-all-listeners bot sender channel
                       (expand-aliases bot message)))
 
+;;; Shutting up works atm through a flag, (silentp bot)
+;;;  - Adlai
 (defreply shut-up ((bot (proto 'sykobot)))
   (setf (silentp bot) t))
 
 (defreply un-shut-up ((bot (proto 'sykobot)))
   (setf (silentp bot) nil))
 
+;;; Removes the direct message indicator from a message,
+;;;   then splits it into a command and arguments.
+;;; CALLED BY: command-listener
+;;; CALLS: scan-string-for-direct-message, answer-command
+;;; CONFLICT: redefined in commands.lisp
+;;;  - Adlai
 (defreply respond-to-message ((bot (proto 'sykobot)) sender channel message)
   (let* ((string (scan-string-for-direct-message bot channel message))
          (command+args (split "\\s+" string :limit 2)))
@@ -158,18 +175,37 @@
       (error (e)
         (send-reply bot sender channel (format nil "An error occurred: ~A" e))))))
 
+;;; Obsolete; never gets called
+;;; Changes a string to a symbol
+;;; CALLED BY: respond-to-message
+;;; CALLS: answer-command
+;;;  - Adlai
 (defreply answer-command ((bot (proto 'sykobot)) (cmd (proto 'string)) args sender channel)
   (answer-command bot (intern (string-upcase cmd) :sykobot) args sender channel))
 
+;;; Obsolete; never gets called
+;;; Calls the function representing a command
+;;; CALLED BY: answer command, respond-to-message
+;;; CALLS: command-function
+;;;  - Adlai
 (defreply answer-command ((bot (proto 'sykobot)) (cmd (proto 'symbol)) args sender channel)
   (let ((fn (command-function cmd)))
     (funcall fn bot args sender channel)))
 
+;;; Checks if a message is directed at the bot
+;;; CALLED BY: command-listener
+;;; CALLS: scan-string-for-direct-message
+;;;  - Adlai
 (defun sent-to-me-p (bot channel message)
   (when (scan-string-for-direct-message bot channel message)
     t))
 
 (defparameter *cmd-prefix* "@")
+
+;;; Checks if the message is directed at the bot
+;;; If so, strips out the header; if not, returns NIL.
+;;; CALLED BY: respond-to-message, sent-to-me-p
+;;;  - Adlai
 (defmessage scan-string-for-direct-message (bot channel message))
 (defreply scan-string-for-direct-message ((bot (proto 'sykobot)) channel message)
   (cond ((equal channel (nickname bot))
