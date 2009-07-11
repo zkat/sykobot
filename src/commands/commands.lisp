@@ -16,11 +16,21 @@
   ((commands (make-hash-table :test #'equal))
    (detection-regex nil)))
 
-(defreply init-sheep :after ((bot (proto 'sykobot-commands)) &key)
-   (setf (detection-regex bot)
-	 (create-scanner (format nil "^~A[:,] " (nickname bot))
-			 :case-insensitive-mode T)))
+;;; Detection regex handling
+(defmessage update-detection-regex (bot))
+(defreply update-detection-regex ((bot (proto 'sykobot-commands)))
+  (setf (detection-regex bot)
+        (create-scanner (format nil "^~A[:,] " (nickname bot))
+                        :case-insensitive-mode T)))
 
+(defreply init-sheep :after ((bot (proto 'sykobot-commands)) &key)
+  (update-detection-regex bot))
+
+(defreply nick :after ((bot (proto 'sykobot-commands)) new-nick)
+  (declare (ignore new-nick))
+  (update-detection-regex bot))
+
+;;; Command handling stuff
 (defmessage add-command (bot command function))
 (defmessage remove-command (bot command))
 (defmessage command-function (bot command))
@@ -39,7 +49,7 @@
              (declare (ignore channel args))
              (send-notice bot sender
                           (format nil "I don't know how to ~A." command))
-	     (values))))
+             (values))))
 
 (defreply erase-all-commands ((bot (proto 'sykobot-commands)))
   (clrhash (commands bot)))
@@ -65,7 +75,7 @@
 ;;; CALLS: scan-string-for-direct-message, respond-to-message
 ;;;  - Adlai
 (deflistener command-listener
-  (when (scan-for-direct-message *bot* *channel* *message*)
+  (when (scan-for-direct-message *bot* *message*)
     (respond-to-message *bot* *sender* *channel* *message*)))
 
 (defmessage respond-to-message (bot sender channel message))
@@ -78,7 +88,7 @@
 ;;; CALLS: scan-string-for-direct-message, process-command-string
 ;;;  - Adlai
 (defreply respond-to-message ((bot (proto 'sykobot)) sender channel message)
-  (let* ((string (scan-for-direct-message bot channel message))
+  (let* ((string (scan-for-direct-message bot message))
          (results (process-command-string bot string sender channel)))
     (loop for result in results
        do (send-reply bot sender channel (format nil "~A" result)))))
@@ -114,17 +124,13 @@
 ;;; Checks if the message is directed at the bot
 ;;; If so, strips out the header; if not, returns NIL.
 ;;; CALLED BY: command-listener, respond-to-message
+;;; Uses (detection-regex bot) to scan out the command.
+;;; Currently only works for channel messages, no command prefix.
 ;;;  - Adlai
-(defmessage scan-for-direct-message (bot channel message))
-(defreply scan-for-direct-message ((bot (proto 'sykobot)) channel message)
-  (cond ((equal channel (nickname bot))
-         message)
-        ((scan (format nil "^~A: " (nickname bot)) message)
-         (regex-replace (format nil "^~A: " (nickname bot)) message ""))
-        ((scan (format nil "^~A, " (nickname bot)) message)
-         (regex-replace (format nil "^~A, " (nickname bot)) message ""))
-        #+nil ((scan (format nil "^~A+" *cmd-prefix*) message)
-         (regex-replace (format nil "^~A+" *cmd-prefix*) message ""))))
+(defmessage scan-for-direct-message (bot message))
+(defreply scan-for-direct-message ((bot (proto 'sykobot)) message)
+  (subseq message
+          (nth-value 1 (scan (detection-regex bot) message))))
 
 ;;; Puts message responses on the response stack
 (defun cmd-msg (message &rest format-args)
