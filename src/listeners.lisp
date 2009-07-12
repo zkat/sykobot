@@ -22,6 +22,12 @@
    (active-listeners nil)
    (deafp nil)))
 
+(defreply msg-hook ((bot (proto 'sykobot-listeners)) msg)
+  (let ((sender (irc:source msg))
+        (channel (car (irc:arguments msg)))
+        (message (second (irc:arguments msg))))
+    (call-active-listeners bot channel sender message)))
+
 (defmessage add-listener (bot name function))
 (defmessage remove-listener (bot name))
 (defmessage listener-function (bot name))

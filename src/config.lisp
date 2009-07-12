@@ -17,7 +17,7 @@
 (defvar *realname* nil)
 (defvar *bot-dir* nil)
 ;; (defvar *default-listeners* '(command-listener send-memos scan-for-fact scan-for-more scan-for-url remember-last-thing-said))
-(defvar *default-listeners* '(command-listener))
+(defvar *default-listeners* '(command-listener scan-for-url))
 
 (defvar *home* (merge-pathnames ".sykobot/" (user-homedir-pathname)))
 
