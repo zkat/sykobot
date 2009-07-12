@@ -89,7 +89,7 @@
     (setf channels (delete channels channel :test #'string-equal))))
 
 (defreply identify ((bot (proto 'sykobot)) password)
-  (send-msg bot "nickserv" (format nil "identify ~A" password)))
+  (send-msg bot "nickserv" (build-string "identify ~A" password)))
 
 ;;;
 ;;; irc functions
@@ -112,11 +112,11 @@
   (irc:privmsg (connection bot) channel (or message "")))
 
 (defreply send-reply ((bot (proto 'sykobot)) target channel message)
-  (send-msg bot channel (format nil "~A: ~A" target message)))
+  (send-msg bot channel (build-string "~A: ~A" target message)))
 
 (defreply send-action ((bot (proto 'sykobot)) channel action)
-  (send-msg bot channel (format nil "~AACTION ~A~A"
-                                (code-char 1) action (code-char 1))))
+  (send-msg bot channel (build-string "~AACTION ~A~A"
+				      (code-char 1) action (code-char 1))))
 
 (defreply topic ((bot (proto 'sykobot)) channel &optional new-topic)
   (if new-topic
