@@ -40,10 +40,11 @@
   (remhash name (listeners bot)))
 
 (defreply listener-function ((bot (proto 'sykobot-listeners)) (name (proto 'symbol)))
-  (gethash name (listeners bot)
-           (lambda (bot sender channel message)
-             (declare (ignore bot sender channel message))
-             (cerror "Continue" "Nonexistant listener ~S" name))))
+  (with-properties (listeners) bot
+    (gethash name listeners
+             (lambda (bot sender channel message)
+               (declare (ignore bot sender channel message))
+               (cerror "Continue" "Nonexistant listener ~S" name)))))
 
 (defreply call-listener ((bot (proto 'sykobot-listeners)) (name (proto 'symbol)) sender channel message)
   (funcall (listener-function bot name) bot sender channel message))

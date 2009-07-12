@@ -44,18 +44,19 @@
   (remhash command (commands bot)))
 
 (defreply command-function ((bot (proto 'sykobot-commands)) command)
-  (gethash (string-upcase command) (commands bot)
-           (lambda (bot args sender channel)
-             (declare (ignore channel args))
-             (send-msg bot sender
-		       (build-string "I don't know how to ~A." command))
-             (values))))
+  (with-properties (commands) bot
+    (gethash (string-upcase command) commands
+	     (lambda (bot args sender channel)
+	       (declare (ignore bot args sender channel))
+	       (error (build-string "I don't know how to ~A"
+				    command))))))
 
 (defreply erase-all-commands ((bot (proto 'sykobot-commands)))
   (clrhash (commands bot)))
 
 (defreply list-all-commands ((bot (proto 'sykobot-commands)))
-  (hash-table-keys (commands bot)))
+  (with-properties (commands) bot
+    (hash-table-keys commands)))
 
 (defmacro defcommand (name (&optional (regex "") &rest vars) &body body)
   `(add-command (proto 'sykobot-commands) (symbol-name ',name)
@@ -102,7 +103,7 @@
 (defreply respond-to-message ((bot (proto 'sykobot)) sender channel message)
   (let* ((results (process-command-string bot message sender channel)))
     (loop for result in results
-       do (send-reply bot sender channel (build-string result)))))
+       do (send-reply bot channel sender (build-string result)))))
 
 ;;; Parses a string into piped commands, and manages piping their
 ;;;   inputs and outputs together, collecting their results.
@@ -152,7 +153,7 @@
                  (or (not diff)
                      (> diff 3))))
       (toggle-deafness *bot* *channel*)
-      (send-reply *bot* *sender* *channel*
+      (send-reply *bot* *channel* *sender*
                   "bla bla blah. Happy?"))))
 
 ;;; base commands
