@@ -105,27 +105,27 @@
   (irc:nick (connection bot) new-nick))
 
 (defreply send-msg ((bot (proto 'sykobot))
-		    (target (proto 'string))
-		    (message (proto 'string)))
+                    (target (proto 'string))
+                    (message (proto 'string)))
   (with-properties (connection) bot
     (do-lines (line message collected-lines)
       do (irc:privmsg connection target line)
       collect line into collected-lines)))
 
 (defreply send-reply ((bot (proto 'sykobot))
-		      (target (proto 'string))
-		      (user (proto 'string))
-		      (message (proto 'string)))
+                      (target (proto 'string))
+                      (user (proto 'string))
+                      (message (proto 'string)))
   (send-msg bot target
-	    (if (string-equal target user) message
-		(apply #'concatenate 'string
-		       (do-lines (line message new-message)
-			 collect (build-string "~A: ~A" user line)
-			 into new-message)))))
+            (if (string-equal target user) message
+                (apply #'concatenate 'string
+                       (do-lines (line message new-message)
+                         collect (build-string "~A: ~A" user line)
+                         into new-message)))))
 
 (defreply send-action ((bot (proto 'sykobot)) channel action)
   (send-msg bot channel (build-string "~AACTION ~A~A"
-				      (code-char 1) action (code-char 1))))
+                                      (code-char 1) action (code-char 1))))
 
 (defreply topic ((bot (proto 'sykobot)) channel &optional new-topic)
   (if new-topic
