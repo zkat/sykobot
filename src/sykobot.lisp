@@ -33,6 +33,10 @@
 
 (defvar *active-bot* nil)
 
+;;; Good Medicine
+(setf drakma:*drakma-default-external-format* :utf-8
+      flexi-streams:*substitution-char* #\?)
+
 ;;;
 ;;; IRC connection
 ;;;
@@ -79,8 +83,8 @@
 (defreply join ((bot (proto 'sykobot)) channel)
   (irc:join (connection bot) channel))
 (defreply join :after ((bot (proto 'sykobot)) channel)
-          (setf (gethash channel (last-said bot)) (make-hash-table :test #'equalp)))
-
+  (setf (gethash channel (last-said bot))
+        (make-hash-table :test #'equalp)))
 
 (defreply part ((bot (proto 'sykobot)) channel)
   (irc:part (connection bot) channel))
@@ -149,10 +153,7 @@
 (defreply respond-to-message ((bot (proto 'sykobot)) sender channel message)
   (let* ((string (scan-string-for-direct-message bot channel message))
          (command+args (split "\\s+" string :limit 2)))
-    (handler-case
-        (answer-command bot (car command+args) (cadr command+args) sender channel)
-      (error (e)
-        (send-reply bot sender channel (format nil "An error occurred: ~A" e))))))
+    (answer-command bot (car command+args) (cadr command+args) sender channel)))
 
 (defreply answer-command ((bot (proto 'sykobot)) (cmd (proto 'string)) args sender channel)
   (answer-command bot (intern (string-upcase cmd) :sykobot) args sender channel))
@@ -160,10 +161,6 @@
 (defreply answer-command ((bot (proto 'sykobot)) (cmd (proto 'symbol)) args sender channel)
   (let ((fn (command-function cmd)))
     (funcall fn bot args sender channel)))
-
-(defun sent-to-me-p (bot channel message)
-  (when (scan-string-for-direct-message bot channel message)
-    t))
 
 (defparameter *cmd-prefix* "@")
 (defmessage scan-string-for-direct-message (bot channel message))

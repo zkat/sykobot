@@ -20,7 +20,12 @@
 
 ;;; Facts
 (defcommand fact ("(\\S+)*" topic)
-  (cmd-msg (get-fact *bot* topic)))
+  (cmd-msg "~A" (get-fact *bot* topic)))
+
+(defcommand random-fact nil
+  (cmd-msg "~A"
+           (get-fact *bot*
+                     (random-elt (hash-table-keys (facts *bot*))))))
 
 (defun facts-db (bot)
   (merge-pathnames "fact-table.db" (bot-dir bot)))
@@ -76,15 +81,15 @@
 
 (deflistener scan-for-fact
   (let* ((articles '("a" "an" "the" "this" "that"))
-	 (verbs '(" am" " is" " are" " isn\\'t" " ain\\'t" "\\'s"
-		  " likes" " uses" " has" " fails" " wins" " can" " can't"))
-	 (regex (format nil ".*?(~{~A~^|~})*\\s*(\\w+)(~{~A~^|~})\\s+(.+)" articles verbs)))
+         (verbs '(" am" " is" " are" " isn\\'t" " ain\\'t" "\\'s"
+                  " likes" " uses" " has" " fails" " wins" " can" " can't"))
+         (regex (format nil ".*?(~{~A~^|~})*\\s*(\\w+)(~{~A~^|~})\\s+(.+)" articles verbs)))
     (loop for statement in (split-into-sub-statements *message*)
        do (do-register-groups (article noun verb info)
-	      (regex statement)
-	    (if article
-		(set-fact *bot* noun (format nil "~A ~A~A ~A" article noun verb info))
-		(set-fact *bot* noun (format nil "~A~A ~A" noun verb info)))))))
+              (regex statement)
+            (if article
+                (set-fact *bot* noun (format nil "~A ~A~A ~A" article noun verb info))
+                (set-fact *bot* noun (format nil "~A~A ~A" noun verb info)))))))
 
 
 
