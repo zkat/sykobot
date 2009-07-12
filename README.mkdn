@@ -25,6 +25,7 @@ Dependencies
 * bordeaux-threads
 * drakma
 * cl-store
+* cl-json
 
 
 Notes
