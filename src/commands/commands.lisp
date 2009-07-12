@@ -70,15 +70,25 @@
 
 ;;; Command processing
 
+;;; Checks if a message is applicable for the bot.
+;;; If so, returns the command section.
+;;; CALLED BY: command-listener, undeafen-listener
+(defmessage get-message-index (bot message))
+(defreply get-message-index ((bot (proto 'sykobot)) message)
+  (nth-value 1 (scan (detection-regex bot) message)))
+
 ;;; When a message is applicable for the bot, responds to it.
 ;;; CALLED BY: call-listeners
 ;;; CALLS: respond-to-message
 ;;;  - Adlai
 (deflistener command-listener
-  (let ((index (nth-value 1 (scan (detection-regex *bot*) *message*))))
+  (let ((index (get-message-index *bot* *message*)))
     (when index
-      (respond-to-message *bot* *sender* *channel*
-                          (subseq *message* index)))))
+      (handler-case
+          (respond-to-message *bot* *sender* *channel*
+                              (subseq *message* index))
+        (error (e) (send-msg *bot* *channel*
+                             (format nil "An error occured: ~A" e)))))))
 
 (defmessage respond-to-message (bot sender channel message))
 (defmessage get-responses (bot cmd args sender channel))
@@ -134,9 +144,13 @@
                 just how lonely and pathetic you really are.")
     (toggle-deafness *bot* *channel*)))
 (deflistener undeafen
-  (let ((cmd (scan-for-direct-message *bot* *channel* *message*)))
-    (when (and (stringp cmd)
-               (string-equal "talk" (subseq cmd 0 4)))
+  (let ((index (get-message-index *bot* *message*)))
+    (when (and index
+               (let ((diff (mismatch "talk" *message*
+                                      :test #'char=
+                                      :start2 index)))
+                 (or (not diff)
+                     (> diff 3))))
       (toggle-deafness *bot* *channel*)
       (send-reply *bot* *sender* *channel*
                   "bla bla blah. Happy?"))))
@@ -274,25 +288,25 @@
   (listener-off *bot* *channel* 'parrot)
   (cmd-msg "NODOUCHE"))
 
-;; ;;; URLs
-;; (deflistener scan-for-url
-;;   (when (and (has-url-p *message*)
-;;              (not (string-equal *sender* (nickname *bot*))))
-;;     (handler-case
-;;         (multiple-value-bind (title url)
-;;             (url-info (grab-url *message*))
-;;           (send-msg *bot* *channel*
-;;                     (format nil "Title: ~A (at ~A)"
-;;                             (or title "<unknown title>")
-;;                             (puri:uri-host (puri:uri url)))))
-;;       (error ()
-;;         (values)))))
+;;; URLs
+(deflistener scan-for-url
+  (when (and (has-url-p *message*)
+             (not (string-equal *sender* (nickname *bot*))))
+    (handler-case
+        (multiple-value-bind (title url)
+            (url-info (grab-url *message*))
+          (send-msg *bot* *channel*
+                    (format nil "Title: ~A (at ~A)"
+                            (or title "<unknown title>")
+                            (puri:uri-host (puri:uri url)))))
+      (error ()
+        (values)))))
 
-;; (defun has-url-p (string)
-;;   (when (scan "https?://.*[.$| |>]" string) t))
+(defun has-url-p (string)
+  (when (scan "https?://.*[.$| |>]" string) t))
 
-;; (defun grab-url (string)
-;;   (find-if #'has-url-p (split "[\\s+><,]" string)))
+(defun grab-url (string)
+  (find-if #'has-url-p (split "[\\s+><,]" string)))
 
 ;; ;;; Aliasing commands
 ;; ;;; Don't stress this with crazy regexp aliases. It only works
@@ -358,3 +372,6 @@
 
 ;; (defcommand reverse ("(.*)" input)
 ;;   (cmd-msg (reverse input)))
+
+(defcommand error NIL
+  (command-function "garbage" 'frobnobdication #'oops))

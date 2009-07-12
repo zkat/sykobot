@@ -123,29 +123,13 @@
       (irc:topic- (connection bot) channel new-topic)
       (irc:topic (irc:find-channel (connection bot) channel))))
 
-;;;
-;;; Message processing
-;;;
+;;; Message processing doesn't happen in (proto 'sykobot)!!!
 (defmessage msg-hook (bot msg))
-(defmessage process-message (bot sender channel message))
-
-;;; This command unpacks a message object from CL-IRC
-;;; CALLED BY: CL-IRC Hook
-;;; CALLS: process-message
-;;;  - Adlai
 (defreply msg-hook ((bot (proto 'sykobot)) msg)
-  (let ((sender (irc:source msg))
-        (channel (car (irc:arguments msg)))
-        (message (second (irc:arguments msg))))
-    (process-message bot sender channel message)))
-
-;;; Calls all listeners applicable to the message.
-;;; CALLED BY: msg-hook
-;;; CALLS: call-all-listeners
-;;;  - Adlai
-(defreply process-message ((bot (proto 'sykobot))
-                           sender channel message)
-  (call-active-listeners bot channel sender message))
+  (declare (ignore bot msg))
+  (format t "I don't know how to handle messages! You might want ~
+             to look into using (proto 'sykobot-listeners), who ~
+             is able to respond to messages."))
 
 ;; ;;;
 ;; ;;; Aliases
