@@ -137,6 +137,7 @@
   (cmd-msg "bla bla bla bla. There, happy?"))
 (defcommand hi ()
   (cmd-msg "Go away."))
+<<<<<<< HEAD:src/commands/commands.lisp
 (defcommand give ("(\\S+) (\\S+) (.*)$" new-target new-command new-args)
 <<<<<<< HEAD:src/commands/commands.lisp
   (answer-command *bot* new-command new-args new-target *channel*))
@@ -149,6 +150,16 @@
 (defcommand language ()
   (cmd-msg "(((((()())))(((()()(OMFG)))()))(((()))))"))
 >>>>>>> ff0c99e6d159e423a50d1b669f3ff3fa56fc48a5:src/commands/commands.lisp
+=======
+(defcommand language ()
+  (cmd-msg "(((((()())))(((()()(OMFG)))()))(((()))))"))
+
+;;; Give is currently broken
+;; (defcommand give ("(\\S+) (\\S+) (.*)$" new-target new-command new-args)
+;;   (setf *sender* new-target)
+;;   (setf *responses* (get-responses *bot* new-command new-args new-target *channel*)))
+
+>>>>>>> a67cba351a45416bac631af0daee9cdfadf3f836:src/commands/commands.lisp
 ;;; Character Decoding
 (defcommand code->char ("(\\S+)*" code-string)
   (let ((code (if code-string (parse-integer code-string :junk-allowed T) 0)))
