@@ -10,11 +10,16 @@
 
 ;; general-purpose util functions/macros/etc go here
 
-(defun random-elt (sequence) 
+(defmacro do-lines ((var stream &optional result) &body body)
+  `(loop for ,var = (read-line ,stream nil)
+      while ,var do ,@body
+      finally (return ,result)))
+
+(defun random-elt (sequence)
   (let ((l (length sequence)))
     (if (zerop l)
-	nil
-	(elt sequence (random (length sequence))))))
+        nil
+        (elt sequence (random (length sequence))))))
 
 (defun hash-table-keys (table)
   (loop for key being the hash-keys of table collect key))
@@ -28,8 +33,8 @@
 (defun flatten (x)
   "Flattens a list."
   (labels ((rec (x acc)
-	     (cond ((null x) acc)
-		   ((atom x) (cons x acc))
-		   (t (rec (car x) (rec (cdr x) acc))))))
+             (cond ((null x) acc)
+                   ((atom x) (cons x acc))
+                   (t (rec (car x) (rec (cdr x) acc))))))
     (rec x nil)))
 
