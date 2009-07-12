@@ -11,9 +11,15 @@
 ;; general-purpose util functions/macros/etc go here
 
 (defun build-string (&rest strings)
+  (when (and (stringp (car strings))
+	     (string-equal (car strings) "~A"))
+    (error "BUILD-STRING is being called like FORMAT.~@
+            Please rewrite this call and join the sensation."))
   (if (cadr strings)
       (apply #'format nil strings)
-      (funcall #'format nil "~A" (car strings))))
+      (funcall #'format nil "~A"
+	       (or (car strings)
+		   ""))))
 
 (defmacro do-lines ((var stream &optional result) &body body)
   `(loop for ,var = (read-line ,stream nil)
