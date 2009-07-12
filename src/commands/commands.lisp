@@ -20,7 +20,7 @@
 (defmessage update-detection-regex (bot))
 (defreply update-detection-regex ((bot (proto 'sykobot-commands)))
   (setf (detection-regex bot)
-        (create-scanner (format nil "^~A[:,] " (nickname bot))
+        (create-scanner (build-string "^~A[:,] " (nickname bot))
                         :case-insensitive-mode T)))
 
 (defreply init-bot :after ((bot (proto 'sykobot-commands)))
@@ -48,7 +48,7 @@
            (lambda (bot args sender channel)
              (declare (ignore channel args))
              (send-notice bot sender
-                          (format nil "I don't know how to ~A." command))
+                          (build-string "I don't know how to ~A." command))
              (values))))
 
 (defreply erase-all-commands ((bot (proto 'sykobot-commands)))
@@ -88,7 +88,7 @@
           (respond-to-message *bot* *sender* *channel*
                               (subseq *message* index))
         (error (e) (send-msg *bot* *channel*
-                             (format nil "An error occured: ~A" e)))))))
+                             (build-string "An error occured: ~A" e)))))))
 
 (defmessage respond-to-message (bot sender channel message))
 (defmessage get-responses (bot cmd args sender channel))
@@ -102,7 +102,7 @@
 (defreply respond-to-message ((bot (proto 'sykobot)) sender channel message)
   (let* ((results (process-command-string bot message sender channel)))
     (loop for result in results
-       do (send-reply bot sender channel (format nil "~A" result)))))
+       do (send-reply bot sender channel (build-string "~A" result)))))
 
 ;;; Parses a string into piped commands, and manages piping their
 ;;;   inputs and outputs together, collecting their results.
@@ -134,7 +134,7 @@
 
 ;;; Puts message responses on the response stack
 (defun cmd-msg (message &rest format-args)
-  (push (apply #'format nil message format-args)
+  (push (apply #'build-string message format-args)
         *responses*))
 
 ;;; Deafness
@@ -215,8 +215,8 @@
 (defun decode-html-string (string)
   (html-entities:decode-entities string))
 
-(defun search-url (engine query)
-  (format nil engine (regex-replace-all "\\s+" query "+")))
+(defun search-url (engine-regex query)
+  (build-string engine-regex (regex-replace-all "\\s+" query "+")))
 
 ;;; Google
 (defcommand google ("(.*)" query)
@@ -258,8 +258,8 @@
         (let ((ks-time (get-ks-time parsed-zone)))
           (cmd-msg "The time in GMT~A is ~3$ ks."
                    (if (or (= parsed-zone 0) (plusp parsed-zone))
-                       (format nil "+~A" (mod parsed-zone 24))
-                       (format nil "~A" (- (mod parsed-zone 24) 24)))
+                       (build-string "+~A" (mod parsed-zone 24))
+                       (build-string "~A" (- (mod parsed-zone 24) 24)))
                    ks-time))
         (cmd-msg "Invalid timezone."))))
 
@@ -296,9 +296,9 @@
         (multiple-value-bind (title url)
             (url-info (grab-url *message*))
           (send-msg *bot* *channel*
-                    (format nil "Title: ~A (at ~A)"
-                            (or title "<unknown title>")
-                            (puri:uri-host (puri:uri url)))))
+                    (build-string "Title: ~A (at ~A)"
+				  (or title "<unknown title>")
+				  (puri:uri-host (puri:uri url)))))
       (error ()
         (values)))))
 
@@ -313,15 +313,15 @@
 ;; ;;;   for text-to-text aliases, without any regex stuff.
 ;; (defcommand alias ("(\\S+) (.*)$" alias expansion)
 ;;   (add-alias *bot*
-;;              (format nil "(?i)(~A[:,])~A(?: |$)"
-;;                      (nickname *bot*) alias)
-;;              (format nil "\\1~A " expansion))
+;;              (build-string "(?i)(~A[:,])~A(?: |$)"
+;;                            (nickname *bot*) alias)
+;;              (build-string "\\1~A " expansion))
 ;;   (cmd-msg "Alright, alias added."))
 
 ;; (defcommand remove-alias ("(\\S+)" alias)
 ;;   (remove-alias *bot*
-;;                 (print (format nil "(?i)(~A[:,])~A(?: |$)"
-;;                                (nickname *bot*) alias)))
+;;                 (print (build-string "(?i)(~A[:,])~A(?: |$)"
+;;                                      (nickname *bot*) alias)))
 ;;   (cmd-msg "Done. Alias removed."))
 
 ;; ;;;'Filters'

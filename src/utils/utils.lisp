@@ -10,6 +10,11 @@
 
 ;; general-purpose util functions/macros/etc go here
 
+(defun build-string (&rest strings)
+  (if (cadr strings)
+      (apply #'format nil strings)
+      (funcall #'format nil "~A" (car strings))))
+
 (defmacro do-lines ((var stream &optional result) &body body)
   `(loop for ,var = (read-line ,stream nil)
       while ,var do ,@body
@@ -26,9 +31,9 @@
 
 ;;; NOTE: Don't use '\' in the separator, it fails.
 (defun merge-strings (separator &rest strings)
-  (format nil (format nil "~~{~~A~~^~A~~}"
-                      (regex-replace-all "~" separator "~~"))
-          strings))
+  (build-string (build-string "~~{~~A~~^~A~~}"
+			      (regex-replace-all "~" separator "~~"))
+		strings))
 
 (defun flatten (x)
   "Flattens a list."
