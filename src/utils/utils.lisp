@@ -10,6 +10,10 @@
 
 ;; general-purpose util functions/macros/etc go here
 
+(defmacro with-gensyms (vars &body body)
+  `(let ,(loop for x in vars collect `(,x (gensym)))
+     ,@body))
+
 (defun build-string (&rest strings)
   (when (and (stringp (car strings))
 	     (string-equal (car strings) "~A"))
@@ -21,10 +25,12 @@
 	       (or (car strings)
 		   ""))))
 
-(defmacro do-lines ((var stream &optional result) &body body)
-  `(loop for ,var = (read-line ,stream nil)
-      while ,var do ,@body
-      finally (return ,result)))
+(defmacro do-lines ((var string &optional result) &body body)
+  (with-gensyms (stream)
+    `(with-input-from-string (,stream ,string)
+       (loop for ,var = (read-line ,stream nil)
+	  while ,var ,@body
+	  finally (return ,result)))))
 
 (defun random-elt (sequence)
   (let ((l (length sequence)))

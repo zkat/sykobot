@@ -96,7 +96,7 @@
 ;;;
 (defmessage nick (bot new-nick))
 (defmessage send-msg (bot target message))
-(defmessage send-reply (bot target channel message))
+(defmessage send-reply (bot target user message))
 (defmessage send-action (bot channel action))
 (defmessage topic (bot channel &optional new-topic))
 
@@ -108,13 +108,20 @@
 		    (target (proto 'string))
 		    (message (proto 'string)))
   (with-properties (connection) bot
-    (with-input-from-string (message-stream message)
-      (do-lines (line message-stream collected-lines)
-	(irc:privmsg connection target line)
-	collect line into collected-lines))))
+    (do-lines (line message collected-lines)
+      do (irc:privmsg connection target line)
+      collect line into collected-lines)))
 
-(defreply send-reply ((bot (proto 'sykobot)) target channel message)
-  (send-msg bot channel (build-string "~A: ~A" target message)))
+(defreply send-reply ((bot (proto 'sykobot))
+		      (target (proto 'string))
+		      (user (proto 'string))
+		      (message (proto 'string)))
+  (send-msg bot target
+	    (if (string-equal target user) message
+		(apply #'concatenate 'string
+		       (do-lines (line message new-message)
+			 collect (build-string "~A: ~A" user line)
+			 into new-message)))))
 
 (defreply send-action ((bot (proto 'sykobot)) channel action)
   (send-msg bot channel (build-string "~AACTION ~A~A"
