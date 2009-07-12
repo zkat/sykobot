@@ -2,22 +2,28 @@
 ** TODO [#A] Deal with current command system
    We must understand the present, that we may usher in the future.
 *** DONE [#A] Understand exactly what it does, how, and why.
-*** TODO [#B] Figure out how to do it better.
+*** DONE [#B] Figure out how to do it better.
 ** TODO [#A] Goals for new command system
    These are the requirements specified by zkat for the new command
    system to be a viable alternative to the current one.
-*** TODO [#A] Simple DEFCOMMAND Macro
-    Sykopomp likes simple macros (who doesn't?). Also, it should be
-    transparent enough that if it breaks, it'll be easy for anybody
-    to understand and fix, regardless of who wrote it.
-*** TODO [#A] Aliases
-    Aliases are one of the features requested by wizzo, and thus are a
-    high-priority item. They would also help with some things like the
-    command prefix.
-*** TODO [#B] Proper Reporting of Incorrect Syntax
+*** TODO [#A] Proper Reporting of Incorrect Syntax
     This is not present in the current system, however, it is highly
     desired by zkat. This could actually just be a hook into a
     help system.
+**** TODO [#A] Deal correctly with bad arglists
+     ie, don't send "NIL" to google search.
+**** TODO [#B] Conditions for command errors
+     Some good feedback. This also means in general a system for
+     dealing with conditions (not just serious-error) that get
+     caught at command-listener.
+*** TODO [#B] Simple DEFCOMMAND Macro
+    Sykopomp likes simple macros (who doesn't?). Also, it should be
+    transparent enough that if it breaks, it'll be easy for anybody
+    to understand and fix, regardless of who wrote it.
+*** TODO [#B] Aliases
+    Aliases are one of the features requested by wizzo, and thus are a
+    high-priority item. They would also help with some things like the
+    command prefix.
 *** TODO [#C] Pipes
     Pipes are neat, because they enable filters such as translation.
     Some commands such as give and echo could also be seen as pipes.

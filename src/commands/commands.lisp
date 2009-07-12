@@ -7,9 +7,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (in-package :sykobot)
 
-;;; Response stack
-;;; Used to assist piping and multiple return values
-(defvar *responses*)
+;; ;;; Response stack
+;; ;;; Used to assist piping and multiple return values
+;; (defvar *responses*)
 
 ;;; Modularization of commands
 (defproto sykobot-commands ((proto 'sykobot-listeners))
@@ -46,10 +46,10 @@
 (defreply command-function ((bot (proto 'sykobot-commands)) command)
   (with-properties (commands) bot
     (gethash (string-upcase command) commands
-	     (lambda (bot args sender channel)
-	       (declare (ignore bot args sender channel))
-	       (error (build-string "I don't know how to ~A"
-				    command))))))
+             (lambda (bot args sender channel)
+               (declare (ignore bot args sender channel))
+               (error (build-string "I don't know how to ~A"
+                                    command))))))
 
 (defreply erase-all-commands ((bot (proto 'sykobot-commands)))
   (clrhash (commands bot)))
@@ -62,12 +62,10 @@
   `(add-command (proto 'sykobot-commands) (symbol-name ',name)
                 (lambda (*bot* *message* *sender* *channel*)
                   (declare (ignorable *message* *bot* *sender* *channel*))
-                  (let ((*responses* nil))
-                    ,@(if vars
-                          `((register-groups-bind ,vars (,regex *message*)
-                              ,@body))
-                          `(,@body))
-                    *responses*))))
+                  ,@(if vars
+                        `((register-groups-bind ,vars (,regex *message*)
+                            ,@body))
+                        `(,@body)))))
 
 ;;; Command processing
 
@@ -91,7 +89,7 @@
         (error (e) (send-msg *bot* *channel*
                              (build-string "An error occured: ~A" e)))))))
 
-(defmessage respond-to-message (bot sender channel message))
+(defmessage respond-to-mesosage (bot sender channel message))
 (defmessage get-responses (bot cmd args sender channel))
 (defmessage process-command-string (bot string sender channel &optional pipe-input))
 
@@ -100,50 +98,59 @@
 ;;; CALLED BY: command-listener
 ;;; CALLS: process-command-string
 ;;;  - Adlai
-(defreply respond-to-message ((bot (proto 'sykobot)) sender channel message)
-  (let* ((results (process-command-string bot message sender channel)))
+(defreply respond-to-message ((bot (proto 'sykobot))
+                              (sender (proto 'string))
+                              (channel (proto 'string))
+                              (message (proto 'string)))
+  (destructuring-bind (command &optional args)
+      (split "\\s+" message :limit 2)
+    (send-reply bot channel sender
+                (funcall (command-function bot command)
+                         bot args sender channel)))
+  #|(let* ((results (process-command-string bot message sender channel)))
     (loop for result in results
-       do (send-reply bot channel sender (build-string result)))))
+       do (send-reply bot channel sender (build-string result))))|#)
 
-;;; Parses a string into piped commands, and manages piping their
-;;;   inputs and outputs together, collecting their results.
-;;; RECURSIVE!!!
-;;; CALLED BY: respond-to-message, process-command-string
-;;; CALLS: get-responses, process-command-string
-;;;  - Adlai
-(defreply process-command-string ((bot (proto 'sykobot)) string sender channel &optional pipe-input)
-  (let* ((head+tail (split "\\s*\\|\\s*" string :limit 2))
-         (command (if pipe-input (concatenate 'string (car head+tail) " " pipe-input) (car head+tail)))
-         (cmd+args (split "\\s+" command :limit 2))
-         (responses (get-responses bot (car cmd+args) (cadr cmd+args) sender channel))
-         (results (if (cadr head+tail)
-                      (loop for response in responses
-                         collect (process-command-string bot (cadr head+tail)
-                                                         sender channel response))
-                      responses)))
-    (flatten results)))
+;;; Pipes don't work atm.
+;; ;;; Parses a string into piped commands, and manages piping their
+;; ;;;   inputs and outputs together, collecting their results.
+;; ;;; RECURSIVE!!!
+;; ;;; CALLED BY: respond-to-message, process-command-string
+;; ;;; CALLS: get-responses, process-command-string
+;; ;;;  - Adlai
+;; (defreply process-command-string ((bot (proto 'sykobot)) string sender channel &optional pipe-input)
+;;   (let* ((head+tail (split "\\s*\\|\\s*" string :limit 2))
+;;          (command (if pipe-input (concatenate 'string (car head+tail) " " pipe-input) (car head+tail)))
+;;          (cmd+args (split "\\s+" command :limit 2))
+;;          (responses (get-responses bot (car cmd+args) (cadr cmd+args) sender channel))
+;;          (results (if (cadr head+tail)
+;;                       (loop for response in responses
+;;                          collect (process-command-string bot (cadr head+tail)
+;;                                                          sender channel response))
+;;                       responses)))
+;;     (flatten results)))
 
-;;; Calls the function representing a command.
-;;; CALLED BY: process-command-string
-;;; CALLS: command-function
-;;;  - Adlai
-(defreply get-responses ((bot (proto 'sykobot)) cmd args sender channel)
-  (let ((fn (command-function bot cmd)))
-    (funcall fn bot args sender channel)))
+;; ;;; Calls the function representing a command.
+;; ;;; CALLED BY: process-command-string
+;; ;;; CALLS: command-function
+;; ;;;  - Adlai
+;; (defreply get-responses ((bot (proto 'sykobot)) cmd args sender channel)
+;;   (let ((fn (command-function bot cmd)))
+;;     (funcall fn bot args sender channel)))
 
 ;;; (defparameter *cmd-prefix* "@")
 
-;;; Puts message responses on the response stack
-(defun cmd-msg (message &rest format-args)
-  (push (apply #'build-string message format-args)
-        *responses*))
+;; ;;; Puts message responses on the response stack
+;; (defun cmd-msg (message &rest format-args)
+;;   (push (apply #'build-string message format-args)
+;;         *responses*))
 
 ;;; Deafness
 (defcommand shut ("(\\S+)*" arg1)
   (when (equalp arg1 "up")
-    (cmd-msg "Fine. Be that way. Tell me to talk when you realize ~
-                just how lonely and pathetic you really are.")
-    (toggle-deafness *bot* *channel*)))
+    (toggle-deafness *bot* *channel*)
+    "Fine. Be that way. Tell me to talk when you realize ~
+       just how lonely and pathetic you really are."))
 (deflistener undeafen
   (let ((index (get-message-index *bot* *message*)))
     (when (and index
@@ -158,43 +165,42 @@
 
 ;;; base commands
 (defcommand echo ("(.*)" string)
-  (cmd-msg string))
+  string)
 (defcommand source ()
-  (cmd-msg "I'm licensed under the AGPL, you can find my source code at: http://github.com/zkat/sykobot"))
+  "I'm licensed under the AGPL, you can find my source code at: http://github.com/zkat/sykobot")
 (defcommand version ()
-  (cmd-msg "Pfft. I have no versions. I'm 100% git"))
+  "Pfft. I have no versions. I'm 100% git")
 (defcommand help ()
-  (cmd-msg "No."))
+  "No.")
 (defcommand commands ()
-  (cmd-msg "Available commands are ~{~A~^ ~}"
-           (list-all-commands *bot*)))
+  (build-string "Available commands are ~{~A~^ ~}"
+                (list-all-commands *bot*)))
 (defcommand topic ("(.*)" new-topic)
   (if (< 0 (length new-topic))
-      (topic *bot* *channel* new-topic)
-      (cmd-msg (topic *bot* *channel*))))
-(defcommand ping ()
-  (cmd-msg "pong"))
-(defcommand hi ()
-  (cmd-msg "Go away."))
-(defcommand language ()
-  (cmd-msg "(((((()())))(((()()(OMFG)))()))(((()))))"))
+      (topic *bot* *channel* new-topic) ; Slightly broken
+      (topic *bot* *channel*)))
+(defcommand ping () "pong")
+(defcommand hi () "Go away.")
+(defcommand language () "I'm \"Lost In Stupid Parentheses\"")
 
 ;;; Give is currently broken
 ;; (defcommand give ("(\\S+) (\\S+) (.*)$" new-target new-command new-args)
 ;;   (setf *sender* new-target)
 ;;   (setf *responses* (get-responses *bot* new-command new-args new-target *channel*)))
 
-;;; Character Decoding
-(defcommand code->char ("(\\S+)*" code-string)
-  (let ((code (if code-string (parse-integer code-string :junk-allowed T) 0)))
-    (cmd-msg "~:[Invalid code~;~:*~A~]" (and (integerp code) (/= code 127) (>= code 32)
-                                             (code-char code)))))
+;;; These are broken until encoding issues can be finalized.
+;; ;;; Character Decoding
+;; (defcommand code->char ("(\\S+)*" code-string)
+;;   (let ((code (if code-string (parse-integer code-string :junk-allowed T) 0)))
+;;     (build-string "~:[Invalid code~;~:*~A~]"
+;;                   (and (integerp code) (/= code 127) (>= code 32)
+;;                        (code-char code)))))
 
-(defcommand char->code ("(\\S+)*" char-string)
-  (let ((code (and char-string (char-code (elt char-string 0)))))
-    (cmd-msg  "~:[Invalid character~;~A~]"
-              (and (integerp code) (/= code 127) (>= code 32))
-              code)))
+;; (defcommand char->code ("(\\S+)*" char-string)
+;;   (let ((code (and char-string (char-code (elt char-string 0)))))
+;;     (build-string  "~:[Invalid character~;~A~]"
+;;                    (and (integerp code) (/= code 127) (>= code 32)
+;;                         code))))
 
 ;;; General web functionality
 (defun url-info (url)
@@ -223,7 +229,7 @@
 (defcommand google ("(.*)" query)
   (multiple-value-bind (title url)
       (google-search query)
-    (cmd-msg "~:[~;~A ~]<~A>" title title url)))
+    (build-string "~:[~;~A ~]<~A>" title title url)))
 
 (defun google-search (query)
   (url-info (search-url
@@ -234,7 +240,8 @@
 (defcommand cliki ("(.*)" query)
   (multiple-value-bind (links numlinks)
       (cliki-urls query)
-    (cmd-msg "I found ~D result~:P.~@[ Check out <~A>.~]" numlinks (car links))))
+    (build-string "I found ~D result~:P.~@[ Check out <~A>.~]"
+                  numlinks (car links))))
 
 (defun cliki-urls (query)
   (let ((links NIL)
@@ -257,12 +264,12 @@
   (let ((parsed-zone (parse-integer zone :junk-allowed t)))
     (if parsed-zone
         (let ((ks-time (get-ks-time parsed-zone)))
-          (cmd-msg "The time in GMT~A is ~3$ ks."
-                   (if (or (= parsed-zone 0) (plusp parsed-zone))
-                       (build-string "+~A" (mod parsed-zone 24))
-                       (build-string "~A" (- (mod parsed-zone 24) 24)))
-                   ks-time))
-        (cmd-msg "Invalid timezone."))))
+          (build-string "The time in GMT~A is ~3$ ks."
+                        (if (or (= parsed-zone 0) (plusp parsed-zone))
+                            (build-string "+~A" (mod parsed-zone 24))
+                            (build-string "~A" (- (mod parsed-zone 24) 24)))
+                        ks-time))
+        "Invalid timezone.")))
 
 (defun get-ks-time (&optional (gmt-diff 0))
   (multiple-value-bind
@@ -281,13 +288,13 @@
   (if (listener-active-p *bot* *channel* 'parrot)
       (progn
         (listener-off *bot* *channel* 'parrot)
-        (cmd-msg "NODOUCHE"))
+        "NODOUCHE")
       (progn
         (listener-on *bot* *channel* 'parrot)
-        (cmd-msg "TIME TO BE A DOUCHEBAG"))))
+        "TIME TO BE A DOUCHEBAG")))
 (defcommand noparrot ()
   (listener-off *bot* *channel* 'parrot)
-  (cmd-msg "NODOUCHE"))
+  "NODOUCHE")
 
 ;;; URLs
 (deflistener scan-for-url
@@ -298,10 +305,8 @@
             (url-info (grab-url *message*))
           (send-msg *bot* *channel*
                     (build-string "Title: ~A (at ~A)"
-				  (or title "<unknown title>")
-				  (puri:uri-host (puri:uri url)))))
-      (error ()
-        (values)))))
+                                  (or title "<unknown title>")
+                                  (puri:uri-host (puri:uri url))))))))
 
 (defun has-url-p (string)
   (when (scan "https?://.*[.$| |>]" string) t))
@@ -346,10 +351,11 @@
 ;; (defcommand capitalise ("(.*)" input)
 ;;   (cmd-msg (string-upcase input)))
 
-;; (defcommand singa ()
-;;   (cmd-msg "I love to singa")
-;;   (cmd-msg "about the moon-a and a june-a and a spring-a")
-;;   (cmd-msg "I love to singa"))
+(defcommand singa ()
+  (build-string
+   "I love to singa~@
+    about the moon-a and a june-a and a spring-a~@
+    I love to singa"))
 
 ;; (defcommand translate ("(\\S+) (\\S+) (.*)" input-lang output-lang text)
 ;;   (if (and (= (length output-lang) 2)

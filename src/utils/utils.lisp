@@ -22,13 +22,13 @@
     (error "BUILD-STRING is being called like FORMAT.~@
             Please rewrite this call and join the sensation."))
   (cond ((null data) "")
-	((not (stringp (car data)))
-	 (warn "Ignoring datum ~A." (car data))
-	 (apply #'build-string (cdr data)))
-	((unless (scan "~[:@]{0,2}\\n" (car data))
-	   (null (cdr data)))
-	 (format nil "~A" (car data)))
-	(T (apply #'format nil data))))
+        ((not (stringp (car data)))
+         (warn "Ignoring datum ~A." (car data))
+         (apply #'build-string (cdr data)))
+        ((unless (scan "~[:@]{0,2}\\n" (car data))
+           (null (cdr data)))
+         (format nil "~A" (car data)))
+        (T (apply #'format nil data))))
 
 (defmacro do-lines ((var string &optional result) &body body)
   (with-gensyms (stream)
@@ -48,8 +48,9 @@
 
 ;;; NOTE: Don't use '\' in the separator, it fails.
 (defun merge-strings (separator &rest strings)
-  (build-string (build-string "~~{~~A~~^~A~~}"
-                              (regex-replace-all "~" separator "~~"))
+  (unless (characterp separator)
+    (setf separator (regex-replace-all "~" separator "~~")))
+  (build-string (build-string "~~{~~A~~^~A~~}" separator)
                 strings))
 
 (defun flatten (x)
