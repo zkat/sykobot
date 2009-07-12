@@ -118,10 +118,10 @@
                       (message (proto 'string)))
   (send-msg bot target
             (if (string-equal target user) message
-                (apply #'concatenate 'string
-                       (do-lines (line message new-message)
-                         collect (build-string "~A: ~A" user line)
-                         into new-message)))))
+                (apply #'build-string
+		       (do-lines (line message new-message)
+			 collect (build-string "~A: ~A" user line)
+			 into new-message)))))
 
 (defreply send-action ((bot (proto 'sykobot)) channel action)
   (send-msg bot channel (build-string "~AACTION ~A~A"
