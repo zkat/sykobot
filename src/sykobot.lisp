@@ -107,7 +107,11 @@
 (defreply send-msg ((bot (proto 'sykobot))
 		    (target (proto 'string))
 		    (message (proto 'string)))
-  (irc:privmsg (connection bot) target message))
+  (with-properties (connection) bot
+    (with-input-from-string (message-stream message)
+      (do-lines (line message-stream collected-lines)
+	(irc:privmsg connection target line)
+	collect line into collected-lines))))
 
 (defreply send-reply ((bot (proto 'sykobot)) target channel message)
   (send-msg bot channel (build-string "~A: ~A" target message)))
