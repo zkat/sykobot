@@ -47,8 +47,8 @@
   (gethash (string-upcase command) (commands bot)
            (lambda (bot args sender channel)
              (declare (ignore channel args))
-             (send-notice bot sender
-                          (build-string "I don't know how to ~A." command))
+             (send-msg bot sender
+		       (build-string "I don't know how to ~A." command))
              (values))))
 
 (defreply erase-all-commands ((bot (proto 'sykobot-commands)))
@@ -102,7 +102,7 @@
 (defreply respond-to-message ((bot (proto 'sykobot)) sender channel message)
   (let* ((results (process-command-string bot message sender channel)))
     (loop for result in results
-       do (send-reply bot sender channel (build-string "~A" result)))))
+       do (send-reply bot sender channel (build-string result)))))
 
 ;;; Parses a string into piped commands, and manages piping their
 ;;;   inputs and outputs together, collecting their results.
@@ -372,6 +372,3 @@
 
 ;; (defcommand reverse ("(.*)" input)
 ;;   (cmd-msg (reverse input)))
-
-(defcommand error NIL
-  (command-function "garbage" 'frobnobdication #'oops))

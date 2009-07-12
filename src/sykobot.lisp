@@ -95,8 +95,7 @@
 ;;; irc functions
 ;;;
 (defmessage nick (bot new-nick))
-(defmessage send-notice (bot target message))
-(defmessage send-msg (bot channel message))
+(defmessage send-msg (bot target message))
 (defmessage send-reply (bot target channel message))
 (defmessage send-action (bot channel action))
 (defmessage topic (bot channel &optional new-topic))
@@ -105,11 +104,10 @@
   (setf (nickname bot) new-nick)
   (irc:nick (connection bot) new-nick))
 
-(defreply send-notice ((bot (proto 'sykobot)) target message)
-  (irc:notice (connection bot) target message))
-
-(defreply send-msg ((bot (proto 'sykobot)) channel message)
-  (irc:privmsg (connection bot) channel (or message "")))
+(defreply send-msg ((bot (proto 'sykobot))
+		    (target (proto 'string))
+		    (message (proto 'string)))
+  (irc:privmsg (connection bot) target message))
 
 (defreply send-reply ((bot (proto 'sykobot)) target channel message)
   (send-msg bot channel (build-string "~A: ~A" target message)))
