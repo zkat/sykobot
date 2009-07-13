@@ -89,7 +89,7 @@
         (error (e) (send-msg *bot* *channel*
                              (build-string "An error occured: ~A" e)))))))
 
-(defmessage respond-to-mesosage (bot sender channel message))
+(defmessage respond-to-message (bot sender channel message))
 (defmessage get-responses (bot cmd args sender channel))
 (defmessage process-command-string (bot string sender channel &optional pipe-input))
 
