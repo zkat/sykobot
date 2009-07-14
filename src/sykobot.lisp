@@ -19,12 +19,6 @@
    (password nil)
    (channels nil)))
 
-;; (defreply init-sheep :after ((sheep (proto 'sykobot)) &key)
-;;   (setf (memos sheep) (make-hash-table :test #'equalp))
-;;   (setf (facts sheep) (make-hash-table :test #'equalp))
-;;   (setf (quotes sheep) (make-hash-table :test #'equalp))
-;;   (setf (last-said sheep) (make-hash-table :test #'equalp)))
-
 (defvar *active-bot* nil)
 
 ;;; Good Medicine
