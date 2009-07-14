@@ -64,5 +64,5 @@
        do (destructuring-bind (recipient sender text time-added) memo
             (declare (ignore recipient time-added))
             (send-reply *bot* *sender* *channel* (build-string "Memo from ~A - \"~A\"" sender text)))
-       (remove-memo *bot* memo))))
+         (remove-memo *bot* memo))))
 

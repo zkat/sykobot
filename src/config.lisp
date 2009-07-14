@@ -46,9 +46,9 @@
         (setf (server bot) *server*))
       (when *port*
         (setf (port bot) *port*))
-;;       (load-memos bot)
-;;       (load-facts bot)
-;;       (load-quotes bot)
+      #+nil (load-memos bot)
+      #+nil (load-facts bot)
+      #+nil (load-quotes bot)
       (init-bot bot)
       (when *identify-with-nickserv?*
         (identify bot *nickserv-password*))

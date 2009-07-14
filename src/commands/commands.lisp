@@ -107,9 +107,9 @@
     (send-reply bot channel sender
                 (funcall (command-function bot command)
                          bot args sender channel)))
-  #|(let* ((results (process-command-string bot message sender channel)))
-    (loop for result in results
-       do (send-reply bot channel sender (build-string result))))|#)
+  #+nil (let* ((results (process-command-string bot message sender channel)))
+          (loop for result in results
+             do (send-reply bot channel sender (build-string result)))))
 
 ;;; Pipes don't work atm.
 ;; ;;; Parses a string into piped commands, and manages piping their
@@ -155,8 +155,8 @@
   (let ((index (get-message-index *bot* *message*)))
     (when (and index
                (let ((diff (mismatch "talk" *message*
-                                      :test #'char=
-                                      :start2 index)))
+                                     :test #'char=
+                                     :start2 index)))
                  (or (not diff)
                      (> diff 3))))
       (toggle-deafness *bot* *channel*)
