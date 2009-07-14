@@ -14,6 +14,12 @@
   `(let ,(loop for x in vars collect `(,x (gensym)))
      ,@body))
 
+(defun format-string-p (string)
+  (string/= string
+	    (handler-case (format nil string)
+	      (simple-error nil
+		(return-from format-string-p T)))))
+
 (defun build-string (&rest data)
   ;; This first form is just to catch idiotic code.
   ;; It should be removed from "out-of-the-box" sykobot distros.
@@ -22,11 +28,8 @@
     (error "BUILD-STRING is being called like FORMAT.~@
             Please rewrite this call and join the sensation."))
   (cond ((null data) "")
-        ((not (stringp (car data)))
-         (warn "Ignoring datum ~A." (car data))
-         (apply #'build-string (cdr data)))
-        ((unless (scan "~[:@]{0,2}\\n" (car data))
-           (null (cdr data)))
+        ((and (not (format-string-p (car data)))
+	      (null (cdr data)))
          (format nil "~A" (car data)))
         (T (apply #'format nil data))))
 
