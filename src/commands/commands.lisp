@@ -390,6 +390,31 @@
     about the moon-a and a june-a and a spring-a~@
     I love to singa"))
 
+(defcommand weather ("(.+)" location)
+  (let* ((location-data
+	  (json:decode-json-from-string 
+	   (map 'string #'code-char 
+		(drakma:http-request 
+		 "http://ws.geonames.org/searchJSON"
+		 :parameters `(("q" . ,location) ("maxRows" . "1"))))))
+	 (lat (format nil "~A" (alref :lat (car (alref :geonames location-data)))))
+	 (lng (format nil "~A" (alref :lng (car (alref :geonames location-data)))))
+	 (weather-data
+	  (alref :weather-observation
+		 (json:decode-json-from-string
+		  (map 'string #'code-char
+		       (drakma:http-request
+			"http://ws.geonames.org/findNearByWeatherJSON"
+			:parameters `(("lat" . ,lat) ("lng" . ,lng)))))))
+	 (cloudyness (alref :clouds weather-data))
+	 (temp (alref :temperature weather-data))
+	 (station-name (alref :station-name weather-data)))
+    (build-string 
+     "there are ~A and the temperature is ~A°C at ~A"
+     cloudyness temp station-name)))
+    
+    
+	 
 ;; (defcommand translate ("(\\S+) (\\S+) (.*)" input-lang output-lang text)
 ;;   (if (and (= (length output-lang) 2)
 ;;            (or (= (length input-lang) 2)
