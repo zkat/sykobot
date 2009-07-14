@@ -34,32 +34,33 @@ Installing Dependencies
 First look in the package your package manager for any dependency in the list above and install it.
 
 
-The rest of the dependencies can be installed with clbuild [4]
-* download clbuild
-* extract it
-* cd clbuild
-* chmod +x clbuild
-* ./clbuild check  ( this checks for dependency's, they are: cvs , svn,  wget , darcs)
-* Now you can install all the dependencies with clbuild ( If clbuild asks you too install some dependencies , just return yes )
+The rest of the dependencies can be installed with [clbuild][4]
+	darcs get http://common-lisp.net/project/clbuild/clbuild	
+	extract it
+	cd clbuild
+	chmod +x clbuild
+	./clbuild check  ( this checks for dependency's, they are: cvs , svn,  wget , darcs)
 
-* ./clbuild install html-entities
-* ./clbuild install cl-irc
-* ./clbuild install cl-pprce
-* ./clbuild install bodeaux-threads
-* ./clbuild install cl-store
-* ./clbuild install cl-json
+Now you can install all the dependencies with clbuild ( If clbuild asks you too install some dependencies , just return yes )
 
-* Now we need to download sykbot and sheeple ( you will need to install git )
-* git clone git://github.com/zkat/sykobot.git  
-* git clone git://github.com/zkat/sheeple.git 
-* cd /path/to/clbuild/systems
-* ln -s /path/to/sheeple.asd
-* ln -s /path/to/sykbot.asd 
+	./clbuild install html-entities
+	./clbuild install cl-irc
+	./clbuild install cl-pprce
+	./clbuild install bodeaux-threads
+	./clbuild install cl-store
+	./clbuild install cl-json
+
+Now we need to download sykbot and sheeple ( you will need to install git )
+	git clone git://github.com/zkat/sykobot.git  
+	git clone git://github.com/zkat/sheeple.git 
+	cd /path/to/clbuild/systems
+	ln -s /path/to/sheeple.asd
+	ln -s /path/to/sykbot.asd 
 
 For ArchLinux:
-* pacman -S sbcl
-* pacman -S slime-cvs
-* install an text editor 
+	pacman -S sbcl
+	pacman -S slime-cvs
+	install an text editor 
 
 Developping in Emacs 
 --------------------
@@ -73,12 +74,12 @@ Emacs configuration  ( .emacs )
 	(setq viper-mode t)
 	(require 'viper)
 
-* Start Emacs
-* M -x slime   ( M == the alt key )
-* , load-system
-* sykobot
-* (in-pacakge sykobot)
-* (run-bot)
+	Start Emacs
+	M -x slime   ( M == the alt key )
+	, load-system 
+	sykobot ( in the load-system prompt  )
+	(in-pacakge sykobot)
+	(run-bot)
 
 
 Notes
