@@ -16,6 +16,9 @@
   ((commands (make-hash-table :test #'equal))
    (detection-regex nil)))
 
+(defreply init-sheep :after ((proto 'command-bot) &key)
+  (setf (commands proto) (make-hash-table :test #'equal)))
+
 ;;; Detection regex handling
 (defmessage update-detection-regex (bot))
 (defreply update-detection-regex ((bot (proto 'command-bot)))
