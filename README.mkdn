@@ -1,4 +1,72 @@
 About
 =====
 
-Sykobot is a next-gen AI, programmed in a next-gen language.
+Vision
+------
+
+Sykobot is a next-gen AI, programmed in a next-gen language. Designed to be a irc bot for #archlinux , #archlinux-offtopic or any other irc channel. Supporting main bot functions , and flexbile code.
+
+
+Supported Platforms
+-------------------
+
+Sykobot is developed on GNU/Linux, for UNIX. It should also work on any Linux distro or OSX wich has installed the dependencies of sykobot. 
+If you run sykobot on a platform not listed above please e-mail me. So i can add the platform to our list.
+
+
+Dependencies
+------------
+* SBCL
+* GNU Lisp
+* [Sheeple][1]
+* html-entities
+* cl-irc
+* cl-pprce
+* bordeaux-threads
+* drakma
+* cl-store
+* cl-json
+
+
+Notes
+-----
+
+Sykobot is still in development , although simple bot functions work. The code can be rewritting and there is no stable branch atm. The code is on [github][2]
+
+
+Features
+--------
+
+* Search --  For searching other sites for example the archlinux wiki , add this alias: " @alias wiki google site:wiki.archlinux.org "
+		usage: @google <keyword> 
+	
+
+* Facts -- facts are a nice AI feature of sykobot, if someone says  "foo is bar" in an irc channel, then sykobot stores this. You can review the fact with @fact foo. Support for showing random facts is being added. Sidenote facts are overwritten all the time.
+		usage: @fact foo
+
+* Grabs -- This command will store an quote of someone. Note: you can't grab yourself or the bot . Grabs can be viewed by doing: "@q nick" or for an random grab: "@rq nick"
+		usage: @grab nick	
+
+* Kiloseconds -- display the current time in [kiloseconds][3] 
+		usage: @kiloseconds 1  
+	-- this will display  time GMT +1 in kiloseconds
+
+* Memo's   --adding memo's to people in the channel
+		usage:  sykobot: memo for foo :  you memo 
+
+* Alias  -- add an alias 
+		usage: @alias fun fun is banned in #archlinux
+	 -- @fun  will display  "fun is banned in #archlinux"
+
+
+Using Sykobot
+-------------
+
+Please refer to #P"doc;user-guide.org" for a full guide to sykobot
+
+As usual, you can contact the developpers directly at the follow irc channel #sykosomatic@freenode.  
+
+
+[1]: http://github.com/zkat/sheeple
+[2]: http://github.com/zkat/sykobot
+[3]: http://bavardage.github.com/Kiloseconds

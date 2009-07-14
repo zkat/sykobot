@@ -184,9 +184,9 @@
 (defcommand language () "I'm \"Lost In Stupid Parentheses\"")
 
 ;;; Give is currently broken
-;; (defcommand give ("(\\S+) (\\S+) (.*)$" new-target new-command new-args)
-;;   (setf *sender* new-target)
-;;   (setf *responses* (get-responses *bot* new-command new-args new-target *channel*)))
+#+nil (defcommand give ("(\\S+) (\\S+) (.*)$" new-target new-command new-args)
+        (setf *sender* new-target)
+        (setf *responses* (get-responses *bot* new-command new-args new-target *channel*)))
 
 ;;; These are broken until encoding issues can be finalized.
 ;; ;;; Character Decoding
@@ -236,6 +236,40 @@
              "http://google.com/search?filter=1&safe=on&q=~A&btnI"
              query)))
 
+;;; ArchWiki 
+(defcommand wiki ("(.*)" query)
+  (multiple-value-bind (title url)
+      (wiki-search query)
+    (build-string "~:[~;~A ~]<~A>" title title url)))
+
+(defun wiki-search (query)
+  (url-info (search-url
+             "http://wiki.archlinux.org/index.php/Special:Search?search=~A"
+             query)))
+
+;;; AUR 
+(defcommand aursearch ("(.*)" query)
+  (multiple-value-bind (title url)
+      (aur-search query)
+    (build-string "~:[~;~A ~]<~A>" title title url)))
+
+(defun aur-search (query)
+  (url-info (search-url
+             "http://aur.archlinux.org/rpc.php?type=search&arg=~A"
+             query)))
+
+;;; BBS 
+(defcommand bbs ("(.*)" query)
+  (multiple-value-bind (title url)
+      (bbs-search query)
+    (build-string "~:[~;~A ~]<~A>" title title url)))
+
+
+(defun bbs-search (query)
+  (url-info (search-url
+             "http://bbs.archlinux.org/search.php?action=search&keywords=~A"
+             query)))
+
 ;;; CLiki search
 (defcommand cliki ("(.*)" query)
   (multiple-value-bind (links numlinks)
@@ -243,6 +277,7 @@
     (build-string "I found ~D result~:P.~@[ Check out <~A>.~]"
                   numlinks (car links))))
 
+;;; CLIKI
 (defun cliki-urls (query)
   (let ((links NIL)
         (page (drakma:http-request
