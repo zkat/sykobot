@@ -409,9 +409,12 @@
 	 (cloudyness (alref :clouds weather-data))
 	 (temp (alref :temperature weather-data))
 	 (station-name (alref :station-name weather-data)))
-    (build-string 
-     "there are ~A and the temperature is ~A°C at ~A"
-     cloudyness temp station-name)))
+    (if weather-data
+      (build-string 
+       "there are ~A and the temperature is ~A°C at ~A"
+       cloudyness temp station-name)
+      (build-string "I couldn't find the weather for ~A" location))))
+  
     
     
 	 
