@@ -24,7 +24,11 @@
 
 (defreply msg-hook ((bot (proto 'sykobot-listeners)) msg)
   (let ((sender (irc:source msg))
-        (channel (car (irc:arguments msg)))
+        (channel (let ((target (car (irc:arguments msg))))
+		   (if (equal target
+			      (irc:nickname (irc:user (irc:connection msg))))
+		       (irc:source msg)
+		       target)))
         (message (second (irc:arguments msg))))
     (call-active-listeners bot channel sender message)))
 

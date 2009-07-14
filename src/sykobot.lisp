@@ -31,6 +31,17 @@
 (setf drakma:*drakma-default-external-format* :utf-8
       flexi-streams:*substitution-char* #\?)
 
+;;; Stdout logging of raw IRC.
+(defmethod cl-irc:irc-message-event :before (connection message)
+  (declare (ignore connection))
+  (format t "-> ~a~%" (irc:raw-message-string message)))
+
+(defmethod cl-irc::send-irc-message :before (connection command &rest arguments)
+  (declare (ignore connection))
+  ;; make-irc-message includes a newline
+  (format t "<- ~a"  (apply #'cl-irc::make-irc-message command arguments))
+  (finish-output))
+
 ;;;
 ;;; IRC connection
 ;;;
@@ -54,6 +65,7 @@
                                       :password (password bot)
                                       :username (username bot)
                                       :realname (realname bot)))
+  (setf (irc:client-stream (connection bot)) (make-broadcast-stream))
   (irc:add-hook (connection bot) 'irc:irc-privmsg-message
                 (lambda (msg)
                   (handler-bind ((cl-irc:no-such-reply (lambda (c)
