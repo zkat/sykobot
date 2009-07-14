@@ -22,15 +22,18 @@
    (active-listeners nil)
    (deafp nil)))
 
-(defreply msg-hook ((bot (proto 'listener-bot)) msg)
-  (let ((sender (irc:source msg))
-        (channel (let ((target (car (irc:arguments msg))))
-		   (if (equal target (nickname bot))
+(defreply msg-hook ((*bot* (proto 'listener-bot)) msg)
+  (let ((*sender* (irc:source msg))
+        (*channel* (let ((target (car (irc:arguments msg))))
+		   (if (equal target (nickname *bot*))
 		       (irc:source msg)
 		       target)))
-        (message (cadr (irc:arguments msg))))
-    (call-active-listeners bot channel sender
-                           (escape-format-string message))))
+        (*message* (cadr (irc:arguments msg))))
+    (handler-case
+        (call-active-listeners *bot* *channel* *sender*
+                               (escape-format-string *message*))
+      (error (e) (send-msg *bot* *channel*
+                           (build-string "ERROR: ~A" e))))))
 
 (defmessage add-listener (bot name function))
 (defmessage remove-listener (bot name))
