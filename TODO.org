@@ -1,5 +1,5 @@
 * TODO Finish sykobot
-** TODO [#A] Deal with current command system
+** DONE [#A] Deal with current command system
    We must understand the present, that we may usher in the future.
 *** DONE [#A] Understand exactly what it does, how, and why.
 *** DONE [#B] Figure out how to do it better.
@@ -16,6 +16,9 @@
      Some good feedback. This also means in general a system for
      dealing with conditions (not just serious-error) that get
      caught at command-listener.
+*** TODO [#B] Fix thinko with #'build-string
+    Get that to work as it should.
+    Hint: output is to a stream, but maintain abstraction over IRC lib.
 *** TODO [#B] Simple DEFCOMMAND Macro
     Sykopomp likes simple macros (who doesn't?). Also, it should be
     transparent enough that if it breaks, it'll be easy for anybody
@@ -57,5 +60,3 @@
 
 ** TODO [#C] Other Features
 *** TODO 'log last five minutes and post to wiki...'
-
-

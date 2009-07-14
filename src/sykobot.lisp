@@ -130,10 +130,11 @@
                       (message (proto 'string)))
   (send-msg bot target
             (if (string-equal target user) message
-                (apply #'merge-strings
-                       (build-string "~A: " user)
+                (apply #'merge-strings #\Newline
                        (do-lines (line (build-string message) message)
-                         collect line into message)))))
+                         collect (build-string "~A: ~A"
+					       user line)
+			 into message)))))
 
 (defreply send-action ((bot (proto 'sykobot)) channel action)
   (send-msg bot channel (build-string "~AACTION ~A~A"
