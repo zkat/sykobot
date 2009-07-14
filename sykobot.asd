@@ -27,7 +27,7 @@
                       :serial t
                       :components
                       ((:file "commands")
-                       #+nil (:file "memos")
+                       (:file "memos")
                        #+nil (:file "facts")
                        #+nil (:file "chant")
                        (:file "quotegrabs")))
