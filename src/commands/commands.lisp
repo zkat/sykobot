@@ -10,7 +10,7 @@
 ;; ;;; Response stack
 ;; ;;; Used to assist piping and multiple return values
 ;; (defvar *responses*)
-
+(defvar *cmd-prefix* "@")
 ;;; Modularization of commands
 (defproto command-bot ((proto 'listener-bot))
   ((commands (make-hash-table :test #'equal))
@@ -20,7 +20,7 @@
 (defmessage update-detection-regex (bot))
 (defreply update-detection-regex ((bot (proto 'command-bot)))
   (setf (detection-regex bot)
-        (create-scanner (build-string "^~A[:,] " (nickname bot))
+        (create-scanner (build-string "^~A[:,] |~A" (nickname bot) *cmd-prefix*)
                         :case-insensitive-mode T)))
 
 (defreply init-bot :after ((bot (proto 'command-bot)))
