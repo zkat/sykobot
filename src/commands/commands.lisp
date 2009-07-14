@@ -20,7 +20,7 @@
 (defmessage update-detection-regex (bot))
 (defreply update-detection-regex ((bot (proto 'command-bot)))
   (setf (detection-regex bot)
-        (create-scanner (build-string "^~A[:,] |~A" (nickname bot) *cmd-prefix*)
+        (create-scanner (build-string "^~A[:,] |^~A" (nickname bot) *cmd-prefix*)
                         :case-insensitive-mode T)))
 
 (defreply init-bot :after ((bot (proto 'command-bot)))
