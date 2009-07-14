@@ -299,10 +299,8 @@
   (let ((parsed-zone (parse-integer zone :junk-allowed t)))
     (if parsed-zone
         (let ((ks-time (get-ks-time parsed-zone)))
-          (build-string "The time in GMT~A is ~3$ ks."
-                        (if (or (= parsed-zone 0) (plusp parsed-zone))
-                            (build-string "+~A" (mod parsed-zone 24))
-                            (build-string "~A" (- (mod parsed-zone 24) 24)))
+          (build-string "The time in GMT~@D is ~3$ ks."
+                        (- (mod (+ 11 parsed-zone) 24) 11)
                         ks-time))
         "Invalid timezone.")))
 
