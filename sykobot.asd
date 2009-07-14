@@ -30,7 +30,7 @@
                        #+nil (:file "memos")
                        #+nil (:file "facts")
                        #+nil (:file "chant")
-                       #+nil (:file "quotegrabs")))
+                       (:file "quotegrabs")))
              (:file "config")))))
 
 (asdf:defsystem sykobot-tests

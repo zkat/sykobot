@@ -89,11 +89,6 @@
 (defreply join ((bot (proto 'sykobot)) channel)
   (irc:join (connection bot) channel)
   (pushnew channel (channels bot) :test #'string-equal))
-;;; This commented-out part will probably belong in the methods
-;;;   for (proto 'sykobot-memos), sometime in the near future
-;; (defreply join :after ((bot (proto 'sykobot)) channel)
-;;   (setf (gethash channel (last-said bot))
-;;         (make-hash-table :test #'equalp)))
 
 (defreply part ((bot (proto 'sykobot)) channel)
   (irc:part (connection bot) channel)
