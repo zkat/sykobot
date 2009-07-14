@@ -16,6 +16,9 @@
   ((commands (make-hash-table :test #'equal))
    (detection-regex nil)))
 
+(defreply init-sheep :after ((proto 'command-bot) &key)
+  (setf (commands proto) (make-hash-table :test #'equal)))
+
 ;;; Detection regex handling
 (defmessage update-detection-regex (bot))
 (defreply update-detection-regex ((bot (proto 'command-bot)))
@@ -58,6 +61,14 @@
   (with-properties (commands) bot
     (hash-table-keys commands)))
 
+;; We declare these variables here, but do not bind them unless we're actually inside
+;; the body of a command.
+(defvar *bot*)
+(defvar *message*)
+(defvar *sender*)
+(defvar *channel*)
+
+;; A very convenient macro...
 (defmacro defcommand (name (&optional (regex "") &rest vars) &body body)
   `(add-command (proto 'command-bot) (symbol-name ',name)
                 (lambda (*bot* *message* *sender* *channel*)
@@ -397,6 +408,30 @@
                            (alref :response-details response)))))
       "Language specifications need to be 2 letters long."))
 
+(defcommand weather ("(.+)" location)
+  (let* ((location-data
+	  (json:decode-json-from-string 
+	   (map 'string #'code-char 
+		(drakma:http-request 
+		 "http://ws.geonames.org/searchJSON"
+		 :parameters `(("q" . ,location) ("maxRows" . "1"))))))
+	 (lat (format nil "~A" (alref :lat (car (alref :geonames location-data)))))
+	 (lng (format nil "~A" (alref :lng (car (alref :geonames location-data)))))
+	 (weather-data
+	  (alref :weather-observation
+		 (json:decode-json-from-string
+		  (map 'string #'code-char
+		       (drakma:http-request
+			"http://ws.geonames.org/findNearByWeatherJSON"
+			:parameters `(("lat" . ,lat) ("lng" . ,lng)))))))
+	 (cloudyness (alref :clouds weather-data))
+	 (temp (alref :temperature weather-data))
+	 (station-name (alref :station-name weather-data)))
+    (if weather-data
+      (build-string 
+       "there are ~A and the temperature is ~A°C at ~A"
+       cloudyness temp station-name)
+      (build-string "I couldn't find the weather for ~A" location))))
 
 ;; (defcommand reverse ("(.*)" input)
 ;;   (cmd-msg (reverse input)))

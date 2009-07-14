@@ -17,6 +17,8 @@
 (defvar *realname* nil)
 (defvar *bot-dir* nil)
 (defvar *default-listeners* '(command-listener scan-for-url remember-last-thing-said send-memos scan-for-fact))
+(defvar *default-listeners-by-channel* nil)
+
 
 (defvar *home* (merge-pathnames ".sykobot/" (user-homedir-pathname)))
 
