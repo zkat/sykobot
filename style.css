@@ -74,3 +74,18 @@ html {
     padding: 1%;
     width: 32%;
 }
+
+#footer {
+    float: left;
+    margin: 1% 1% 1% 5%;
+    padding: 1%;
+    width: 88%;
+}
+ 
+#footer img {
+    vertical-align: middle;
+}
+ 
+#footer a {
+    color: black;
+}
