@@ -17,8 +17,26 @@
 (defun format-string-p (string)
   (string/= string
 	    (handler-case (format nil string)
-	      (simple-error nil
-		(return-from format-string-p T)))))
+              #+ccl
+              (simple-error (e)
+                (return-from format-string-p e))
+              #+sbcl
+              (sb-format:format-error (e)
+                (return-from format-string-p e))
+              #- (or ccl sbcl)
+              (error (e)
+                (return-from format-string-p :probably)))))
+
+(defun escape-format-string (string)
+  (loop with result = (make-array (1+ (length string))
+                                  :fill-pointer 0
+                                  :adjustable T
+                                  :element-type 'character)
+     for char across string do
+       (when (char= char #\~)
+         (vector-push-extend #\~ result))
+       (vector-push-extend char result)
+     finally (return result)))
 
 (defun build-string (&rest data)
   ;; This first form is just to catch idiotic code.
