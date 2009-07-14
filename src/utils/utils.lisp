@@ -27,6 +27,17 @@
               (error (e)
                 (return-from format-string-p :probably)))))
 
+(defun escape-format-string (string)
+  (loop with result = (make-array (1+ (length string))
+                                  :fill-pointer 0
+                                  :adjustable T
+                                  :element-type 'character)
+     for char across string do
+       (when (char= char #\~)
+         (vector-push-extend #\~ result))
+       (vector-push-extend char result)
+     finally (return result)))
+
 (defun build-string (&rest data)
   ;; This first form is just to catch idiotic code.
   ;; It should be removed from "out-of-the-box" sykobot distros.
