@@ -29,7 +29,8 @@
 		       (irc:source msg)
 		       target)))
         (message (cadr (irc:arguments msg))))
-    (call-active-listeners bot channel sender message)))
+    (call-active-listeners bot channel sender
+                           (escape-format-string message))))
 
 (defmessage add-listener (bot name function))
 (defmessage remove-listener (bot name))
