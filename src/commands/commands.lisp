@@ -165,7 +165,7 @@
 
 ;;; base commands
 (defcommand echo ("(.*)" string)
-  string)
+  (escape-format-string string))
 (defcommand source ()
   "I'm licensed under the AGPL, you can find my source code at: http://github.com/zkat/sykobot")
 (defcommand version ()
