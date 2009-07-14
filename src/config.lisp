@@ -17,7 +17,7 @@
 (defvar *realname* nil)
 (defvar *bot-dir* nil)
 ;; (defvar *default-listeners* '(command-listener send-memos scan-for-fact scan-for-more scan-for-url remember-last-thing-said))
-(defvar *default-listeners* '(command-listener scan-for-url))
+(defvar *default-listeners* '(command-listener scan-for-url remember-last-thing-said send-memos))
 
 (defvar *home* (merge-pathnames ".sykobot/" (user-homedir-pathname)))
 
@@ -25,7 +25,9 @@
 (defreply bot-dir ((bot (proto 'sykobot)))
   (ensure-directories-exist (merge-pathnames (dir bot) *home*)))
 
-(defun run-bot (&optional (bot-prototype (proto 'command-bot)))
+(defun run-bot (&optional (bot-prototype (clone (proto 'quotes-bot) 
+						(proto 'memos-bot)
+						(proto 'command-bot))))
   (let ((bot (clone bot-prototype)))
     (handler-bind ((cl-irc:no-such-reply (lambda (c)
                                            (let ((r (find-restart 'continue c)))
@@ -46,9 +48,9 @@
         (setf (server bot) *server*))
       (when *port*
         (setf (port bot) *port*))
-      #+nil (load-memos bot)
+      (load-memos bot)
       #+nil (load-facts bot)
-      #+nil (load-quotes bot)
+      (load-quotes bot)
       (init-bot bot)
       (when *identify-with-nickserv?*
         (identify bot *nickserv-password*))
