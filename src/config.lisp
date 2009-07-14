@@ -25,7 +25,7 @@
 (defreply bot-dir ((bot (proto 'sykobot)))
   (ensure-directories-exist (merge-pathnames (dir bot) *home*)))
 
-(defun run-bot (&optional (bot-prototype (proto 'sykobot-listeners)))
+(defun run-bot (&optional (bot-prototype (proto 'command-bot)))
   (let ((bot (clone bot-prototype)))
     (handler-bind ((cl-irc:no-such-reply (lambda (c)
                                            (let ((r (find-restart 'continue c)))
