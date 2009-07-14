@@ -29,3 +29,7 @@
 ;; password to identify with goes here, as a string
 (setf *nickserv-password* "pass")
 
+;; so, we want to have only the scan-for-fact listener active in channel #foo 
+;; and remove the scan-for-url in channel #bar
+(setf (alref "#foo" *default-listeners-by-channel*) '(scan-for-fact))
+(setf (alref "#bar" *default-listeners-by-channel*) (remove 'scan-for-url *default-listeners*))
