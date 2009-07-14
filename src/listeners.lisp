@@ -25,12 +25,12 @@
 (defreply msg-hook ((bot (proto 'listener-bot)) msg)
   (let ((sender (irc:source msg))
         (channel (let ((target (car (irc:arguments msg))))
-		   (if (equal target
-			      (irc:nickname (irc:user (irc:connection msg))))
+		   (if (equal target (nickname bot))
 		       (irc:source msg)
 		       target)))
-        (message (second (irc:arguments msg))))
-    (call-active-listeners bot channel sender message)))
+        (message (cadr (irc:arguments msg))))
+    (call-active-listeners bot channel sender
+                           (escape-format-string message))))
 
 (defmessage add-listener (bot name function))
 (defmessage remove-listener (bot name))

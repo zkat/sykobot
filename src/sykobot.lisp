@@ -137,8 +137,7 @@
 			 into message)))))
 
 (defreply send-action ((bot (proto 'sykobot)) channel action)
-  (send-msg bot channel (build-string "~AACTION ~A~A"
-                                      (code-char 1) action (code-char 1))))
+  (send-msg bot channel (build-string "~AACTION ~A~:2*" #\^A action)))
 
 (defreply topic ((bot (proto 'sykobot)) channel &optional new-topic)
   (if new-topic
