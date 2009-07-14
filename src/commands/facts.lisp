@@ -62,7 +62,7 @@
       (gethash noun (facts bot))
     (if hasp
         info
-        (format nil "I know nothing about ~A" noun))))
+        (build-string "I know nothing about ~A" noun))))
 
 (defreply erase-some-facts ((bot (proto 'sykobot)))
   (send-msg bot "#sykosomatic" "deleting facts")
@@ -83,13 +83,13 @@
   (let* ((articles '("a" "an" "the" "this" "that"))
          (verbs '(" am" " is" " are" " isn\\'t" " ain\\'t" "\\'s"
                   " likes" " uses" " has" " fails" " wins" " can" " can't"))
-         (regex (format nil ".*?(~{~A~^|~})*\\s*(\\w+)(~{~A~^|~})\\s+(.+)" articles verbs)))
+         (regex (build-string ".*?(~{~A~^|~})*\\s*(\\w+)(~{~A~^|~})\\s+(.+)" articles verbs)))
     (loop for statement in (split-into-sub-statements *message*)
        do (do-register-groups (article noun verb info)
               (regex statement)
             (if article
-                (set-fact *bot* noun (format nil "~A ~A~A ~A" article noun verb info))
-                (set-fact *bot* noun (format nil "~A~A ~A" noun verb info)))))))
+                (set-fact *bot* noun (build-string "~A ~A~A ~A" article noun verb info))
+                (set-fact *bot* noun (build-string "~A~A ~A" noun verb info)))))))
 
 
 
