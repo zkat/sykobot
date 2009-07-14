@@ -63,6 +63,6 @@
     (loop for memo in (reverse memos)
        do (destructuring-bind (recipient sender text time-added) memo
             (declare (ignore recipient time-added))
-            (send-reply *bot* *sender* *channel* (format nil "Memo from ~A - \"~A\"" sender text)))
-       (remove-memo *bot* memo))))
+            (send-reply *bot* *sender* *channel* (build-string "Memo from ~A - \"~A\"" sender text)))
+         (remove-memo *bot* memo))))
 
