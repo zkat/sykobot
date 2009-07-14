@@ -120,8 +120,21 @@ Please refer to #P"doc;user-guide.org" for a full guide to sykobot
 
 As usual, you can contact the developpers directly at the follow irc channel #sykosomatic@freenode.  
 
+Bug Reporting
+-------------
+
+With only two weeks of development and constant change of code, the bot has bugs. If you discover a bug, you can open an [issue][5]. Or report it at the irc channel.
+
+Simple Bug reporting howto
+
+* If you think something is a bug , first try to replicate it. 
+* Then report the bug at irc or at the issue tracker. 
+* Report every error you get, (IRC:  if it's more than 4 lines pastebin it. ) 
+* Any selfmade patch can also be reported at irc or the issue tracker.
+
 
 [1]: http://github.com/zkat/sheeple
 [2]: http://github.com/zkat/sykobot
 [3]: http://bavardage.github.com/Kiloseconds
 [4]: http://common-lisp.net/project/clbuild/
+[5]: http://github.com/zkat/sykobot/issues
