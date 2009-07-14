@@ -28,7 +28,7 @@
                       :components
                       ((:file "commands")
                        (:file "memos")
-                       #+nil (:file "facts")
+                       (:file "facts")
                        #+nil (:file "chant")
                        (:file "quotegrabs")))
              (:file "config")))))
