@@ -61,6 +61,14 @@
   (with-properties (commands) bot
     (hash-table-keys commands)))
 
+;; We declare these variables here, but do not bind them unless we're actually inside
+;; the body of a command.
+(defvar *bot*)
+(defvar *message*)
+(defvar *sender*)
+(defvar *channel*)
+
+;; A very convenient macro...
 (defmacro defcommand (name (&optional (regex "") &rest vars) &body body)
   `(add-command (proto 'command-bot) (symbol-name ',name)
                 (lambda (*bot* *message* *sender* *channel*)
