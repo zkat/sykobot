@@ -15,6 +15,7 @@
 
 ;;; Must be bound before the bot runs
 (defvar *default-listeners*)
+(defvar *default-listeners-by-channel*)
 
 ;;; Attempt at modularization
 (defproto listener-bot ((proto 'sykobot))
@@ -91,7 +92,10 @@
     (listener-on bot channel name)))
 
 (defreply join :after ((bot (proto 'listener-bot)) channel)
-  (apply #'activate-listeners bot channel *default-listeners*))
+  (let ((channel-listeners (alref channel *default-listeners-by-channel*)))
+    (if channel-listeners
+	(apply #'activate-listeners bot channel channel-listeners)
+	(apply #'activate-listeners bot channel *default-listeners*))))
 
 ;;; Deafness (aka silence)
 
