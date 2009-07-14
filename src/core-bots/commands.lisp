@@ -390,24 +390,24 @@
     about the moon-a and a june-a and a spring-a~@
     I love to singa"))
 
-;; (defcommand translate ("(\\S+) (\\S+) (.*)" input-lang output-lang text)
-;;   (if (and (= (length output-lang) 2)
-;;            (or (= (length input-lang) 2)
-;;                (string= input-lang "*")))
-;;       (let* ((lang-pair (merge-strings "|" (if (string= input-lang "*") ""
-;;                                                input-lang)
-;;                                        output-lang))
-;;              (json-result
-;;               (drakma:http-request "http://ajax.googleapis.com/ajax/services/language/translate"
-;;                                    :parameters `(("v" . "1.0") ("q" . ,text) ("langpair" . ,lang-pair))))
-;;              (response (json:decode-json-from-string json-result)))
-;;         (case (alref :response-status response)
-;;           (200 (cmd-msg (decode-html-string
-;;                          (alref :translated-text
-;;                                 (alref :response-data response)))))
-;;           (T (cmd-msg "Error: ~A"
-;;                       (alref :response-details response)))))
-;;       (cmd-msg "Language specifications need to be 2 letters long.")))
+(defcommand translate ("(\\S+) (\\S+) (.*)" input-lang output-lang text)
+  (if (and (= (length output-lang) 2)
+           (or (= (length input-lang) 2)
+               (string= input-lang "*")))
+      (let* ((lang-pair (merge-strings "|" (if (string= input-lang "*") ""
+                                               input-lang)
+                                       output-lang))
+             (json-result
+              (drakma:http-request "http://ajax.googleapis.com/ajax/services/language/translate"
+                                   :parameters `(("v" . "1.0") ("q" . ,text) ("langpair" . ,lang-pair))))
+             (response (json:decode-json-from-string json-result)))
+        (case (alref :response-status response)
+          (200 (decode-html-string
+                (alref :translated-text
+                       (alref :response-data response))))
+          (T (build-string "Error: ~A"
+                           (alref :response-details response)))))
+      "Language specifications need to be 2 letters long."))
 
 
 ;; (defcommand reverse ("(.*)" input)
