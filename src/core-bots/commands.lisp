@@ -83,11 +83,8 @@
 (deflistener command-listener
   (let ((index (get-message-index *bot* *message*)))
     (when index
-      (handler-case
-          (respond-to-message *bot* *sender* *channel*
-                              (subseq *message* index))
-        (error (e) (send-msg *bot* *channel*
-                             (build-string "An error occured: ~A" e)))))))
+      (respond-to-message *bot* *sender* *channel*
+                          (subseq *message* index)))))
 
 (defmessage respond-to-message (bot sender channel message))
 (defmessage get-responses (bot cmd args sender channel))
@@ -331,21 +328,12 @@
 
 ;;; URLs
 (deflistener scan-for-url
-  (when (and (has-url-p *message*)
-             (not (string-equal *sender* (nickname *bot*))))
-    (handler-case
-        (multiple-value-bind (title url)
-            (url-info (grab-url *message*))
-          (send-msg *bot* *channel*
-                    (build-string "Title: ~A (at ~A)"
-                                  (or title "<unknown title>")
-                                  (puri:uri-host (puri:uri url))))))))
-
-(defun has-url-p (string)
-  (when (scan "https?://.*[.$| |>]" string) t))
-
-(defun grab-url (string)
-  (find-if #'has-url-p (split "[\\s+><,]" string)))
+  (do-register-groups (link) ("(https?://.*?)(?:>|[.,]? |$)" *message*)
+    (multiple-value-bind (title url) (url-info link)
+      (send-msg *bot* *channel*
+                (build-string "Title: ~A (at ~A)"
+                              (or title "<unknown title>")
+                              (puri:uri-host (puri:uri url)))))))
 
 ;; ;;; Aliasing commands
 ;; ;;; Don't stress this with crazy regexp aliases. It only works
