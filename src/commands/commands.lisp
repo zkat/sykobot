@@ -349,7 +349,9 @@
             (url-info (grab-url *message*))
           (send-msg *bot* *channel*
                     (build-string "Title: ~A (at ~A)"
-                                  (or title "<unknown title>")
+                                  (or (remove-if
+				       (lambda (c) (< (char-code c) 32))
+				       title) "<unknown title>")
                                   (puri:uri-host (puri:uri url))))))))
 
 (defun has-url-p (string)
