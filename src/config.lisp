@@ -49,7 +49,7 @@
       (when *port*
         (setf (port bot) *port*))
       (load-memos bot)
-      #+nil (load-facts bot)
+      (load-facts bot)
       (load-quotes bot)
       (init-bot bot)
       (when *identify-with-nickserv?*
