@@ -29,24 +29,31 @@ html {
 }
 
 #commits {
-	float: left
-    	margin: 0% 0% 0% 0%;
+	float: left;
+    	margin: 1% 1% 1% 5%;
     	padding: 0% 1% 0% 1%; /*top right bottom left*/
     	width: 60%;
     	height: 500px;
 }
 #feature {
-	float: left
+	float: left;
     	margin: 1% 1% 1% 5%;
     	padding: 0% 1% 0% 1%; /*top right bottom left*/
     	width: 15%;
     	height: 300px;
 }
 #dep {
-	float: left
-    	margin: 0% 0% 0% 0%;
+	float: left;
+    	margin: 1% 1% 1% 5%;
     	padding: 0% 1% 0% 1%; /*top right bottom left*/
     	width: 35%;
     	height: 300px;
 }
 
+#layout {
+	float: left;
+    	margin: 1% 1% 1% 5%;
+    	padding: 0% 1% 0% 1%; /*top right bottom left*/
+    	width: 35%;
+    	height: 300px;
+}
