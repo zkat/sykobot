@@ -25,7 +25,7 @@ html {
     	margin: 1% 1% 1% 5%;
     	padding: 0% 1% 0% 1%; /*top right bottom left*/
     	width: 50%;
-    	height: 500px;
+    	height: 580px;
 }
 
 #commits {
@@ -33,20 +33,20 @@ html {
     	margin: 1% 1% 1% 1%;
     	padding: 0% 1% 0% 1%; /*top right bottom left*/
     	width: 35%;
-    	height: 500px;
+    	height: 580px;
 }
 #feature {
 	float: left;
-    	margin: 1% 1% 1% 5%;
+    	margin: 5% 1% 1% 1%;
     	padding: 0% 1% 0% 1%; /*top right bottom left*/
     	width: 40%;
     	height: 300px;
 }
 #dep {
 	float: left;
-    	margin: 1% 1% 1% 5%;
+    	margin: 5% 1% 1% 5%;
     	padding: 0% 1% 0% 1%; /*top right bottom left*/
-    	width: 40%;
+    	width: 45%;
     	height: 300px;
 }
 
@@ -88,4 +88,11 @@ html {
  
 #footer a {
     color: black;
+}
+#text {
+	float: left;
+	margin 1% 1% 1% 1%;
+    	padding: 1% 1% 1% 1%; /*top right bottom left*/
+	width: 95%;
+	height: 140px;
 }
