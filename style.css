@@ -1,0 +1,58 @@
+html {
+	    font-family: "Nimbus Sans L", "Helvetica";
+    }
+
+.curved-box {
+	    border: 2px solid black;
+	        -moz-border-radius: 15px;
+	}
+#header {
+    float: left;
+ 
+    margin: 1% 1% 1% 5%;
+    padding: 0% 1% 0% 1%; /*top right bottom left*/
+    width: 88%;
+ 
+    height: 100px;
+}
+ 
+#header h1 {
+    float: left;
+}
+
+#about {
+	float: left;
+    	margin: 1% 1% 1% 5%;
+    	padding: 0% 1% 0% 1%; /*top right bottom left*/
+    	width: 60%;
+    	height: 500px;
+}
+
+#commits {
+	position: absolute;
+	top: 132px;
+	left: 650px;
+    	margin: 1% 1% 1% 5%;
+    	padding: 0% 1% 0% 1%; /*top right bottom left*/
+    	width: 245px;
+    	height: 500px;
+}
+#feature {
+	position: absolute;
+	top: 300px;
+	left: 30px;
+    	margin: 1% 1% 1% 5%;
+    	padding: 0% 1% 0% 1%; /*top right bottom left*/
+    	width: 15%;
+    	height: 300px;
+}
+#dep {
+	position: absolute;
+	top: 300px;
+	left: 230px;
+    	margin: 1% 1% 1% 5%;
+    	padding: 0% 1% 0% 1%; /*top right bottom left*/
+    	width: 35%;
+    	height: 300px;
+}
+
