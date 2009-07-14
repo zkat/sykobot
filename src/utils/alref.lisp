@@ -14,9 +14,6 @@
 
 (in-package :sykobot)
 
-(defmacro with-gensyms (vars &body body)
-  `(let ,(loop for x in vars collect `(,x (gensym)))
-     ,@body))
 (defun alref (item alist &key
               (test #'string-equal)
               (key #'identity) default)
@@ -28,13 +25,14 @@
                                   (key '#'identity)
                              &environment env)
   "Set the value corresponding to ITEM in ALIST."
-  (multiple-value-bind (foo bar stores setter)
+  (multiple-value-bind (orig-temps orig-vals stores setter)
       (get-setf-expansion alist env)
-    (declare (ignore foo bar))
     (with-gensyms (it g-item g-alist g-test g-key new)
-      (values (list g-item g-alist g-test g-key it)
-              (list item alist test key
-                    `(assoc ,item ,alist :test ,test :key ,key))
+      (values (append (list g-item g-alist g-test g-key it)
+                      orig-temps)
+              (append (list item alist test key
+                            `(assoc ,item ,alist :test ,test :key ,key))
+                      orig-vals)
               `(,new)
               `(cond ((eq ,new NIL)
                       (let ((,(car stores)
