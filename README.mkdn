@@ -34,7 +34,7 @@ Installing Dependencies
 First look in the package your package manager for any dependency in the list above and install it.
 
 
-The rest of the dependencies can be installed with [clbuild][4]
+The rest of the dependencies can be installed with [clbuild][4] ( note you will need to install darcs )
 	darcs get http://common-lisp.net/project/clbuild/clbuild	
 	extract it
 	cd clbuild
