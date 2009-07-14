@@ -12,21 +12,21 @@
 ;; (defvar *responses*)
 
 ;;; Modularization of commands
-(defproto sykobot-commands ((proto 'sykobot-listeners))
+(defproto command-bot ((proto 'listener-bot))
   ((commands (make-hash-table :test #'equal))
    (detection-regex nil)))
 
 ;;; Detection regex handling
 (defmessage update-detection-regex (bot))
-(defreply update-detection-regex ((bot (proto 'sykobot-commands)))
+(defreply update-detection-regex ((bot (proto 'command-bot)))
   (setf (detection-regex bot)
         (create-scanner (build-string "^~A[:,] " (nickname bot))
                         :case-insensitive-mode T)))
 
-(defreply init-bot :after ((bot (proto 'sykobot-commands)))
+(defreply init-bot :after ((bot (proto 'command-bot)))
   (update-detection-regex bot))
 
-(defreply nick :after ((bot (proto 'sykobot-commands)) new-nick)
+(defreply nick :after ((bot (proto 'command-bot)) new-nick)
   (declare (ignore new-nick))
   (update-detection-regex bot))
 
@@ -37,13 +37,13 @@
 (defmessage erase-all-commands (bot))
 (defmessage list-all-commands (bot))
 
-(defreply add-command ((bot (proto 'sykobot-commands)) command function)
+(defreply add-command ((bot (proto 'command-bot)) command function)
   (setf (gethash command (commands bot)) function))
 
-(defreply remove-command ((bot (proto 'sykobot-commands)) command)
+(defreply remove-command ((bot (proto 'command-bot)) command)
   (remhash command (commands bot)))
 
-(defreply command-function ((bot (proto 'sykobot-commands)) command)
+(defreply command-function ((bot (proto 'command-bot)) command)
   (with-properties (commands) bot
     (gethash (string-upcase command) commands
              (lambda (bot args sender channel)
@@ -51,15 +51,15 @@
                (error (build-string "I don't know how to ~A"
                                     command))))))
 
-(defreply erase-all-commands ((bot (proto 'sykobot-commands)))
+(defreply erase-all-commands ((bot (proto 'command-bot)))
   (clrhash (commands bot)))
 
-(defreply list-all-commands ((bot (proto 'sykobot-commands)))
+(defreply list-all-commands ((bot (proto 'command-bot)))
   (with-properties (commands) bot
     (hash-table-keys commands)))
 
 (defmacro defcommand (name (&optional (regex "") &rest vars) &body body)
-  `(add-command (proto 'sykobot-commands) (symbol-name ',name)
+  `(add-command (proto 'command-bot) (symbol-name ',name)
                 (lambda (*bot* *message* *sender* *channel*)
                   (declare (ignorable *message* *bot* *sender* *channel*))
                   ,@(if vars
