@@ -110,7 +110,12 @@
                     (message (proto 'string)))
   (with-properties (connection) bot
     (do-lines (line message collected-lines)
-      do (irc:privmsg connection target line)
+      do (irc:privmsg connection
+		      target
+		      ;; The following prevents the injection of arbitrary raw IRC via messages containing \r and other possibly meaningful non-printable characters in cases where raw message content originates from a third party source, e.g. raw URL title echoing.
+		      (remove-if
+		       (lambda (c) (< (char-code c) 32))
+		       line))
       collect line into collected-lines)))
 
 (defreply send-reply ((bot (proto 'sykobot))
