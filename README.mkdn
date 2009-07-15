@@ -89,6 +89,7 @@ Common Lisp's "trace" can also be helpful for catching bugs. If you're not worri
 
 * On SBCL:
 	(trace "SYKOBOT")
+
 * On Clozure CL:
 	(trace (:package sykobot))
 
