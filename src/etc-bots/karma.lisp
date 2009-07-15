@@ -64,6 +64,7 @@
 	 (karma base-karma))
     (loop for k-record in (gethash nick (karma bot))
 	 do (destructuring-bind (receiver giver positive time) k-record
+	      (declare (ignore receiver positive time))
 	      (let ((giver-karma (calculate-base-karma bot giver)))
 		(cond 
 		  ((< 0 giver-karma) (setf karma (+ karma (/ giver-karma base-karma))))
