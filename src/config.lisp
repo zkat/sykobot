@@ -30,6 +30,7 @@
 (defun run-bot (&optional (bot-prototype (clone (proto 'quotes-bot) 
 						(proto 'memos-bot)
 						(proto 'facts-bot)
+						(proto 'karma-bot)
 ;;						(proto 'eliza-bot)
 						(proto 'command-bot))))
   (let ((bot (clone bot-prototype)))
