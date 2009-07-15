@@ -19,12 +19,6 @@
    (password nil)
    (channels nil)))
 
-;; (defreply init-sheep :after ((sheep (proto 'sykobot)) &key)
-;;   (setf (memos sheep) (make-hash-table :test #'equalp))
-;;   (setf (facts sheep) (make-hash-table :test #'equalp))
-;;   (setf (quotes sheep) (make-hash-table :test #'equalp))
-;;   (setf (last-said sheep) (make-hash-table :test #'equalp)))
-
 (defvar *active-bot* nil)
 
 ;;; Good Medicine
@@ -116,7 +110,12 @@
                     (message (proto 'string)))
   (with-properties (connection) bot
     (do-lines (line message collected-lines)
-      do (irc:privmsg connection target line)
+      do (irc:privmsg connection
+		      target
+		      ;; The following prevents the injection of arbitrary raw IRC via messages containing \r and other possibly meaningful non-printable characters in cases where raw message content originates from a third party source, e.g. raw URL title echoing.
+		      (remove-if
+		       (lambda (c) (< (char-code c) 32))
+		       line))
       collect line into collected-lines)))
 
 (defreply send-reply ((bot (proto 'sykobot))
@@ -132,7 +131,8 @@
 			 into message)))))
 
 (defreply send-action ((bot (proto 'sykobot)) channel action)
-  (send-msg bot channel (build-string "~AACTION ~A~:2*" #\^A action)))
+  (irc:privmsg (connection bot) channel
+               (build-string "~AACTION ~A~2:*" #\^A action)))
 
 (defreply topic ((bot (proto 'sykobot)) channel &optional new-topic)
   (if new-topic
@@ -146,29 +146,3 @@
   (format t "I don't know how to handle messages! You might want ~
              to look into using (proto 'sykobot-listeners), who ~
              is able to respond to messages."))
-
-;; ;;;
-;; ;;; Aliases
-;; ;;;
-;; (defmessage add-alias (bot alias expansion))
-;; (defmessage remove-alias (bot alias))
-;; (defmessage expand-aliases (bot message))
-
-;; (defreply add-alias ((bot (proto 'sykobot)) alias expansion)
-;;   (setf (aliases bot) (acons alias expansion (aliases bot))))
-
-;; (defreply remove-alias ((bot (proto 'sykobot)) alias)
-;;   (setf (aliases bot) (delete alias (aliases bot) :count 1
-;;                               :test #'string-equal :key #'car)))
-
-;; (defreply expand-aliases ((bot (proto 'sykobot)) message)
-;;   (loop while
-;;        (loop for (alias . expansion) in (aliases bot)
-;;           for (new changedp) =
-;;             (multiple-value-list (regex-replace-all alias message
-;;                                                     expansion
-;;                                                     :preserve-case t))
-;;           when changedp do
-;;             (setf message new)
-;;             (return t))
-;;        finally (return message)))
