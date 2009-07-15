@@ -28,7 +28,8 @@
 
 ;;; This command is used to chant.
 (defcommand chant ()
-  (cmd-msg "MORE ~:@(~A~)" (alref *channel* *more* :default "MONEY")))
+  "Syntax: 'chant' - Chants about a current topic."
+  (build-string "MORE ~:@(~A~)" (alref *channel* *more* :default "MONEY")))
 
 ;;; This is where the cookie crumbles.
 ;;;
