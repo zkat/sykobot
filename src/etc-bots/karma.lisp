@@ -1,5 +1,3 @@
-
-
 (in-package :sykobot)
 
 (defproto karma-bot ((proto 'command-bot))
@@ -39,7 +37,8 @@
 (defreply add-karma ((bot (proto 'karma-bot)) receiver karma)
   (push karma (gethash receiver (karma bot))))
 (defreply add-karma :after ((bot (proto 'karma-bot)) receiver karma)
-	  (save-karma bot))
+  (declare (ignore karma receiver))
+  (save-karma bot))
 
 (defreply give-karma ((bot (proto 'karma-bot)) receiver giver)
   (add-karma bot receiver (make-karma-record receiver giver)))
