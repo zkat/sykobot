@@ -21,7 +21,7 @@
 
 (defproto command ()
   ((cmd-function )
-   (dox "")))
+   (dox "No documentation available.")))
 
 ;;; Detection regex handling
 (defmessage update-detection-regex (bot))
@@ -40,6 +40,7 @@
 ;;; Command handling stuff
 (defmessage add-command (bot name command))
 (defmessage remove-command (bot command))
+(defmessage find-command (bot name))
 (defmessage command-function (bot command))
 (defmessage erase-all-commands (bot))
 (defmessage list-all-commands (bot))
@@ -50,14 +51,17 @@
 (defreply remove-command ((bot (proto 'command-bot)) name)
   (remhash name (commands bot)))
 
-(defreply command-function ((bot (proto 'command-bot)) name)
+(defreply find-command ((bot (proto 'command-bot)) name)
   (with-properties (commands) bot
-    (or (let ((cmd (gethash name commands)))
-	  (when cmd (cmd-function cmd)))
-	(lambda (bot args sender channel)
-	  (declare (ignore bot args sender channel))
-	  (error (build-string "I don't know how to ~A"
-			       name))))))
+    (gethash (string-upcase name) commands)))
+
+(defreply command-function ((bot (proto 'command-bot)) name)
+  (or (let ((cmd (find-command bot name)))
+	(when cmd (cmd-function cmd)))
+      (lambda (bot args sender channel)
+	(declare (ignore bot args sender channel))
+	(error (build-string "I don't know how to ~A"
+			     name)))))
 
 (defreply erase-all-commands ((bot (proto 'command-bot)))
   (clrhash (commands bot)))
@@ -181,6 +185,11 @@
 ;;; base commands
 (defcommand echo ("(.*)" string)
   string)
+(defcommand documentation ("(\\S+)" cmd-name)
+  (let ((cmd (find-command *active-bot* cmd-name)))
+    (if cmd 
+	(dox cmd)
+	(build-string "I don't know any command called ~A" cmd-name))))
 (defcommand source ()
   "I'm licensed under the AGPL, you can find my source code at: http://github.com/zkat/sykobot")
 (defcommand version ()
