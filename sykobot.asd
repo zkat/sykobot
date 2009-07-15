@@ -33,6 +33,7 @@
                       ((:file "memos")
                        (:file "facts")
 		       (:file "eliza")
+		       (:file "karma")
                        #+nil (:file "chant")
                        (:file "quotegrabs")))
              (:file "config")))))
