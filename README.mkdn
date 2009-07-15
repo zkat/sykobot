@@ -86,8 +86,11 @@ Bug Reporting
 * Report the bug at irc or at the [issue tracker][7].
 
 Common Lisp's "trace" can also be helpful for catching bugs. If you're not worried about massive amounts of REPL output, evaluate the following immediately after loading the sykobot system:
-* For SBCL -- (trace "SYKOBOT")
-* For Clozure CL -- (trace (:package sykobot))
+
+* On SBCL:
+	(trace "SYKOBOT")
+* On Clozure CL:
+	(trace (:package sykobot))
 
 [1]: http://www.sbcl.org/
 [2]: http://trac.clozure.com/openmcl
