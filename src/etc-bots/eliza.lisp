@@ -2,18 +2,18 @@
 
 (in-package :sykobot)
 
-(defun translate (str alist)
+(defun translate (string alist)
   "take a string and replace any (key, value) in alist"
-  (let ((words (split "\\s+" str)))
+  (let ((words (split "\\s+" string)))
     (loop for word in words
           for y from 0
        when (alref word alist)
 	 do (setf (elt words y) (alref word alist)))
     (format nil "~{~A~^ ~}" words)))
 
-(defun substitute-groups (str groups)
+(defun substitute-groups (string groups)
   "take a string containing $1 $2 etc and substitute with the coresponding element"
-  (let ((words (split "\\s+" str)))
+  (let ((words (split "\\s+" string)))
     (loop for word in words
        for y from 0
        when (equalp (char word 0) #\$)
@@ -31,8 +31,8 @@
 			      ("mines" . "yours") ("yours" . "mine")
 			      ("me" . "you") ("you" . "me")))
 
-(defun reflect (str)
-  (translate str *reflections*))
+(defun reflect (string)
+  (translate string *reflections*))
 
 (defun respond (string regexen)
   "takes the string, checks through the regexes until a match is made
@@ -49,8 +49,7 @@
   '(("hello" ("go away"))
     ("my name is (\\w+)" ("hello $0"
 			  "greetings $0"))
-
-;;psychoanalysis
+    ;;psychoanalysis
     ("I need (.+)" ("Why do you need $0?"
 		    "Would it really help to get $0?"))
     ("I dreamt (that|about|)(.+)" ("You dream $0 $1 often then?"
@@ -62,7 +61,6 @@
 			     "Is $0 worth remembering"))
     ("if (.+) then (.+)" ("Do you really think it's likely that $0"
 			  "Well, it sure would be awesome if $1"))
-
     ("my mother (.+)" ("Who else in your family $0 ?"
 		       "Tell me more about your family"))
     ("I want (.+)" ("Why would anyone want $0"
@@ -84,15 +82,12 @@
     ("I suspect (.+)" ("I suspect *someone* is hiding something"
 		       "I more than suspect so"
 		       "I KNOW $0"))
-
-
     ("yes" ("orly?"
 	    "yup kk, sure"
 	    "well I'm glad we sorted that out"))
     ("orly" ("yarly"
 	     "btard"))
-	  
-;; sarcastic stuff
+    ;; sarcastic stuff
     ("\\w+ (is|are) (fat|big|hot|awesome|win|sexy|ugly)" ("your mum is $1"))
     ("(\\w+) (is|are) here" ("oh great. I love $0"
 			     "$0 is annoying"
@@ -100,12 +95,13 @@
     ("(tard|ass)" ("no, you're the $0"))
     ("die" ("no, you die"))
     ("you suck" ("your mum sucks"))
-    ("phrik" ("screw phrik"))))
+    ("phrik" ("screw phrik"))
+    ("(.*)" ("Why do you say that $0\?" "What do you mean when you say that $0\?"
+	     "What are your motives behind saying such a thing\?"
+	     "I think it's clear that you're full of shit when you say that $0."))))
 
-				   
 (defun respond-to (string)
   (respond string *eliza-responses*))
-
 
 (defcommand - ("(.+)" string)
   (respond-to string))
