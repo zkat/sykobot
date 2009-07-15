@@ -95,8 +95,8 @@
                           ,@(if vars
                                 `((or (register-groups-bind ,vars (,regex *message*)
                                         ,@real-body)
-                                      (error ,(build-string "Not enough arguments to "
-                                                            (symbol-name name)))))
+                                      (error ,(build-string "Not enough arguments to ~A. Try 'help ~:*~A'"
+                                                            name))))
                                 `(,@real-body))))
 		       ,@(when documentation
 			       `((dox ,documentation))))))))
