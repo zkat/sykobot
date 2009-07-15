@@ -84,7 +84,7 @@
   (save-facts bot))
 
 (defun split-into-sub-statements (statement)
-  (split "\\s*(,|but|however|whereas|although|\\;|\\.)\\s*" statement))
+  (split "\\s*(,|but|however|whereas|although|\\; |\\. )\\s*" statement))
 
 (deflistener scan-for-fact
   (let* ((articles '("a" "an" "the" "this" "that"))
