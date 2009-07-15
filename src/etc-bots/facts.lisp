@@ -29,9 +29,11 @@
 
 ;;; Facts
 (defcommand fact ("(\\S+)*" topic)
+  "Syntax: 'fact <topic>' - Returns a known fact concerning <topic>."
   (get-fact *bot* topic))
 
-(defcommand random-fact nil
+(defcommand random-fact ()
+  "Syntax 'random-fact' - Returns a random fact from the bot's knowledge base."
   (get-fact *bot*
 	    (random-elt (hash-table-keys (facts *bot*)))))
 
