@@ -3,6 +3,9 @@
    We must understand the present, that we may usher in the future.
 *** DONE [#A] Understand exactly what it does, how, and why.
 *** DONE [#B] Figure out how to do it better.
+** TODO [#A] Listeners as sheep
+   This will give good modularity for the various parts of the command
+   system, and will also make aliases easier later on.
 ** TODO [#A] Goals for new command system
    These are the requirements specified by zkat for the new command
    system to be a viable alternative to the current one.
