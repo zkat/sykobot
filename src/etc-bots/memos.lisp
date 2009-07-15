@@ -18,7 +18,9 @@
 (defreply init-bot :after ((bot (proto 'memos-bot)))
 	  (load-memos bot))
 
-(defcommand memo ("for (\\S+)\\s*: (.*)" recipient memo)
+(defcommand memo ("for (\\S+)\\s*: ?(.*)" recipient memo)
+  "Syntax: 'memo for <recipient>: <memo>' - Leaves a memo for <recipient>. The bot will tell it~
+ to the recipient next time it sees them speak."
   (add-memo *bot* recipient memo *sender*)
   (build-string "Tada! Added memo for ~A. ~
             I'll let them know next time they speak."
