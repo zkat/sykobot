@@ -24,7 +24,7 @@
 ;;; This variable stores the current 'fad'.
 ;;; It is an alist, because each channel that the bot connects to
 ;;;  could have a different fad.
-(defvar *more* NIL)
+(defvar *more* nil)
 
 ;;; This command is used to chant.
 (defcommand chant ()
