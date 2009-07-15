@@ -81,4 +81,3 @@
 (defcommand karma ("(.+)" nick)
   (build-string "~2$" (calculate-adjusted-karma *bot* nick)))
 
-
