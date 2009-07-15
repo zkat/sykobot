@@ -87,10 +87,12 @@ Bug Reporting
 
 Common Lisp's "trace" can also be helpful for catching bugs. If you're not worried about massive amounts of REPL output, evaluate the following immediately after loading the sykobot system:
 
-* On SBCL:
+On SBCL:
+
 	(trace "SYKOBOT")
 
-* On Clozure CL:
+On Clozure CL:
+
 	(trace (:package sykobot))
 
 [1]: http://www.sbcl.org/
