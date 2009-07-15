@@ -74,8 +74,10 @@
                 (lambda (*bot* *message* *sender* *channel*)
                   (declare (ignorable *message* *bot* *sender* *channel*))
                   ,@(if vars
-                        `((register-groups-bind ,vars (,regex *message*)
-                            ,@body))
+                        `((or (register-groups-bind ,vars (,regex *message*)
+                                ,@body)
+                              (error ,(build-string "Not enough arguments to "
+                                                    (symbol-name name)))))
                         `(,@body)))))
 
 ;;; Command processing
