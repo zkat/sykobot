@@ -29,6 +29,7 @@
 (defun run-bot (&optional (bot-prototype (clone (proto 'quotes-bot) 
 						(proto 'memos-bot)
 						(proto 'facts-bot)
+;;						(proto 'eliza-bot)
 						(proto 'command-bot))))
   (let ((bot (clone bot-prototype)))
     (handler-bind ((cl-irc:no-such-reply (lambda (c)
