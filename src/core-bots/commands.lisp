@@ -79,15 +79,26 @@
 
 ;; A very convenient macro...
 (defmacro defcommand (name (&optional (regex "") &rest vars) &body body)
-  `(add-command (proto 'command-bot) (symbol-name ',name)
-		(defclone ((proto 'command))
-		    ((cmd-function
-		      (lambda (*bot* *message* *sender* *channel*)
-			(declare (ignorable *message* *bot* *sender* *channel*))
-			,@(if vars
-			      `((register-groups-bind ,vars (,regex *message*)
-				  ,@body))
-			      `(,@body))))))))
+  (let ((documentation nil)
+	(real-body nil))
+    (if (and (stringp (car body))
+	     (cdr body))
+	(progn
+	  (setf documentation (car body))
+	  (setf real-body (cdr body)))
+	(setf real-body body))
+    `(add-command (proto 'command-bot) (symbol-name ',name)
+		  (defclone ((proto 'command))
+		      ((cmd-function
+			(lambda (*bot* *message* *sender* *channel*)
+			  (declare (ignorable *message* *bot* *sender* *channel*))
+			  ,@(if vars
+				`((register-groups-bind ,vars (,regex *message*)
+				    ,@real-body))
+				`(,@real-body))))
+		       ,@(when documentation
+			       `((dox ,documentation))))))))
+
 
 ;;; Command processing
 
@@ -184,28 +195,42 @@
 
 ;;; base commands
 (defcommand echo ("(.*)" string)
+  "Syntax: 'echo <string>' - Echoes back STRING."
   string)
-(defcommand documentation ("(\\S+)" cmd-name)
-  (let ((cmd (find-command *active-bot* cmd-name)))
-    (if cmd 
-	(dox cmd)
-	(build-string "I don't know any command called ~A" cmd-name))))
+(defcommand help ("(\\S+)" cmd-name)
+  "Syntax: 'help [<cmd-name>]' - If cmd-name is provided, dumps the docstring for that command.~
+otherwise, it dumps a generic help string."
+  (if (<= 1 (length cmd-name))
+      (let ((cmd (find-command *active-bot* cmd-name)))
+	(if cmd 
+	    (dox cmd)
+	    (build-string "I don't know any command called ~A" cmd-name)))
+      "Tell me 'help <cmd-name> for more information on a particular command."))
 (defcommand source ()
+  "Syntax: 'source' - Dumps information about the bot's source code."
   "I'm licensed under the AGPL, you can find my source code at: http://github.com/zkat/sykobot")
 (defcommand version ()
+  "Syntax: 'version' - Current version of sykobot."
   "Pfft. I have no versions. I'm 100% git")
-(defcommand help ()
-  "No.")
 (defcommand commands ()
+  "Syntax: 'commands' - Lists all available commands"
   (build-string "Available commands are ~{~A~^ ~}"
                 (list-all-commands *bot*)))
 (defcommand topic ("(.*)" new-topic)
+  "Syntax: 'topic [<new-topic>]' - If new-topic is provided, and the bot has topic-setting~
+privileges, it sets the channel's topic. Otherwise, it dumps the current topic."
   (if (< 0 (length new-topic))
       (topic *bot* *channel* new-topic) ; Slightly broken
       (topic *bot* *channel*)))
-(defcommand ping () "pong")
-(defcommand hi () "Go away.")
-(defcommand language () "I'm \"Lost In Stupid Parentheses\"")
+(defcommand ping () 
+  "Syntax: 'ping' - Pongs you."
+  "pong")
+(defcommand hi ()
+  "This is undocumented. Fuck you. Don't care."
+  "Go away.")
+(defcommand language () 
+  "Syntax: 'language' - Returns information about the bot's implementation language."
+  "I'm \"Lost In Stupid Parentheses\"")
 
 ;;; Give is currently broken
 #+nil (defcommand give ("(\\S+) (\\S+) (.*)$" new-target new-command new-args)
@@ -251,6 +276,7 @@
 
 ;;; Google
 (defcommand google ("(.*)" query)
+  "Syntax: 'google <query> - Does a google search and returns the top-ranking result."
   (multiple-value-bind (title url)
       (google-search query)
     (build-string "~:[~;~A ~]<~A>" title title url)))
@@ -262,6 +288,7 @@
 
 ;;; ArchWiki 
 (defcommand wiki ("(.*)" query)
+  "Syntax: 'wiki <query> - Searches the Arch Linux wiki."
   (multiple-value-bind (title url)
       (wiki-search query)
     (build-string "~:[~;~A ~]<~A>" title title url)))
@@ -273,6 +300,7 @@
 
 ;;; AUR 
 (defcommand aursearch ("(.*)" query)
+  "Syntax: 'aursearch <query> - Searches the Arch User Repository."
   (multiple-value-bind (title url)
       (aur-search query)
     (build-string "~:[~;~A ~]<~A>" title title url)))
@@ -284,6 +312,7 @@
 
 ;;; BBS 
 (defcommand bbs ("(.*)" query)
+  "Syntax: 'bbs <query> - Searches the Arch Linux BBS."
   (multiple-value-bind (title url)
       (bbs-search query)
     (build-string "~:[~;~A ~]<~A>" title title url)))
@@ -296,6 +325,7 @@
 
 ;;; CLiki search
 (defcommand cliki ("(.*)" query)
+  "Syntax: 'bbs <query>' - Searches CLiki."
   (multiple-value-bind (links numlinks)
       (cliki-urls query)
     (build-string "I found ~D result~:P.~@[ Check out <~A>.~]"
@@ -319,6 +349,8 @@
 
 ;;; kiloseconds
 (defcommand kiloseconds ("(.*)" zone)
+  "Syntax: 'kiloseconds [<zone>]' - The current time in kiloseconds. Optionally, a time zone~
+can be provided in the format [+-]NUM. Example: 'kiloseconds -5'."
   (when (zerop (length zone)) (setf zone "0"))
   (let ((parsed-zone (parse-integer zone :junk-allowed t)))
     (if parsed-zone
@@ -342,6 +374,7 @@
 (deflistener parrot
   (send-msg *bot* *channel* *message*))
 (defcommand parrot ()
+  "Syntax: 'parrot' - Turns the bot into an auto-echoing douchebag."
   (if (listener-active-p *bot* *channel* 'parrot)
       (progn
         (listener-off *bot* *channel* 'parrot)
@@ -350,6 +383,7 @@
         (listener-on *bot* *channel* 'parrot)
         "TIME TO BE A DOUCHEBAG")))
 (defcommand noparrot ()
+  "Syntax: 'noparrot' - stops the madness."
   (listener-off *bot* *channel* 'parrot)
   "NODOUCHE")
 
@@ -400,16 +434,22 @@
 ;;   (cmd-msg (string-upcase input)))
 
 (defcommand singa ()
+  "I love to singa
+about the moon-a and a june-a and a spring-a
+I love to singa"
   (build-string
    "I love to singa~@
     about the moon-a and a june-a and a spring-a~@
     I love to singa"))
 
 (defcommand error ()
+  "This accepts no arguments. It makes lisp signal an error, to make sure they're handled properly."
   (error "OH SHIT ERRORED! D:")
   "Uh oh")
 
 (defcommand translate ("(\\S+) (\\S+) (.*)" input-lang output-lang text)
+  "Syntax: 'translate <input-lang> <output-lang> <text>' - translates TEXT from input-lang into~
+ output-lang. Providing '*' as the input-lang will make it auto-detect the from-language."
   (if (and (= (length output-lang) 2)
            (or (= (length input-lang) 2)
                (string= input-lang "*")))
@@ -429,6 +469,7 @@
       "Language specifications need to be 2 letters long."))
 
 (defcommand weather ("(.+)" location)
+  "Syntax: 'weather <location>' - Tells you the current weather in <location>"
   (let* ((location-data
 	  (json:decode-json-from-string 
 	   (map 'string #'code-char 
