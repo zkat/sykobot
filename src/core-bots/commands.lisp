@@ -19,6 +19,10 @@
 (defreply init-sheep :after ((proto 'command-bot) &key)
   (setf (commands proto) (make-hash-table :test #'equal)))
 
+(defproto command ()
+  ((cmd-function )
+   (dox "")))
+
 ;;; Detection regex handling
 (defmessage update-detection-regex (bot))
 (defreply update-detection-regex ((bot (proto 'command-bot)))
@@ -34,25 +38,26 @@
   (update-detection-regex bot))
 
 ;;; Command handling stuff
-(defmessage add-command (bot command function))
+(defmessage add-command (bot name command))
 (defmessage remove-command (bot command))
 (defmessage command-function (bot command))
 (defmessage erase-all-commands (bot))
 (defmessage list-all-commands (bot))
 
-(defreply add-command ((bot (proto 'command-bot)) command function)
-  (setf (gethash command (commands bot)) function))
+(defreply add-command ((bot (proto 'command-bot)) name command)
+  (setf (gethash name (commands bot)) command))
 
-(defreply remove-command ((bot (proto 'command-bot)) command)
-  (remhash command (commands bot)))
+(defreply remove-command ((bot (proto 'command-bot)) name)
+  (remhash name (commands bot)))
 
-(defreply command-function ((bot (proto 'command-bot)) command)
+(defreply command-function ((bot (proto 'command-bot)) name)
   (with-properties (commands) bot
-    (gethash (string-upcase command) commands
-             (lambda (bot args sender channel)
-               (declare (ignore bot args sender channel))
-               (error (build-string "I don't know how to ~A"
-                                    command))))))
+    (or (let ((cmd (gethash name commands)))
+	  (when cmd (cmd-function cmd)))
+	(lambda (bot args sender channel)
+	  (declare (ignore bot args sender channel))
+	  (error (build-string "I don't know how to ~A"
+			       name))))))
 
 (defreply erase-all-commands ((bot (proto 'command-bot)))
   (clrhash (commands bot)))
@@ -71,12 +76,14 @@
 ;; A very convenient macro...
 (defmacro defcommand (name (&optional (regex "") &rest vars) &body body)
   `(add-command (proto 'command-bot) (symbol-name ',name)
-                (lambda (*bot* *message* *sender* *channel*)
-                  (declare (ignorable *message* *bot* *sender* *channel*))
-                  ,@(if vars
-                        `((register-groups-bind ,vars (,regex *message*)
-                            ,@body))
-                        `(,@body)))))
+		(defclone ((proto 'command))
+		    ((cmd-function
+		      (lambda (*bot* *message* *sender* *channel*)
+			(declare (ignorable *message* *bot* *sender* *channel*))
+			,@(if vars
+			      `((register-groups-bind ,vars (,regex *message*)
+				  ,@body))
+			      `(,@body))))))))
 
 ;;; Command processing
 
