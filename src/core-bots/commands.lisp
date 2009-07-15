@@ -238,19 +238,20 @@ privileges, it sets the channel's topic. Otherwise, it dumps the current topic."
         (setf *sender* new-target)
         (setf *responses* (get-responses *bot* new-command new-args new-target *channel*)))
 
-;;; These are broken until encoding issues can be finalized.
-;; ;;; Character Decoding
-;; (defcommand code->char ("(\\S+)*" code-string)
-;;   (let ((code (if code-string (parse-integer code-string :junk-allowed T) 0)))
-;;     (build-string "~:[Invalid code~;~:*~A~]"
-;;                   (and (integerp code) (/= code 127) (>= code 32)
-;;                        (code-char code)))))
+;;; Character Decoding
+;; These are broken until encoding issues can be finalized. -Adlai
+;; I'll worry about it later. Worksfornow -syko
+(defcommand code->char ("(\\S+)*" code-string)
+  (let ((code (if code-string (parse-integer code-string :junk-allowed T) 0)))
+    (build-string "~:[Invalid code~;~A~]"
+                  (and (integerp code) (/= code 127) (>= code 32))
+		  (code-char code))))
 
-;; (defcommand char->code ("(\\S+)*" char-string)
-;;   (let ((code (and char-string (char-code (elt char-string 0)))))
-;;     (build-string  "~:[Invalid character~;~A~]"
-;;                    (and (integerp code) (/= code 127) (>= code 32)
-;;                         code))))
+(defcommand char->code ("(\\S+)*" char-string)
+  (let ((code (and char-string (char-code (elt char-string 0)))))
+    (build-string  "~:[Invalid character~;~A~]"
+                   (and (integerp code) (/= code 127) (>= code 32))
+		   code)))
 
 ;;; General web functionality
 (defun url-info (url)
