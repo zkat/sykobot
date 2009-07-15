@@ -1,8 +1,4 @@
 * TODO Finish sykobot
-** DONE [#A] Deal with current command system
-   We must understand the present, that we may usher in the future.
-*** DONE [#A] Understand exactly what it does, how, and why.
-*** DONE [#B] Figure out how to do it better.
 ** TODO [#A] Listeners as sheep
    This will give good modularity for the various parts of the command
    system, and will also make aliases easier later on.
@@ -33,7 +29,7 @@
 *** TODO [#C] Pipes
     Pipes are neat, because they enable filters such as translation.
     Some commands such as give and echo could also be seen as pipes.
-*** TODO [#C] Compatibility with Existing Commands
+*** DONE [#C] Compatibility with Existing Commands
     The transition should be smooth. This can be worked on once there
     is something to transition _to_.
 ** TODO [#B] Bugfixes
@@ -43,19 +39,23 @@
    I guess if we actually get these features built into sykobot, it may actually
    replace supybot as phrik's backend.
 *** DONE google search
-*** TODO quotegrabs
+*** DONE quotegrabs
     Persistent quotegrabs, including being able to !grab, !rq, and !q <someone>
 *** TODO Aliases
     Entire commands should be aliasable, i.e. !alias wiki google site:en.wikipedia.org
-*** TODO Factoids
+*** DONE Factoids
     ability to define simple persistent factoids that can be called up with just !factname
 *** TODO Admin access
     Maybe later? Register users, etc.
 *** TODO ELIZA
-    *shrug*
+    Under progress, almost DONE.
 *** TODO Stability
     Don't want this fucker crashing.
 *** TODO Command piping
 *** TODO give commands
 ** TODO [#C] Other Features
 *** TODO 'log last five minutes and post to wiki...'
+*** TODO Karma
+    Record karma points for each user, and allow giving positive and
+    negative karma. People's ability to give karma depends on how much
+    karma they themselves have.
