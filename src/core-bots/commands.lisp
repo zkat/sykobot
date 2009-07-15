@@ -16,6 +16,9 @@
   ((commands (make-hash-table :test #'equal))
    (detection-regex nil)))
 
+(defreply init-sheep :after ((proto 'command-bot) &key)
+  (setf (commands proto) (make-hash-table :test #'equal)))
+
 ;;; Detection regex handling
 (defmessage update-detection-regex (bot))
 (defreply update-detection-regex ((bot (proto 'command-bot)))
@@ -58,6 +61,14 @@
   (with-properties (commands) bot
     (hash-table-keys commands)))
 
+;; We declare these variables here, but do not bind them unless we're actually inside
+;; the body of a command.
+(defvar *bot*)
+(defvar *message*)
+(defvar *sender*)
+(defvar *channel*)
+
+;; A very convenient macro...
 (defmacro defcommand (name (&optional (regex "") &rest vars) &body body)
   `(add-command (proto 'command-bot) (symbol-name ',name)
                 (lambda (*bot* *message* *sender* *channel*)
@@ -83,11 +94,8 @@
 (deflistener command-listener
   (let ((index (get-message-index *bot* *message*)))
     (when index
-      (handler-case
-          (respond-to-message *bot* *sender* *channel*
-                              (subseq *message* index))
-        (error (e) (send-msg *bot* *channel*
-                             (build-string "An error occured: ~A" e)))))))
+      (respond-to-message *bot* *sender* *channel*
+                          (subseq *message* index)))))
 
 (defmessage respond-to-message (bot sender channel message))
 (defmessage get-responses (bot cmd args sender channel))
@@ -331,21 +339,12 @@
 
 ;;; URLs
 (deflistener scan-for-url
-  (when (and (has-url-p *message*)
-             (not (string-equal *sender* (nickname *bot*))))
-    (handler-case
-        (multiple-value-bind (title url)
-            (url-info (grab-url *message*))
-          (send-msg *bot* *channel*
-                    (build-string "Title: ~A (at ~A)"
-                                  (or title "<unknown title>")
-                                  (puri:uri-host (puri:uri url))))))))
-
-(defun has-url-p (string)
-  (when (scan "https?://.*[.$| |>]" string) t))
-
-(defun grab-url (string)
-  (find-if #'has-url-p (split "[\\s+><,]" string)))
+  (do-register-groups (link) ("(https?://.*?)(?:>|[.,]? |$)" *message*)
+    (multiple-value-bind (title url) (url-info link)
+      (send-msg *bot* *channel*
+                (build-string "Title: ~A (at ~A)"
+                              (or title "<unknown title>")
+                              (puri:uri-host (puri:uri url)))))))
 
 ;; ;;; Aliasing commands
 ;; ;;; Don't stress this with crazy regexp aliases. It only works
@@ -390,25 +389,49 @@
     about the moon-a and a june-a and a spring-a~@
     I love to singa"))
 
-;; (defcommand translate ("(\\S+) (\\S+) (.*)" input-lang output-lang text)
-;;   (if (and (= (length output-lang) 2)
-;;            (or (= (length input-lang) 2)
-;;                (string= input-lang "*")))
-;;       (let* ((lang-pair (merge-strings "|" (if (string= input-lang "*") ""
-;;                                                input-lang)
-;;                                        output-lang))
-;;              (json-result
-;;               (drakma:http-request "http://ajax.googleapis.com/ajax/services/language/translate"
-;;                                    :parameters `(("v" . "1.0") ("q" . ,text) ("langpair" . ,lang-pair))))
-;;              (response (json:decode-json-from-string json-result)))
-;;         (case (alref :response-status response)
-;;           (200 (cmd-msg (decode-html-string
-;;                          (alref :translated-text
-;;                                 (alref :response-data response)))))
-;;           (T (cmd-msg "Error: ~A"
-;;                       (alref :response-details response)))))
-;;       (cmd-msg "Language specifications need to be 2 letters long.")))
+(defcommand translate ("(\\S+) (\\S+) (.*)" input-lang output-lang text)
+  (if (and (= (length output-lang) 2)
+           (or (= (length input-lang) 2)
+               (string= input-lang "*")))
+      (let* ((lang-pair (merge-strings "|" (if (string= input-lang "*") ""
+                                               input-lang)
+                                       output-lang))
+             (json-result
+              (drakma:http-request "http://ajax.googleapis.com/ajax/services/language/translate"
+                                   :parameters `(("v" . "1.0") ("q" . ,text) ("langpair" . ,lang-pair))))
+             (response (json:decode-json-from-string json-result)))
+        (case (alref :response-status response)
+          (200 (decode-html-string
+                (alref :translated-text
+                       (alref :response-data response))))
+          (T (build-string "Error: ~A"
+                           (alref :response-details response)))))
+      "Language specifications need to be 2 letters long."))
 
+(defcommand weather ("(.+)" location)
+  (let* ((location-data
+	  (json:decode-json-from-string 
+	   (map 'string #'code-char 
+		(drakma:http-request 
+		 "http://ws.geonames.org/searchJSON"
+		 :parameters `(("q" . ,location) ("maxRows" . "1"))))))
+	 (lat (format nil "~A" (alref :lat (car (alref :geonames location-data)))))
+	 (lng (format nil "~A" (alref :lng (car (alref :geonames location-data)))))
+	 (weather-data
+	  (alref :weather-observation
+		 (json:decode-json-from-string
+		  (map 'string #'code-char
+		       (drakma:http-request
+			"http://ws.geonames.org/findNearByWeatherJSON"
+			:parameters `(("lat" . ,lat) ("lng" . ,lng)))))))
+	 (cloudyness (alref :clouds weather-data))
+	 (temp (alref :temperature weather-data))
+	 (station-name (alref :station-name weather-data)))
+    (if weather-data
+      (build-string 
+       "there are ~A and the temperature is ~A°C at ~A"
+       cloudyness temp station-name)
+      (build-string "I couldn't find the weather for ~A" location))))
 
 ;; (defcommand reverse ("(.*)" input)
 ;;   (cmd-msg (reverse input)))

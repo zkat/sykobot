@@ -16,8 +16,9 @@
 (defvar *username* nil)
 (defvar *realname* nil)
 (defvar *bot-dir* nil)
-;; (defvar *default-listeners* '(command-listener send-memos scan-for-fact scan-for-more scan-for-url remember-last-thing-said))
-(defvar *default-listeners* '(command-listener scan-for-url remember-last-thing-said send-memos))
+(defvar *default-listeners* '(command-listener scan-for-url remember-last-thing-said send-memos scan-for-fact))
+(defvar *default-listeners-by-channel* nil)
+
 
 (defvar *home* (merge-pathnames ".sykobot/" (user-homedir-pathname)))
 
@@ -27,6 +28,7 @@
 
 (defun run-bot (&optional (bot-prototype (clone (proto 'quotes-bot) 
 						(proto 'memos-bot)
+						(proto 'facts-bot)
 						(proto 'command-bot))))
   (let ((bot (clone bot-prototype)))
     (handler-bind ((cl-irc:no-such-reply (lambda (c)
@@ -49,7 +51,7 @@
       (when *port*
         (setf (port bot) *port*))
       (load-memos bot)
-      #+nil (load-facts bot)
+      (load-facts bot)
       (load-quotes bot)
       (init-bot bot)
       (when *identify-with-nickserv?*

@@ -21,14 +21,17 @@
                       :components
                       ((:file "utils")
                        (:file "alref")))
-             (:file "sykobot")
-             (:file "listeners")
-             (:module "commands"
+             (:module "core-bots"
                       :serial t
                       :components
-                      ((:file "commands")
-                       (:file "memos")
-                       #+nil (:file "facts")
+                      ((:file "sykobot")
+                       (:file "listeners")
+                       (:file "commands")))             
+             (:module "etc-bots"
+                      :serial t
+                      :components
+                      ((:file "memos")
+                       (:file "facts")
                        #+nil (:file "chant")
                        (:file "quotegrabs")))
              (:file "config")))))

@@ -8,6 +8,15 @@
 (in-package :sykobot)
 
 
+(defproto facts-bot ((proto 'command-bot))
+  ((facts (make-hash-table :test #'equalp))))
+
+(defreply init-sheep :after ((bot (proto 'facts-bot)) &key)
+  (setf (facts bot) (make-hash-table :test #'equalp)))
+
+(defreply init-bot :after ((bot (proto 'facts-bot)))
+  (load-facts bot))
+
 ;;; Limiting
 ;;; With 110 facts the size is 4467 bytes.
 ;;; Assuming linear growth (is this valid?) that's 40 bytes per fact.
@@ -20,12 +29,11 @@
 
 ;;; Facts
 (defcommand fact ("(\\S+)*" topic)
-  (cmd-msg "~A" (get-fact *bot* topic)))
+  (get-fact *bot* topic))
 
 (defcommand random-fact nil
-  (cmd-msg "~A"
-           (get-fact *bot*
-                     (random-elt (hash-table-keys (facts *bot*))))))
+  (get-fact *bot*
+	    (random-elt (hash-table-keys (facts *bot*)))))
 
 (defun facts-db (bot)
   (merge-pathnames "fact-table.db" (bot-dir bot)))
@@ -37,43 +45,40 @@
 (defmessage erase-some-facts (bot))
 (defmessage erase-all-facts (bot))
 
-(defreply load-facts ((bot (proto 'sykobot)))
+(defreply load-facts ((bot (proto 'facts-bot)))
   (when (probe-file (facts-db bot))
     (setf (facts bot)
           (cl-store:restore (facts-db bot)))))
 
-(defreply save-facts ((bot (proto 'sykobot)))
+(defreply save-facts ((bot (proto 'facts-bot)))
   (when (zerop (mod (hash-table-count (facts bot)) *facts-write-interval*))
     (cl-store:store (facts bot) (facts-db bot))))
 
-(defreply set-fact ((bot (proto 'sykobot))
-                    noun info)
+(defreply set-fact ((bot (proto 'facts-bot)) noun info)
   (when (> (hash-table-count (facts bot)) *max-facts-to-store*)
     (erase-some-facts bot))
   (setf (gethash noun (facts bot)) info))
 
-(defreply set-fact :after ((bot (proto 'sykobot))
-                           noun info)
+(defreply set-fact :after ((bot (proto 'facts-bot)) noun info)
   (declare (ignore noun info))
   (save-facts bot))
 
-(defreply get-fact ((bot (proto 'sykobot)) noun)
+(defreply get-fact ((bot (proto 'facts-bot)) noun)
   (multiple-value-bind (info hasp)
       (gethash noun (facts bot))
     (if hasp
         info
         (build-string "I know nothing about ~A" noun))))
 
-(defreply erase-some-facts ((bot (proto 'sykobot)))
-  (send-msg bot "#sykosomatic" "deleting facts")
+(defreply erase-some-facts ((bot (proto 'facts-bot)))
   (let ((keys (hash-table-keys (facts bot))))
     (dotimes (n *facts-to-remove*) ;;remove approximately *facts-to-remove* facts
       (remhash (random-elt keys) (facts bot)))))
 
 
-(defreply erase-all-facts ((bot (proto 'sykobot)))
+(defreply erase-all-facts ((bot (proto 'facts-bot)))
   (clrhash (facts bot)))
-(defreply erase-all-facts :after ((bot (proto 'sykobot)))
+(defreply erase-all-facts :after ((bot (proto 'facts-bot)))
   (save-facts bot))
 
 (defun split-into-sub-statements (statement)

@@ -15,6 +15,7 @@
 
 ;;; Must be bound before the bot runs
 (defvar *default-listeners*)
+(defvar *default-listeners-by-channel*)
 
 ;;; Attempt at modularization
 (defproto listener-bot ((proto 'sykobot))
@@ -22,15 +23,18 @@
    (active-listeners nil)
    (deafp nil)))
 
-(defreply msg-hook ((bot (proto 'listener-bot)) msg)
-  (let ((sender (irc:source msg))
-        (channel (let ((target (car (irc:arguments msg))))
-		   (if (equal target (nickname bot))
+(defreply msg-hook ((*bot* (proto 'listener-bot)) msg)
+  (let ((*sender* (irc:source msg))
+        (*channel* (let ((target (car (irc:arguments msg))))
+		   (if (equal target (nickname *bot*))
 		       (irc:source msg)
 		       target)))
-        (message (cadr (irc:arguments msg))))
-    (call-active-listeners bot channel sender
-                           (escape-format-string message))))
+        (*message* (cadr (irc:arguments msg))))
+    (handler-case
+        (call-active-listeners *bot* *channel* *sender*
+                               (escape-format-string *message*))
+      (error (e) (send-msg *bot* *channel*
+                           (build-string "ERROR: ~A" e))))))
 
 (defmessage add-listener (bot name function))
 (defmessage remove-listener (bot name))
@@ -88,7 +92,10 @@
     (listener-on bot channel name)))
 
 (defreply join :after ((bot (proto 'listener-bot)) channel)
-  (apply #'activate-listeners bot channel *default-listeners*))
+  (let ((channel-listeners (alref channel *default-listeners-by-channel*)))
+    (if channel-listeners
+	(apply #'activate-listeners bot channel channel-listeners)
+	(apply #'activate-listeners bot channel *default-listeners*))))
 
 ;;; Deafness (aka silence)
 
