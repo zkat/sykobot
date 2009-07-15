@@ -60,14 +60,20 @@
 	      (declare (ignore receiver positive time))
 	      (let ((giver-karma (calculate-base-karma bot giver)))
 		(cond 
-		  ((< 0 giver-karma) (setf karma (+ karma (/ giver-karma base-karma))))
+		  ((< 0 giver-karma) (setf karma (+ karma (/ giver-karma (if (= 0 base-karma)
+									     1 base-karma)))))
 		  ((> 0 giver-karma) (setf karma (+ karma (expt 2 giver-karma))))
-		  (t (setf karma (+ karma (/ 1 base-karma))))))))
+		  (t (setf karma (+ karma (/ 1 (if (= 0 base-karma) 1 base-karma)))))))))
     karma))
 
 (defcommand praise ("(.+)" nick)
-  (give-karma *bot* nick *sender*)
-  (build-string "ALL PRAISE ~:@(~A~)" nick))
+  (if (string-equal nick *sender*)
+      (progn
+	(give-unkarma *bot* nick *sender*)
+	"Self-glorifying dorks get no love.")
+      (progn
+	(give-karma *bot* nick *sender*)
+	(build-string "ALL PRAISE ~:@(~A~)" nick))))
 (defcommand unpraise ("(.+)" nick)
   (give-unkarma *bot* nick *sender*)
   (build-string "~A shitsux" nick))
