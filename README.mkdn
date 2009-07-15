@@ -30,9 +30,8 @@ Dependencies
 
 Installing Dependencies
 -----------------------
-You need a Common Lisp compiler to run sykobot, along with several dependencies for various features of the bot.
-We also highly recommend Emacs + SLIME as an IDE for developing, should you be interested in contributing to the project.
-
+You need a Common Lisp compiler to run sykobot, along with several dependencies for various features
+of the bot.
 
 Most of the dependencies can be installed with [clbuild][5], available via darcs:
 	darcs get http://common-lisp.net/project/clbuild/clbuild
