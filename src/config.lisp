@@ -16,7 +16,8 @@
 (defvar *username* nil)
 (defvar *realname* nil)
 (defvar *bot-dir* nil)
-(defvar *default-listeners* '(command-listener scan-for-url remember-last-thing-said send-memos scan-for-fact))
+(defvar *default-listeners* '(command-listener scan-for-url remember-last-thing-said
+			      send-memos scan-for-fact scan-for-more))
 (defvar *default-listeners-by-channel* nil)
 
 
