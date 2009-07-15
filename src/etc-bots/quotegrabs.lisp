@@ -28,6 +28,7 @@
 
 ;;; Commands
 (defcommand grab ("(.*)" nick)
+  "Syntax: 'grab <nick>' - Grabs the last thing someone said, and remembers it as a quote."
   (if (equalp nick *sender*)
       "*swat* No grabbing yourself in public. That's rude."
       (let ((to-grab (get-last-said-for-nick *bot* nick *channel*)))
@@ -38,6 +39,8 @@
             "Nothing to grab"))))
 
 (defcommand random-quote ("(.*)" nick)
+  "Syntax: 'random-quote [<nick>]' - Returns a random quote. If <nick> is provided, it only~
+ gets a random quote from that nick."
   (if (< 0 (length nick))
       (pretty-print-quote (get-random-quote *bot* nick))
       (pretty-print-quote
@@ -45,6 +48,7 @@
 			 (random-elt (hash-table-keys (quotes *bot*)))))))
 
 (defcommand quote ("(.*)" nick)
+  "Syntax: 'quote <nick>' - Returns the last thing grabbed from <nick>."
   (pretty-print-quote (get-last-quote *bot* nick)))
 
 ;;; utility
