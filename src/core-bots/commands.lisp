@@ -90,15 +90,16 @@
     `(add-command (proto 'command-bot) (symbol-name ',name)
 		  (defclone ((proto 'command))
 		      ((cmd-function
-			(lambda (*bot* *message* *sender* *channel*)
-			  (declare (ignorable *message* *bot* *sender* *channel*))
-			  ,@(if vars
-				`((register-groups-bind ,vars (,regex *message*)
-				    ,@real-body))
-				`(,@real-body))))
+                        (lambda (*bot* *message* *sender* *channel*)
+                          (declare (ignorable *message* *bot* *sender* *channel*))
+                          ,@(if vars
+                                `((or (register-groups-bind ,vars (,regex *message*)
+                                        ,@real-body)
+                                      (error ,(build-string "Not enough arguments to ~A. Try 'help ~:*~A'"
+                                                            name))))
+                                `(,@real-body))))
 		       ,@(when documentation
 			       `((dox ,documentation))))))))
-
 
 ;;; Command processing
 
