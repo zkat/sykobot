@@ -389,6 +389,10 @@
     about the moon-a and a june-a and a spring-a~@
     I love to singa"))
 
+(defcommand error ()
+  (error "OH SHIT ERRORED! D:")
+  "Uh oh")
+
 (defcommand translate ("(\\S+) (\\S+) (.*)" input-lang output-lang text)
   (if (and (= (length output-lang) 2)
            (or (= (length input-lang) 2)
