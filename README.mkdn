@@ -4,19 +4,21 @@ About
 Vision
 ------
 
-Sykobot is a next-gen AI, programmed in a next-gen language. Designed to be a irc bot for #archlinux , #archlinux-offtopic or any other irc channel. Supporting main bot functions , and flexbile code.
+Sykobot is a next-gen AI, programmed in a next-gen language, designed to be a irc bot for #archlinux, #archlinux-offtopic, or any other irc channel.
+Sykobot currently supports main bot functions, and has flexible code.
 
 
 Supported Platforms
 -------------------
 
-Sykobot is developed on GNU/Linux, for UNIX. It should also work on any Linux distro or OSX wich has installed the dependencies of sykobot. 
-If you run sykobot on a platform not listed above please e-mail me. So i can add the platform to our list.
+Sykobot is developed on GNU/Linux. It should, however, work on any Unix-like system with a Common Lisp compiler.
+It has been tested and confirmed to work on [SBCL][1], [Clozure CL][2], and [Allegro CL Express][3].
+If you run sykobot on another platform, please let us know.
 
 
 Dependencies
 ------------
-* [Sheeple][1]
+* [Sheeple][4]
 * html-entities
 * cl-irc
 * cl-pprce
@@ -25,23 +27,20 @@ Dependencies
 * cl-store
 * cl-json
 
-For development
-* sbcl or ccl
-* slime
 
 Installing Dependencies
 -----------------------
-First look in the package your package manager for any dependency in the list above and install it.
+You need a Common Lisp compiler to run sykobot, along with several dependencies for various features of the bot.
+We also highly recommend Emacs + SLIME as an IDE for developing, should you be interested in contributing to the project.
 
 
-The rest of the dependencies can be installed with [clbuild][4] ( note you will need to install darcs )
-	darcs get http://common-lisp.net/project/clbuild/clbuild	
-	extract it
+Most of the dependencies can be installed with [clbuild][5], available via darcs:
+	darcs get http://common-lisp.net/project/clbuild/clbuild
 	cd clbuild
 	chmod +x clbuild
-	./clbuild check  ( this checks for dependency's, they are: cvs , svn,  wget , darcs)
+	./clbuild check  (this checks for various programs that help clbuild; they are: cvs, svn, wget, and darcs)
 
-Now you can install all the dependencies with clbuild ( If clbuild asks you too install some dependencies , just return yes )
+You should let clbuild install all dependencies of each system.
 
 	./clbuild install html-entities
 	./clbuild install cl-irc
@@ -50,91 +49,50 @@ Now you can install all the dependencies with clbuild ( If clbuild asks you too 
 	./clbuild install cl-store
 	./clbuild install cl-json
 
-Now we need to download sykbot and sheeple ( you will need to install git )
-	git clone git://github.com/zkat/sykobot.git  
-	git clone git://github.com/zkat/sheeple.git 
+Now we need to download sheeple and sykobot itself -- through git.
+	git clone git://github.com/zkat/sykobot.git 
+	git clone git://github.com/zkat/sheeple.git
 	cd /path/to/clbuild/systems
 	ln -s /path/to/sheeple.asd
-	ln -s /path/to/sykbot.asd 
-
-For ArchLinux:
-	pacman -S sbcl
-	pacman -S slime-cvs
-	install an text editor 
-
-Developping in Emacs 
---------------------
-
-Emacs configuration  ( .emacs )
-	(setq inferior-lisp-program "/usr/bin/sbcl")
-	(add-to-list 'load-path "/usr/share/emacs/site-lisp/slime")
-	(require 'slime)
-	(slime-setup '(slime-fancy slime-asdf slime-sbcl-exts slime-tramp))
-	(setq slime-net-coding-system 'utf-8-unix)
-	(setq viper-mode t)
-	(require 'viper)
-
-	Start Emacs
-	M -x slime   ( M == the alt key )
-	, load-system 
-	sykobot ( in the load-system prompt  )
-	(in-pacakge sykobot)
-	(run-bot)
+	ln -s /path/to/sykbot.asd
 
 
 Notes
 -----
 
-Sykobot is still in development , although simple bot functions work. The code can be rewritting and there is no stable branch atm. The code is on [github][2]
+Sykobot is still in development, although simple bot functions work. There is currently no official stable branch. However, if you have any trouble, we will be glad to help you at #sykosomatic.
 
 
 Features
 --------
 
-* Search --  For searching other sites for example the archlinux wiki , add this alias: " @alias wiki google site:wiki.archlinux.org "
-		usage: @google <keyword> 
-	
-
-* Facts -- facts are a nice AI feature of sykobot, if someone says  "foo is bar" in an irc channel, then sykobot stores this. You can review the fact with @fact foo. Support for showing random facts is being added. Sidenote facts are overwritten all the time.
-		usage: @fact foo
-
-* Grabs -- This command will store an quote of someone. Note: you can't grab yourself or the bot . Grabs can be viewed by doing: "@q nick" or for an random grab: "@rq nick"
-		usage: @grab nick	
-
-* Kiloseconds -- display the current time in [kiloseconds][3] 
-		usage: @kiloseconds 1  
-	-- this will display  time GMT +1 in kiloseconds
-
-* Memo's   --adding memo's to people in the channel
-		usage:  sykobot: memo for foo :  you memo 
-
-* Alias  -- add an alias 
-		usage: @alias fun fun is banned in #archlinux
-	 -- @fun  will display  "fun is banned in #archlinux"
+* Search -- A simple google search
+* Facts -- A simple parser extracts "facts" from the flow of chatter.
+* Quotes -- A facility for grabbing quotes that people in the channel say.
+* Kiloseconds -- The current time, in [kiloseconds][6].
+* Memos -- Leave a message for somebody else, to be delivered when they next speak.
 
 
 Using Sykobot
 -------------
 
-Please refer to #P"doc;user-guide.org" for a full guide to sykobot
+Currently, the best way to get setup using and hacking sykobot is to ask for help at #sykosomatic on freenode. The developers are distributed across timezones and are always glad to help.
 
-As usual, you can contact the developpers directly at the follow irc channel #sykosomatic@freenode.  
 
 Bug Reporting
 -------------
 
-With only two weeks of development and constant change of code, the bot has bugs. If you discover a bug, you can open an [issue][5]. Or report it at the irc channel.
+* If you think something is a bug, first try to replicate it and get backtraces.
+* Report the bug at irc or at the [issue tracker][7].
 
-Simple Bug reporting howto
+Common Lisp's "trace" can also be helpful for catching bugs. If you're not worried about massive amounts of REPL output, evaluate the following immediately after loading the sykobot system:
+* For SBCL -- (trace "SYKOBOT")
+* For Clozure CL -- (trace (:package sykobot))
 
-* If you think something is a bug , first try to replicate it. 
-* Then report the bug at irc or at the issue tracker. 
-* Report every error you get, (IRC:  if it's more than 4 lines pastebin it. ) 
-* Any selfmade patch can also be reported at irc or the issue tracker.
-
-
-[1]: http://github.com/zkat/sheeple
-[2]: http://github.com/zkat/sykobot
-[3]: http://bavardage.github.com/Kiloseconds
-[4]: http://common-lisp.net/project/clbuild/
-[5]: http://github.com/zkat/sykobot/issues
+[1]: http://www.sbcl.org/
+[2]: http://trac.clozure.com/openmcl
+[3]: http://www.franz.com/products/allegrocl/
+[4]: http://github.com/zkat/sheeple
+[5]: http://common-lisp.net/project/clbuild/
+[6]: http://bavardage.github.com/Kiloseconds
+[7]: http://github.com/zkat/sykobot/issues
