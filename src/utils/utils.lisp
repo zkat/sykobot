@@ -82,3 +82,10 @@
                    (t (rec (car x) (rec (cdr x) acc))))))
     (rec x nil)))
 
+(defmacro restartable (&body body)
+  "Helper macro since we use continue restarts a lot.
+Hit C in SLIME or pick the restart so errors don't kill the app."
+  `(restart-case
+      (progn ,@body)
+    (continue () :report "Continue")))
+ 

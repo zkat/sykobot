@@ -94,8 +94,8 @@
 (deflistener command-listener
   (let ((index (get-message-index *bot* *message*)))
     (when index
-      (respond-to-message *bot* *sender* *channel*
-                          (subseq *message* index)))))
+      (restartable (respond-to-message *bot* *sender* *channel*
+				       (subseq *message* index))))))
 
 (defmessage respond-to-message (bot sender channel message))
 (defmessage get-responses (bot cmd args sender channel))
@@ -114,7 +114,7 @@
       (split "\\s+" message :limit 2)
     (send-reply bot channel sender
                 (funcall (command-function bot command)
-                         bot args sender channel)))
+			 bot args sender channel)))
   #+nil (let* ((results (process-command-string bot message sender channel)))
           (loop for result in results
              do (send-reply bot channel sender (build-string result)))))
