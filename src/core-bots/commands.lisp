@@ -350,7 +350,7 @@ privileges, it sets the channel's topic. Otherwise, it dumps the current topic."
 ;;; kiloseconds
 (defcommand kiloseconds ("(.*)" zone)
   "Syntax: 'kiloseconds [<zone>]' - The current time in kiloseconds. Optionally, a time zone~
-can be provided in the format [+-]NUM. Example: 'kiloseconds -5'."
+ can be provided in the format [+-]NUM. Example: 'kiloseconds -5'."
   (when (zerop (length zone)) (setf zone "0"))
   (let ((parsed-zone (parse-integer zone :junk-allowed t)))
     (if parsed-zone
