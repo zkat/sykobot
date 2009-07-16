@@ -182,7 +182,7 @@ function show_recent_commits() {
     function show_commits(commits) {
 	$('#recent-commits').html('');
 	$('#recent-commits').removeClass('loading');
-	$.each(commits.slice(0,), function(i, item) {
+	$.each(commits.slice(0,6), function(i, item) {
 		text = '<div class="commit">';
 		text += '<span class="commit-message">';
 		text += item.message;
