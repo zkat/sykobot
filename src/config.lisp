@@ -17,7 +17,7 @@
 (defvar *realname* nil)
 (defvar *bot-dir* nil)
 (defvar *default-listeners* '(command-listener scan-for-url remember-last-thing-said
-			      send-memos scan-for-fact scan-for-more scan-for-now-playing))
+			      send-memos scan-for-fact scan-for-more scan-for-now-playing seen-listener))
 (defvar *default-listeners-by-channel* nil)
 (defvar *cmd-prefix* nil)
 
@@ -32,6 +32,7 @@
 						(proto 'facts-bot)
 						(proto 'karma-bot)
 						(proto 'eliza-bot)
+						(proto 'seen-bot)
 						(proto 'command-bot))))
   (let ((bot (clone bot-prototype)))
     (handler-bind ((cl-irc:no-such-reply (lambda (c)
