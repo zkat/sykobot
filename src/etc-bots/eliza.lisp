@@ -117,6 +117,9 @@
   '(("hello" ("go away"))
     ("my name is (\\w+)" ("hello $0"
 			  "greetings $0"))
+    ("o/" ("o/"))
+    ("bye" ("goodbye!"))
+    ("sleep" ("i am a bot , i haz no sleep !"))
     ;;psychoanalysis
     ("I need (.+)" ("Why do you need $a0?"
 		    "Would it really help to get $a0?"))
