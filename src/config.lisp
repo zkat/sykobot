@@ -31,7 +31,7 @@
 						(proto 'memos-bot)
 						(proto 'facts-bot)
 						(proto 'karma-bot)
-						#+nil(proto 'eliza-bot)
+						(proto 'eliza-bot)
 						(proto 'command-bot))))
   (let ((bot (clone bot-prototype)))
     (handler-bind ((cl-irc:no-such-reply (lambda (c)
