@@ -6,6 +6,24 @@ html {
    border: 2px solid black;
    -moz-border-radius: 15px;
   }
+
+.bar {
+    margin: 1%;
+    margin-bottom: 0;
+    padding: 2px;
+    border: 1px solid #aaa;
+    border-bottom-width: 0;
+    background-color: #eee;
+}
+
+.textbox {
+    border: 1px solid #aaa;
+    color: #444;
+    margin: 1%;
+    margin-top: 0;
+    padding: 1%;
+}
+
 #header {
     float: left;
  
@@ -80,7 +98,7 @@ html {
       margin: 1% 1% 1% 5%;
       padding: 0% 1% 0% 1%; /*top right bottom left*/
       width: 88%;
-      height: 240px;
+      height: 400px;
 }
   
 
