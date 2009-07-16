@@ -10,6 +10,8 @@
     Hint: output is to a stream, but maintain abstraction over IRC lib.
 ** TODO Other stuff
 *** TODO 'log last five minutes and post to wiki...'
+*** TODO Eliza
+    Sort out the reflection so 'you and your family' 'my family and I'
 * TODO 0.1
 ** TODO [#A] Listeners as sheep
    This will give good modularity for the various parts of the command
