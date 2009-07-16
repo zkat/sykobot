@@ -198,6 +198,9 @@
 (defcommand echo ("(.*)" string)
   "Syntax: 'echo <string>' - Echoes back STRING."
   string)
+(defcommand reverse ("(.*)" input)
+  "Syntax: 'reverse <string>' - Reverses the input."
+  (reverse input))
 (defcommand help ("(\\S+)" cmd-name)
   "Syntax: 'help [<cmd-name>]' - If cmd-name is provided, dumps the docstring for that command.~
 otherwise, it dumps a generic help string."
@@ -232,7 +235,6 @@ privileges, it sets the channel's topic. Otherwise, it dumps the current topic."
 (defcommand language () 
   "Syntax: 'language' - Returns information about the bot's implementation language."
   "I'm \"Lost In Stupid Parentheses\"")
-
 ;;; Give is currently broken
 #+nil (defcommand give ("(\\S+) (\\S+) (.*)$" new-target new-command new-args)
         (setf *sender* new-target)
@@ -495,5 +497,3 @@ I love to singa"
        cloudyness temp station-name)
       (build-string "I couldn't find the weather for ~A" location))))
 
-;; (defcommand reverse ("(.*)" input)
-;;   (cmd-msg (reverse input)))
