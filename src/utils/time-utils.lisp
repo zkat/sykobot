@@ -8,8 +8,8 @@
   `(multiple-value-bind
          (seconds minutes hours date month year day light timezone)
        (decode-universal-time ,time ,zone)
-     (declare (ignore seconds minutes hours date
-                      month year day light timezone))
+     (declare (ignorable seconds minutes hours date
+			 month year day light timezone))
      ,@body))
 
 (defun get-boring-timestamp (&key (zone 0) (time (get-universal-time)))
