@@ -180,9 +180,9 @@ splits it into a command and arguments"
 (defcommand reverse ("(.*)" input)
   "Syntax: 'reverse <string>' - Reverses the input."
   (reverse input))
-(defcommand help ("(\\S+)" cmd-name)
-  "Syntax: 'help [<cmd-name>]' - If cmd-name is provided, dumps the docstring for that command.~
-otherwise, it dumps a generic help string."
+(defcommand help ("(.*)" cmd-name)
+  "Syntax: 'help [<cmd-name>]' - If cmd-name is provided, dumps the docstring for that command. ~
+Otherwise, it dumps a generic help string."
   (if (<= 1 (length cmd-name))
       (let ((cmd (find-command *active-bot* cmd-name)))
 	(if cmd 
