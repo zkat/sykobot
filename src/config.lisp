@@ -19,7 +19,9 @@
 (defvar *default-listeners* '(command-listener scan-for-url remember-last-thing-said
 			      send-memos scan-for-fact scan-for-more scan-for-now-playing seen-listener))
 (defvar *default-listeners-by-channel* nil)
+(defvar *default-timestamp-function* #'get-ks-timestamp)
 (defvar *cmd-prefix* nil)
+
 
 (defvar *home* (merge-pathnames ".sykobot/" (user-homedir-pathname)))
 
