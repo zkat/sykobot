@@ -15,34 +15,31 @@
 (defproto command-bot ((proto 'listener-bot))
   ((commands (make-hash-table :test #'equal))
    (detection-regex nil)
-   (command-prefix "@")))
+   (command-prefix)))
 
-(defreply init-sheep :after ((proto 'command-bot) &key)
-  (setf (commands proto) (make-hash-table :test #'equal)))
+(defreply init-sheep :after ((bot 'command-bot) &key)
+  (with-properties (command-prefix) bot
+    (setf command-prefix (nickname bot))))
 
 (defproto command ()
-  ((cmd-function (lambda (a b c d)
-		   (declare (ignore a b c d))
-		   "Oops. Why are you grabbing the proto's cmd-function?"))
+  ((cmd-function (constantly "OOPS. Don't go here."))
    (dox "No documentation available.")))
 
 ;;; Detection regex handling
 (defmessage update-detection-regex (bot))
 (defreply update-detection-regex ((bot (proto 'command-bot)))
   (setf (detection-regex bot)
-        (create-scanner (build-string "^~A[:,] |^~A" (nickname bot) (command-prefix bot))
+        (create-scanner (build-string "^(?:~A[:,] |~A)" (nickname bot) (command-prefix bot))
                         :case-insensitive-mode T)))
 
 (defreply (setf command-prefix) :after (new-value (bot (proto 'command-bot)))
-  "Whenever we set this property, we should make sure the regex is updated as well."
+  "Keeps the detection-regex up-to-date."
   (declare (ignore new-value))
   (update-detection-regex bot))
 
-(defreply init-bot :after ((bot (proto 'command-bot)))
-  (update-detection-regex bot))
-
-(defreply nick :after ((bot (proto 'command-bot)) new-nick)
-  (declare (ignore new-nick))
+(defreply (setf nickname) :after (new-value (bot (proto 'command-bot)))
+  "Keeps the detection-regex up-to-date."
+  (declare (ignore new-value))
   (update-detection-regex bot))
 
 ;;; Command handling stuff
