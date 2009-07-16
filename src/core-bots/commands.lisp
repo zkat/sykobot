@@ -93,12 +93,13 @@
 			(lambda (*bot* *message* *sender* *channel*)
 			  (declare (ignorable *message* *bot* *sender* *channel*))
 			  ,@(if vars
-				`((register-groups-bind ,vars (,regex *message*)
-				    ,@real-body))
-				`(,@real-body))))
+				`((or (register-groups-bind ,vars (,regex *message*)
+                                        ,@real-body)
+                                      (error ,(build-string "Not enough arguments to ~A. Try 'help ~:*~A'"
+                                                            name))))
+                                `(,@real-body))))
 		       ,@(when documentation
 			       `((dox ,documentation))))))))
-
 
 ;;; Command processing
 
