@@ -199,7 +199,7 @@
 (defcommand echo ("(.*)" string)
   "Syntax: 'echo <string>' - Echoes back STRING."
   string)
-(defcommand help ("(.*)" cmd-name)
+(defcommand help ("(\\S+)?" cmd-name)
   "Syntax: 'help [<cmd-name>]' - If cmd-name is provided, dumps the docstring for that command. ~
 Otherwise, it dumps a generic help string."
   (if (<= 1 (length cmd-name))
