@@ -49,6 +49,8 @@
         ((and (not (format-string-p (car data)))
 	      (null (cdr data)))
          (format nil "~A" (car data)))
+        ((not (format-string-p (car data)))
+         (apply #'concatenate 'string data))
         (T (apply #'format nil data))))
 
 (defmacro do-lines ((var string &optional result) &body body)
