@@ -188,6 +188,12 @@
 	    "well I'm glad we sorted that out"))
     ("orly" ("yarly"
 	     "btard"))
+
+    ("(ty|thanks|thankyou|danke|merci)" ("Don't mention it"
+					 "np"
+					 "you're welcome"
+					 "my pleasure"))
+
     ;; questions
     ("how (was|is|are|were) ([\\w ]+) (\\w+ing)" ("$1 $0 $2 great"
 						  "$1 $0 $2 meh"
