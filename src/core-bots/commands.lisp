@@ -15,11 +15,7 @@
 (defproto command-bot ((proto 'listener-bot))
   ((commands (make-hash-table :test #'equal))
    (detection-regex nil)
-   (command-prefix)))
-
-(defreply init-sheep :after ((bot 'command-bot) &key)
-  (with-properties (command-prefix) bot
-    (setf command-prefix (nickname bot))))
+   (command-prefix "@")))
 
 (defproto command ()
   ((cmd-function (constantly "OOPS. Don't go here."))
