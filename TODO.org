@@ -1,24 +1,43 @@
-* TODO Finish sykobot
+* TODO 0.2
+** TODO Command system
+*** TODO [#A] GIVE command
+    This command probably requires a bit of restructuring of the way the command system works.
+    Right now, commands assume their replies are simply going to be sent back to the original
+    sender. GIVE breaks this, and since it's supposed to be a command, it would probably be trapped
+    by the system's requirement that 'everything is a reply'.
+*** TODO [#B] Fix thinko with #'build-string
+    Get that to work as it should.
+    Hint: output is to a stream, but maintain abstraction over IRC lib.
+** TODO Other stuff
+*** TODO 'log last five minutes and post to wiki...'
+*** TODO Eliza
+    Sort out the reflection so 'you and your family' 'my family and I'
+*** TODO seen listener
+    so 'seen nick' would say "last seen ....." or "nope, never heard of them"
+*** TODO Praise listener
+    listen for stuff like nick++ or nick ftw
+* TODO 0.1
 ** TODO [#A] Listeners as sheep
    This will give good modularity for the various parts of the command
    system, and will also make aliases easier later on.
 ** TODO [#A] Goals for new command system
    These are the requirements specified by zkat for the new command
    system to be a viable alternative to the current one.
-*** TODO [#A] Proper Reporting of Incorrect Syntax
+*** DONE [#A] Proper Reporting of Incorrect Syntax
     This is not present in the current system, however, it is highly
     desired by zkat. This could actually just be a hook into a
     help system.
-**** TODO [#A] Deal correctly with bad arglists
+    UPDATE zkat: This sort of works right now, but it can grow better as the command system
+    grows and evolves. It gives some decent enough feedback for the time being, though.
+**** DONE [#A] Deal correctly with bad arglists
      ie, don't send "NIL" to google search.
-**** TODO [#B] Conditions for command errors
-     Some good feedback. This also means in general a system for
-     dealing with conditions (not just serious-error) that get
-     caught at command-listener.
-*** TODO [#B] Fix thinko with #'build-string
-    Get that to work as it should.
-    Hint: output is to a stream, but maintain abstraction over IRC lib.
-*** TODO [#B] Simple DEFCOMMAND Macro
+**** DONE [#B] Conditions for command errors
+     Some good feedback. This also means in general a system for dealing with conditions (not just
+     serious-error) that get caught at command-listener.  
+     UPDATE zkat - Feedback is fine right now. We're catching conditions, and the conditions are
+     output to channel. If we ever need specific conditions, we can just signal them within
+     commands.
+*** DONE [#B] Simple DEFCOMMAND Macro
     Sykopomp likes simple macros (who doesn't?). Also, it should be
     transparent enough that if it breaks, it'll be easy for anybody
     to understand and fix, regardless of who wrote it.
@@ -41,21 +60,21 @@
 *** DONE google search
 *** DONE quotegrabs
     Persistent quotegrabs, including being able to !grab, !rq, and !q <someone>
-*** TODO Aliases
-    Entire commands should be aliasable, i.e. !alias wiki google site:en.wikipedia.org
 *** DONE Factoids
     ability to define simple persistent factoids that can be called up with just !factname
 *** TODO Admin access
     Maybe later? Register users, etc.
 *** TODO ELIZA
     Under progress, almost DONE.
-*** TODO Stability
+*** DONE Stability
     Don't want this fucker crashing.
-*** TODO Command piping
-*** TODO give commands
-** TODO [#C] Other Features
-*** TODO 'log last five minutes and post to wiki...'
-*** TODO Karma
-    Record karma points for each user, and allow giving positive and
-    negative karma. People's ability to give karma depends on how much
-    karma they themselves have.
+    UPDATE zkat - After that horrible day when everything crashed, the bot's been ridiculously
+    stable. I'm tentatively tagging this as done. There's still plenty of work to do with stability,
+    but I think it's all about maturing from now on.
+** DONE [#C] Other Features
+*** DONE Karma
+    Record karma points for each user, and allow giving positive and negative karma. People's
+    ability to give karma depends on how much karma they themselves have.  UPDATE zkat: We can
+    probably improve this a bit still, but it's probably not worth much effort until 0.2. I'm
+    tagging this as tentatively done.
+    
