@@ -138,6 +138,8 @@
 
     ("if (.+) then (.+)" ("Do you really think it's likely that $0"
 			  "Well, it sure would be awesome if $1"))
+    ("what (.+) if (.+)" ("then it would be $1"
+			  "you would be $1"))
     ("my mother (.+)" ("Who else in your family $0 ?"
 		       "Tell me more about your family"))
     ("I want (.+)" ("Why would anyone want $a0"
@@ -152,9 +154,15 @@
     ("perhaps (.+)" ("Why the uncertainty"
 		     "Of course $0"
 		     "Well, duh?!"))
-
-    ("I have (.+)" ("Why did you tell me that you've $0"
+    ("Do you like (.+)" ("well ofcourse i like $0"
+			 "i would rather like something else"
+			 "i wouldn't like $0"
+			 "i bet you like $0"))
+    ("(I|i) have (.+)" ("Why did you tell me that you've $0"
 		    "Now that you have $0 what will you do next?"))
+
+    ("(I|i) really (.+)" ("do you really $0" 
+		      "i really hate $0"))
     ("I would (.+)" ("Why would you $0"
 		     "Why would you do that?"
 		     "Who else did you tell that you'd $0"))
@@ -192,9 +200,24 @@
     ("die" ("no, you die"))
     ("you suck" ("your mum sucks"))
     ("phrik" ("screw phrik"))
+    ("love" ("love is in the air" 
+	     "who do you love?"
+	     "i don't love you !"
+	     "who is the lucky man/woman?"))
     ("fag" ("you're the fag"))
     ("bot" ("hmm? bot? No, I am no bot"
 	    "I don't see any bots"))
+    ("irc" ("irc is for nerds"
+	    "don't you have friends ?"
+	    "there are no girls on irc"))
+    ("music" ("i heard metallica is dead !"
+	     "do you like music ?"
+	     "music is great !"
+	     "did you listen to the new album of moby?"
+	     "tool kicks ass at music !"
+	     "music is my life !"
+	     "do you play any instrument ?"))
+
 
     ;; clutch at straws
 
