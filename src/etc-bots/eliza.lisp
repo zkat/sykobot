@@ -208,9 +208,6 @@
   (respond (remove #\? string) *eliza-responses*))
 
 (defcommand - ("(.+)" string)
-<<<<<<< HEAD:src/etc-bots/eliza.lisp
-  (respond-to string))
-=======
   "Syntax: '- <string>' - Test Eliza."
   (respond-to (preprocess string)))
 
@@ -221,4 +218,3 @@
 (defcommand preprocess ("(.+)" string)
   "Syntax: 'preprocess <string>' - Tests Eliza's preprocessor."
   (preprocess string))
->>>>>>> 2f04ff62845f5e29e5ba7812bf534db47e8fc0ca:src/etc-bots/eliza.lisp
