@@ -63,6 +63,7 @@
 
 (defparameter *preprocessings* '(("i'll" . "I will") ("i'd" . "I would")
 				 ("you'd" . "you would") ("you'll" . "you will")
+				 ("you're" . "you are")
 				 ("he'd" . "he would") ("he'll" . "he will")
 				 ("she'd" . "she would") ("she'll" . "she will")
 				 ("it'd" . "it would") ("it'll" . "it will")
