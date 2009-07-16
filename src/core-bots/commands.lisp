@@ -14,22 +14,29 @@
 ;;; Modularization of commands
 (defproto command-bot ((proto 'listener-bot))
   ((commands (make-hash-table :test #'equal))
-   (detection-regex nil)))
+   (detection-regex nil)
+   (command-prefix "@")))
 
 (defreply init-sheep :after ((proto 'command-bot) &key)
   (setf (commands proto) (make-hash-table :test #'equal)))
 
 (defproto command ()
-  ((cmd-function )
+  ((cmd-function (lambda (a b c d)
+		   (declare (ignore a b c d))
+		   "Oops. Why are you grabbing the proto's cmd-function?"))
    (dox "No documentation available.")))
 
 ;;; Detection regex handling
-(defparameter *cmd-prefix* "@")
 (defmessage update-detection-regex (bot))
 (defreply update-detection-regex ((bot (proto 'command-bot)))
   (setf (detection-regex bot)
-        (create-scanner (build-string "^~A[:,] |^~A" (nickname bot) *cmd-prefix*)
+        (create-scanner (build-string "^~A[:,] |^~A" (nickname bot) (command-prefix bot))
                         :case-insensitive-mode T)))
+
+(defreply (setf command-prefix) :after (new-value (bot (proto 'command-bot)))
+  "Whenever we set this property, we should make sure the regex is updated as well."
+  (declare (ignore new-value))
+  (update-detection-regex bot))
 
 (defreply init-bot :after ((bot (proto 'command-bot)))
   (update-detection-regex bot))
@@ -169,13 +176,6 @@
 ;; (defreply get-responses ((bot (proto 'sykobot)) cmd args sender channel)
 ;;   (let ((fn (command-function bot cmd)))
 ;;     (funcall fn bot args sender channel)))
-
-
-
-;; ;;; Puts message responses on the response stack
-;; (defun cmd-msg (message &rest format-args)
-;;   (push (apply #'build-string message format-args)
-;;         *responses*))
 
 ;;; Deafness
 (defcommand shut ("(\\S+)*" arg1)
