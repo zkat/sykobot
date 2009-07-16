@@ -112,6 +112,7 @@
 		       "Tell me more about your family"))
     ("I want (.+)" ("Why would anyone want $a0"
 		    "Yes, that would be nice"))
+    ("I like (.+)" ("I like $a0 too!"))
     ("I demand (.+)" ("oh, you *demand* do you?"))
     ("are you (.+)" ("And if I were $0 - what then?"
 		     "Why does it matter?"
@@ -139,22 +140,35 @@
     ("how (was|is|are|were) ([\\w ]+) (\\w+ing)" ("$1 $0 $2 great"
 						  "$1 $0 $2 meh"
 						  "$1 $0 $2 ok I guess"))
-    ("how (was|is|are|were) ([\\w ]+)" ("$1 $0 great"))
 
-    ;; sarcastic stuff
     ("\\w+ (is|are) (fat|big|hot|awesome|win|sexy|ugly)" ("your mum is $1"))
     ("(\\w+) (is|are) here" ("oh great. I love $0"
 			     "$0 is annoying"
 			     "well since $0 $1 here, maybe you could leave"))
+
+    ("how (was|is|are|were) ([\\w ]+)" ("$1 $0 great"))
+    ("(how|what|where|when|why|who) (\\w+) you (.+)"
+     ("well, $0 $1 YOU $2?"))
+    ("(how|what|where|when|why|who) (.+)" ("$0 indeed"
+					   "I ask myself the same question"))
+    ("can (\\w+) (.+)" ("I dunno. Can $0 $a1?"))
+    ("\\w+ (is|are|were|was) (.+)" ("correct"))
+
+
+
     ("(tard|ass)" ("no, you're the $0"))
     ("die" ("no, you die"))
     ("you suck" ("your mum sucks"))
     ("phrik" ("screw phrik"))
+    ("fag" ("you're the fag"))
+    ("bot" ("hmm? bot? No, I am no bot"
+	    "I don't see any bots"))
 
     ;; clutch at straws
 
     ("interesting" ("well, YOU are not interesting"))
     ("hate" ("...and I hate you"))
+    ("^\\s*because (.+)" ("oh, well now it makes sense"))
 
     ;; fine, give up, DEFLECT IT
     ("(.*)" ("Why do you say that $0\?" "What do you mean when you say that $0\?"
@@ -168,4 +182,9 @@
   (respond-to (preprocess string)))
 
 (defcommand reflect ("(.+)" string)
+  "swaps 1st and 2nd person in the accusative case"
   (reflect string))
+
+(defcommand preprocess ("(.+)" string)
+  "preprocesses the string - i.e. normalise abbreviations"
+  (preprocess string))
