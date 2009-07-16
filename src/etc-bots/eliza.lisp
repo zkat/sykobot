@@ -8,15 +8,14 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (in-package :sykobot)
 
-(defproto eliza-bot ((proto 'command-bot))
+(defproto eliza-bot ((proto 'facts-bot))
   ((eliza-mode t)))
 
 (defreply command-function :around ((bot (proto 'eliza-bot)) name)
-  (declare (ignore bot))
   (handler-case (call-next-reply)
     (unknown-command (e)
       (if (eliza-mode *bot*)
-          (lambda () (respond-to (build-string name " " *message*)))
+          (lambda () (respond-to bot (build-string name " " *message*)))
           (signal e)))))
 
 (defcommand eliza ("(\\w+)?" on-off-p)
@@ -102,7 +101,8 @@
 (defun preprocess (string)
   (translate string *preprocessings*))
 
-(defun respond (string regexen)
+(defmessage respond (bot string regexen))
+(defreply respond ((bot (proto 'eliza-bot)) string regexen)
   "takes the string, checks through the regexes until a match is made
    and chooses a random response from the response list"
   (or
@@ -110,11 +110,21 @@
       do (destructuring-bind (regex responses) regex+responses
 	   (multiple-value-bind (match groups) (scan-to-strings regex string)
 	     (when match
-	       (return (substitute-groups (random-elt responses) groups))))))
+	       (let ((response (random-elt responses)))
+		 (print "IS IT A FUNCTION?")
+		 (print (functionp response))
+		 (if (functionp response)
+		     (return (funcall response bot groups))
+		     (return (substitute-groups (random-elt responses) groups))))))))
    "I have nothing to say to you"))
 
+(defmacro defresp (&body body)
+  `(lambda (bot groups)
+     (declare (ignorable bot groups))
+     ,@body))
+
 (defparameter *eliza-responses* 
-  '(("hello" ("go away"))
+  `(("hello" ("go away"))
     ("my name is (\\w+)" ("hello $0"
 			  "greetings $0"))
     ;;psychoanalysis
@@ -146,6 +156,19 @@
 		     "Why does it matter if $0"
 		     "Would you prefer it if I were $0"
 		     "wait, are YOU $0"))
+
+    ("do you know about (.+)" (,(defresp
+				 (let ((noun (elt groups 0)))
+				   (if (has-fact bot noun)
+				       (build-string 
+					"Well I know that someone said '~A'"
+					(get-fact bot (elt groups 0)))
+				       (random-elt
+					(list
+					 (build-string "Of course I know about ~A"
+						       noun)
+					 "Nothing at all")))))))
+
     ("perhaps (.+)" ("Why the uncertainty"
 		     "Of course $0"
 		     "Well, duh?!"))
@@ -178,6 +201,7 @@
     ("how (was|is|are|were) ([\\w ]+)" ("$1 $0 great"))
     ("(how|what|where|when|why|who) (\\w+) you (.+)"
      ("well, $0 $1 YOU $2?"))
+
     ("(how|what|where|when|why|who) (.+)" ("$0 indeed"
 					   "I ask myself the same question"))
     ("can (\\w+) (.+)" ("I dunno. Can $0 $a1?"))
@@ -204,12 +228,12 @@
 	     "What are your motives behind saying such a thing\?"
 	     "I think it's clear that you're full of shit when you say that $0."))))
 
-(defun respond-to (string)
-  (respond (remove #\? string) *eliza-responses*))
+(defun respond-to (bot string)
+  (respond bot (remove #\? string) *eliza-responses*))
 
 (defcommand - ("(.+)" string)
   "Syntax: '- <string>' - Test Eliza."
-  (respond-to (preprocess string)))
+  (respond-to *bot* (preprocess string)))
 
 (defcommand reflect ("(.+)" string)
   "Syntax: 'reflect <string>' - Tests Eliza's pronoun reflector."
