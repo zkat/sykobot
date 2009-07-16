@@ -334,30 +334,41 @@ utf-8 code."
                 0))))
 
 ;;; kiloseconds
-(defcommand kiloseconds ("(.*)" zone)
+(defcommand kiloseconds ("(\\S+)?" zone-string)
   "Syntax: 'kiloseconds [<zone>]' - The current time in kiloseconds. Optionally, a time zone~
  can be provided in the format [+-]NUM. Example: 'kiloseconds -5'."
-  (when (zerop (length zone)) (setf zone "0"))
-  (let ((parsed-zone (parse-integer zone :junk-allowed t)))
-    (if parsed-zone
-        (build-string "The time is ~A." (get-ks-timestamp parsed-zone))
+  (when (null zone-string) (setf zone-string "0"))
+  (let ((zone (parse-integer zone-string :junk-allowed t)))
+    (if zone
+        (build-string "The time is ~A." (get-ks-timestamp :zone zone))
         "Invalid timezone.")))
 
-(defun get-ks-timestamp (&optional (gmt-diff 0))
+(defun get-ks-timestamp (&key (zone 0) (time (get-universal-time)))
   (multiple-value-call #'build-string
-    "~3$ ks in GMT~@D" (get-ks-time gmt-diff)))
+    "~3$ ks in GMT~@D" (get-ks-time :zone zone :time time)))
 
-(defun get-ks-time (&optional (gmt-diff 0))
-  (let ((timezone (- (mod (+ 11 gmt-diff) 24) 11)))
-    (values (multiple-value-bind
-                  (seconds minutes hours date month year day light zone)
-                (get-decoded-time)
-              (declare (ignore date month year day light))
-              (/ (+ seconds
-                    (* 60 (+ minutes
-                             (* 60 (mod (+ hours zone timezone) 24)))))
-                 1000))
-            timezone)))
+(defun get-boring-timestamp (&key (zone 0) (time (get-universal-time)))
+  (multiple-value-bind (seconds minutes hours)
+      (decode-universal-time time zone)
+    (build-string "~2D:~2D:~2D in GMT~@D" hours minutes seconds
+                  (- (mod (+ 11 zone) 24) 11))))
+
+(defun get-datestamp (&key (zone 0) (time (get-universal-time)))
+  (multiple-value-bind
+        (seconds minutes hours date month year day)
+      (decode-universal-time time zone)
+    (declare (ignore seconds minutes hours))
+    (build-string "~[Mon~;Tue~;Wed~;Thu~;Fri~;Sat~;Sun~], ~
+                   ~[Jan~;Feb~;Mar~;Apr~;May~;Jun~;Jul~;Aug~;Sep~;Oct~;Nov~;Dec~] ~
+                   ~D~[th~;st~;nd~;rd~:;th~], ~D"
+                  day (1+ month) date (mod date 10) year)))
+
+(defun get-ks-time (&key (zone 0) (time (get-universal-time)))
+  (let ((zone (- (mod (+ 11 zone) 24) 11)))
+    (values (multiple-value-bind (seconds minutes hours)
+                (decode-universal-time time zone)
+              (/ (+ seconds (* 60 (+ minutes (* 60 hours)))) 1000.0))
+            zone)))
 
 ;;; Parrot
 (deflistener parrot
