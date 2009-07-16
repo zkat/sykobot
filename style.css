@@ -75,6 +75,14 @@ html {
     width: 32%;
 }
 
+#example {
+      float: left;
+      margin: 1% 1% 1% 5%;
+      padding: 0% 1% 0% 1%; /*top right bottom left*/
+      width: 88%;
+      height: 240px;
+}
+  
 
 #contact {
   float: left;
