@@ -82,6 +82,8 @@
     ("I suspect (.+)" ("I suspect *someone* is hiding something"
 		       "I more than suspect so"
 		       "I KNOW $0"))
+    ("(you're|you are) (.+)" ("NO, YOU are $1"))
+    ("(no, you're|no, you are) (.+)" ("YOU are $1"))
     ("yes" ("orly?"
 	    "yup kk, sure"
 	    "well I'm glad we sorted that out"))
