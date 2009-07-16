@@ -55,6 +55,12 @@
 (defreply command-function ((bot (proto 'command-bot)) name)
   (or (let ((cmd (find-command bot name)))
 	(when cmd (cmd-function cmd)))
+      (let ((cmd (find-command bot "-"))) ;;eliza
+	(when cmd 
+	  (if *message*
+	      (setf *message* (merge-strings " " name *message*))
+	      (setf *message* name))
+	  (cmd-function cmd)))
       (lambda ()
         (error (build-string "I don't know how to ~A" name)))))
 
@@ -116,6 +122,8 @@ splits it into a command and arguments"
       (split "\\s+" message :limit 2)
     (send-reply bot channel sender
                 (funcall (command-function bot command))))
+
+
   #+nil (let* ((results (process-command-string bot message sender channel)))
           (loop for result in results
              do (send-reply bot channel sender (build-string result)))))
