@@ -1,0 +1,14 @@
+Index: event.lisp
+===================================================================
+--- event.lisp	(revision 212)
++++ event.lisp	(working copy)
+@@ -375,7 +375,8 @@
+        (connection message)
+        :notice (source message)
+        (make-ctcp-message
+-        (format nil "PING ~A" (car (last (arguments message))))))))
++        (let ((args (car (last (arguments message)))))
++          (subseq args 1 (1- (length args))))))))
+ 
+ (defmethod irc-message-event (connection (message ctcp-dcc-chat-request-message))
+   (declare (ignore connection))
