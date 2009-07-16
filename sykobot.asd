@@ -35,6 +35,7 @@
                        (:file "facts")
 		       (:file "eliza")
 		       (:file "chant")
+		       (:file "now-playing")
 		       (:file "karma")
                        (:file "quotegrabs")))
              (:file "config")))))
