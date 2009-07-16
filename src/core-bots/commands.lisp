@@ -7,10 +7,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (in-package :sykobot)
 
-;; ;;; Response stack
-;; ;;; Used to assist piping and multiple return values
-;; (defvar *responses*)
-
 ;;; Modularization of commands
 (defproto command-bot ((proto 'listener-bot))
   ((commands (make-hash-table :test #'equal))
@@ -59,10 +55,8 @@
 (defreply command-function ((bot (proto 'command-bot)) name)
   (or (let ((cmd (find-command bot name)))
 	(when cmd (cmd-function cmd)))
-      (lambda (bot args sender channel)
-	(declare (ignore bot args sender channel))
-	(error (build-string "I don't know how to ~A"
-			     name)))))
+      (lambda ()
+        (error (build-string "I don't know how to ~A" name)))))
 
 (defreply erase-all-commands ((bot (proto 'command-bot)))
   (clrhash (commands bot)))
@@ -70,13 +64,6 @@
 (defreply list-all-commands ((bot (proto 'command-bot)))
   (with-properties (commands) bot
     (hash-table-keys commands)))
-
-;; We declare these variables here, but do not bind them unless we're actually inside
-;; the body of a command.
-(defvar *bot*)
-(defvar *message*)
-(defvar *sender*)
-(defvar *channel*)
 
 ;; A very convenient macro...
 (defmacro defcommand (name (&optional (regex "") &rest vars) &body body)
@@ -91,8 +78,7 @@
     `(add-command (proto 'command-bot) (symbol-name ',name)
 		  (defclone ((proto 'command))
 		      ((cmd-function
-                        (lambda (*bot* *message* *sender* *channel*)
-                          (declare (ignorable *message* *bot* *sender* *channel*))
+                        (lambda ()
                           ,@(if vars
                                 `((or (register-groups-bind ,vars (,regex *message*)
                                         ,@real-body)
@@ -134,11 +120,10 @@
                               (sender (proto 'string))
                               (channel (proto 'string))
                               (message (proto 'string)))
-  (destructuring-bind (command &optional args)
+  (destructuring-bind (command &optional *message*)
       (split "\\s+" message :limit 2)
     (send-reply bot channel sender
-                (funcall (command-function bot command)
-			 bot args sender channel)))
+                (funcall (command-function bot command))))
   #+nil (let* ((results (process-command-string bot message sender channel)))
           (loop for result in results
              do (send-reply bot channel sender (build-string result)))))
