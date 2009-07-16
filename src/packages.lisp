@@ -7,7 +7,7 @@
            :*nickserv-password* :*nickname* :*cmd-prefix* :*default-listeners*
            :*username* :*realname* :*bot-dir* :command-listener :send-memos
            :scan-for-fact :scan-for-more :scan-for-url :remember-last-thing-said
-	   :*default-listeners-by-channel* :alref))
+	   :*default-listeners-by-channel* :alref :*default-timestamp-function*))
 
 (defpackage #:sykobot-user
   (:use :cl :sykobot :sheeple :cl-ppcre))
