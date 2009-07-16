@@ -12,6 +12,10 @@
 *** TODO 'log last five minutes and post to wiki...'
 *** TODO Eliza
     Sort out the reflection so 'you and your family' 'my family and I'
+*** TODO seen listener
+    so 'seen nick' would say "last seen ....." or "nope, never heard of them"
+*** TODO Praise listener
+    listen for stuff like nick++ or nick ftw
 * TODO 0.1
 ** TODO [#A] Listeners as sheep
    This will give good modularity for the various parts of the command
@@ -73,3 +77,4 @@
     ability to give karma depends on how much karma they themselves have.  UPDATE zkat: We can
     probably improve this a bit still, but it's probably not worth much effort until 0.2. I'm
     tagging this as tentatively done.
+    
