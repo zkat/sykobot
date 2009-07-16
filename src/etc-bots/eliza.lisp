@@ -16,7 +16,10 @@
   (handler-case (call-next-reply)
     (unknown-command (e)
       (if (eliza-mode *bot*)
-          (lambda () (respond-to *message*))
+          (lambda () 
+	    (if *message*
+		(respond-to (merge-strings " " name *message*))
+		(respond-to name)))
           (signal e)))))
 
 (defcommand eliza ("(\\w+)?" on-off-p)
@@ -205,11 +208,11 @@
 	     "I think it's clear that you're full of shit when you say that $0."))))
 
 (defun respond-to (string)
-  (respond (remove #\? string) *eliza-responses*))
+  (respond (preprocess (remove #\? string)) *eliza-responses*))
 
 (defcommand - ("(.+)" string)
   "Syntax: '- <string>' - Test Eliza."
-  (respond-to (preprocess string)))
+  (respond-to string))
 
 (defcommand reflect ("(.+)" string)
   "Syntax: 'reflect <string>' - Tests Eliza's pronoun reflector."
