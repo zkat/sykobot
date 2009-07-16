@@ -497,3 +497,5 @@ I love to singa"
        cloudyness temp station-name)
       (build-string "I couldn't find the weather for ~A" location))))
 
+(deflistener scan-for-now-playing (when (string-equal (subseq *message* 0 3) "np:") (send-reply *bot* *channel* *sender* "wut an noise!")))
+
