@@ -24,10 +24,11 @@
    (dox "No documentation available.")))
 
 ;;; Detection regex handling
+(defparameter *cmd-prefix* "@")
 (defmessage update-detection-regex (bot))
 (defreply update-detection-regex ((bot (proto 'command-bot)))
   (setf (detection-regex bot)
-        (create-scanner (build-string "^~A[:,] " (nickname bot))
+        (create-scanner (build-string "^~A[:,] |^~A" (nickname bot) *cmd-prefix*)
                         :case-insensitive-mode T)))
 
 (defreply init-bot :after ((bot (proto 'command-bot)))
@@ -169,7 +170,7 @@
 ;;   (let ((fn (command-function bot cmd)))
 ;;     (funcall fn bot args sender channel)))
 
-;;; (defparameter *cmd-prefix* "@")
+
 
 ;; ;;; Puts message responses on the response stack
 ;; (defun cmd-msg (message &rest format-args)
@@ -198,15 +199,15 @@
 (defcommand echo ("(.*)" string)
   "Syntax: 'echo <string>' - Echoes back STRING."
   string)
-(defcommand help ("(\\S+)" cmd-name)
-  "Syntax: 'help [<cmd-name>]' - If cmd-name is provided, dumps the docstring for that command.~
-otherwise, it dumps a generic help string."
+(defcommand help ("(.*)" cmd-name)
+  "Syntax: 'help [<cmd-name>]' - If cmd-name is provided, dumps the docstring for that command. ~
+Otherwise, it dumps a generic help string."
   (if (<= 1 (length cmd-name))
       (let ((cmd (find-command *active-bot* cmd-name)))
 	(if cmd 
 	    (dox cmd)
 	    (build-string "I don't know any command called ~A" cmd-name)))
-      "Tell me 'help <cmd-name> for more information on a particular command."))
+      "Tell me 'help <cmd-name>' for more information on a particular command."))
 (defcommand source ()
   "Syntax: 'source' - Dumps information about the bot's source code."
   "I'm licensed under the AGPL, you can find my source code at: http://github.com/zkat/sykobot")
