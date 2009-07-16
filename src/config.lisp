@@ -19,7 +19,7 @@
 (defvar *default-listeners* '(command-listener scan-for-url remember-last-thing-said
 			      send-memos scan-for-fact scan-for-more))
 (defvar *default-listeners-by-channel* nil)
-
+(defvar *cmd-prefix* nil)
 
 (defvar *home* (merge-pathnames ".sykobot/" (user-homedir-pathname)))
 
@@ -31,7 +31,7 @@
 						(proto 'memos-bot)
 						(proto 'facts-bot)
 						(proto 'karma-bot)
-;;						(proto 'eliza-bot)
+						#+nil(proto 'eliza-bot)
 						(proto 'command-bot))))
   (let ((bot (clone bot-prototype)))
     (handler-bind ((cl-irc:no-such-reply (lambda (c)
@@ -53,9 +53,8 @@
         (setf (server bot) *server*))
       (when *port*
         (setf (port bot) *port*))
-      (load-memos bot)
-      (load-facts bot)
-      (load-quotes bot)
+      (when *cmd-prefix*
+	(setf (command-prefix bot) *cmd-prefix*))
       (init-bot bot)
       (when *identify-with-nickserv?*
         (identify bot *nickserv-password*))
