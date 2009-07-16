@@ -7,7 +7,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (in-package :sykobot)
 
-
 (defproto facts-bot ((proto 'command-bot))
   ((facts (make-hash-table :test #'equalp))))
 
@@ -74,7 +73,7 @@
 
 (defreply erase-some-facts ((bot (proto 'facts-bot)))
   (let ((keys (hash-table-keys (facts bot))))
-    (dotimes (n *facts-to-remove*) ;;remove approximately *facts-to-remove* facts
+    (dotimes (n *facts-to-remove*) ; remove approximately *facts-to-remove* facts
       (remhash (random-elt keys) (facts bot)))))
 
 

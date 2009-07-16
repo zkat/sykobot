@@ -21,14 +21,12 @@
 
 (defvar *active-bot* nil)
 
-;;; Good Medicine
-(setf drakma:*drakma-default-external-format* :utf-8
-      flexi-streams:*substitution-char* #\?)
-
 ;;; Stdout logging of raw IRC.
 (defmethod cl-irc:irc-message-event :before (connection message)
   (declare (ignore connection))
-  (format t "-> ~a~%" (irc:raw-message-string message)))
+  (format t "-> ~a~%"
+          (let ((message (irc:raw-message-string message)))
+            (subseq message 0 (1- (length message))))))
 
 (defmethod cl-irc::send-irc-message :before (connection command &rest arguments)
   (declare (ignore connection))
@@ -86,8 +84,8 @@
 
 (defreply part ((bot (proto 'sykobot)) channel)
   (irc:part (connection bot) channel)
-  (with-properties (channels) bot
-    (setf channels (delete channels channel :test #'string-equal))))
+  (with-accessors ((channels channels)) bot
+    (setf channels (delete channel channels :test #'string-equal))))
 
 (defreply identify ((bot (proto 'sykobot)) password)
   (send-msg bot "nickserv" (build-string "identify ~A" password)))
