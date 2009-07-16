@@ -28,17 +28,16 @@
 		   (if (equal target (nickname *bot*))
 		       (irc:source msg)
 		       target)))
-        (*message* (cadr (irc:arguments msg))))
+        (*message* (escape-format-string (cadr (irc:arguments msg)))))
     (handler-case
-        (call-active-listeners *bot* *channel* *sender*
-                               (escape-format-string *message*))
+        (call-active-listeners *bot* *channel*)
       (error (e) (send-msg *bot* *channel*
                            (build-string "ERROR: ~A" e))))))
 
 (defmessage add-listener (bot name function))
 (defmessage remove-listener (bot name))
 (defmessage listener-function (bot name))
-(defmessage call-listener (bot name sender channel message))
+(defmessage call-listener (bot name))
 
 (defreply set-listener ((bot (proto 'listener-bot)) (name (proto 'symbol)) function)
   (setf (gethash name (listeners bot)) function))
@@ -53,19 +52,17 @@
                (declare (ignore bot sender channel message))
                (cerror "Continue" "Nonexistant listener ~S" name)))))
 
-(defreply call-listener ((bot (proto 'listener-bot)) (name (proto 'symbol)) sender channel message)
-  (funcall (listener-function bot name) bot sender channel message))
+(defreply call-listener ((bot (proto 'listener-bot)) (name (proto 'symbol)))
+  (funcall (listener-function bot name)))
 
 (defmacro deflistener (name &body body)
   `(set-listener (proto 'listener-bot) ',name
-                 (lambda (*bot* *sender* *channel* *message*)
-                   (declare (ignorable *bot* *sender* *channel* *message*))
-                   ,@body)))
+                 (lambda () ,@body)))
 
 ;;; Customization of listeners
 (defmessage listener-on (bot channel name))
 (defmessage listener-off (bot channel name))
-(defmessage call-active-listeners (bot channel sender message))
+(defmessage call-active-listeners (bot channel))
 (defmessage listener-active-p (bot channel name))
 
 (defreply listener-on ((bot (proto 'listener-bot)) channel name)
@@ -76,12 +73,12 @@
     (setf (alref channel active-listeners)
           (delete name (alref channel active-listeners)))))
 
-(defreply call-active-listeners ((bot (proto 'listener-bot)) channel sender message)
+(defreply call-active-listeners ((bot (proto 'listener-bot)) channel)
   (let ((deafp (alref channel (deafp bot))))
     (if deafp
-        (call-listener bot deafp sender channel message)
+        (call-listener bot deafp)
         (dolist (name (alref channel (active-listeners bot)))
-          (call-listener bot name sender channel message)))))
+          (call-listener bot name)))))
 
 (defreply listener-active-p ((bot (proto 'listener-bot)) channel name)
   (member name (alref channel (active-listeners bot))))
