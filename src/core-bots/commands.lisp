@@ -35,6 +35,13 @@
   (update-detection-regex bot))
 
 ;;; Command handling stuff
+(define-condition unknown-command (error)
+  ((command-name :reader command-name
+                 :initarg :command-name))
+  (:report (lambda (condition stream)
+             (format stream "Unknown command: ~A"
+                     (command-name condition)))))
+
 (defmessage add-command (bot name command))
 (defmessage remove-command (bot command))
 (defmessage find-command (bot name))
@@ -55,14 +62,7 @@
 (defreply command-function ((bot (proto 'command-bot)) name)
   (or (let ((cmd (find-command bot name)))
 	(when cmd (cmd-function cmd)))
-      (let ((cmd (find-command bot "-"))) ;;eliza
-	(when cmd 
-	  (if *message*
-	      (setf *message* (merge-strings " " name *message*))
-	      (setf *message* name))
-	  (cmd-function cmd)))
-      (lambda ()
-        (error (build-string "I don't know how to ~A" name)))))
+      (error 'unknown-command :command-name name)))
 
 (defreply erase-all-commands ((bot (proto 'command-bot)))
   (clrhash (commands bot)))
@@ -428,7 +428,7 @@ I love to singa"
 
 (defcommand error ()
   "This accepts no arguments. It makes lisp signal an error, to make sure they're handled properly."
-  (error "OH SHIT ERRORED! D:")
+  (error "This is a test error.")
   "Uh oh")
 
 (defcommand translate ("(\\S+) (\\S+) (.*)" input-lang output-lang text)
