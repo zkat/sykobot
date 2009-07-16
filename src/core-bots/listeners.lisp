@@ -90,6 +90,9 @@
   (dolist (name names)
     (listener-on bot channel name)))
 
+(defreply part :after ((bot (proto 'listener-bot)) channel)
+  (setf (alref channel (active-listeners bot)) nil))
+
 (defreply join :after ((bot (proto 'listener-bot)) channel)
   (let ((channel-listeners (alref channel *default-listeners-by-channel*)))
     (if channel-listeners
