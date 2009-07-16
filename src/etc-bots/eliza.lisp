@@ -1,5 +1,11 @@
-;; translation of http://www.strout.net/python/ai/therapist.py
-
+;;;; Copyright 2009 Kat Marchan
+;;;;
+;;;; This file is part of sykobot.
+;;;;
+;;;; For licensing and warranty information, refer to COPYING
+;;;;
+;;;; translation of http://www.strout.net/python/ai/therapist.py
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (in-package :sykobot)
 
 (defun translate (string alist)

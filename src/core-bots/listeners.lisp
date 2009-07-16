@@ -96,7 +96,6 @@
 	(apply #'activate-listeners bot channel *default-listeners*))))
 
 ;;; Deafness (aka silence)
-
 (defmessage toggle-deafness (bot channel))
 
 (defreply toggle-deafness ((bot (proto 'listener-bot)) channel)

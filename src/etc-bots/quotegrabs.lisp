@@ -8,7 +8,6 @@
 (in-package :sykobot)
 
 ;;; Quotes
-
 (defproto quotes-bot ((proto 'command-bot))
   ((quotes (make-hash-table :test #'equalp))
    (last-said (make-hash-table :test #'equalp))))
@@ -23,8 +22,6 @@
 (defreply join :after ((bot (proto 'quotes-bot)) channel)
   (setf (gethash channel (last-said bot))
 	(make-hash-table :test #'equalp)))
-
-
 
 ;;; Commands
 (defcommand grab ("(.*)" nick)

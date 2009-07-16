@@ -89,19 +89,14 @@
 			       `((dox ,documentation))))))))
 
 ;;; Command processing
-
-;;; Checks if a message is applicable for the bot.
-;;; If so, returns the command section.
-;;; CALLED BY: command-listener, undeafen-listener
-(defmessage get-message-index (bot message))
+(defmessage get-message-index (bot message)
+  (:documentation "Checks if a message is applicable for the bot. If so,
+it returns the command section of the message."))
 (defreply get-message-index ((bot (proto 'sykobot)) message)
   (nth-value 1 (scan (detection-regex bot) message)))
 
-;;; When a message is applicable for the bot, responds to it.
-;;; CALLED BY: call-listeners
-;;; CALLS: respond-to-message
-;;;  - Adlai
 (deflistener command-listener
+  "When a message is applicable for the bot, respond to it."
   (let ((index (get-message-index *bot* *message*)))
     (when index
       (restartable (respond-to-message *bot* *sender* *channel*
@@ -111,15 +106,12 @@
 (defmessage get-responses (bot cmd args sender channel))
 (defmessage process-command-string (bot string sender channel &optional pipe-input))
 
-;;; Removes the direct message indicator from a message,
-;;;   and then splits it into a command and arguments.
-;;; CALLED BY: command-listener
-;;; CALLS: process-command-string
-;;;  - Adlai
 (defreply respond-to-message ((bot (proto 'sykobot))
                               (sender (proto 'string))
                               (channel (proto 'string))
                               (message (proto 'string)))
+  "Removes the direct message indicator from a message, and then
+splits it into a command and arguments"
   (destructuring-bind (command &optional *message*)
       (split "\\s+" message :limit 2)
     (send-reply bot channel sender
@@ -221,12 +213,15 @@ privileges, it sets the channel's topic. Otherwise, it dumps the current topic."
 ;; These are broken until encoding issues can be finalized. -Adlai
 ;; I'll worry about it later. Worksfornow -syko
 (defcommand code->char ("(\\S+)*" code-string)
+  "Syntax: 'code->char <number>' - Converts <number> into its utf-8 representation."
   (let ((code (if code-string (parse-integer code-string :junk-allowed T) 0)))
     (build-string "~:[Invalid code~;~A~]"
                   (and (integerp code) (/= code 127) (>= code 32))
 		  (code-char code))))
 
 (defcommand char->code ("(\\S+)*" char-string)
+  "Syntax: 'char->code <arg>' - Takes the first character seen in <arg> and converts it to its ~
+utf-8 code."
   (let ((code (and char-string (char-code (elt char-string 0)))))
     (build-string  "~:[Invalid character~;~A~]"
                    (and (integerp code) (/= code 127) (>= code 32))
