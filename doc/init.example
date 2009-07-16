@@ -33,3 +33,7 @@
 ;; and remove the scan-for-url in channel #bar
 (setf (alref "#foo" *default-listeners-by-channel*) '(scan-for-fact))
 (setf (alref "#bar" *default-listeners-by-channel*) (remove 'scan-for-url *default-listeners*))
+
+;; default timestamp function? are you boring?
+;;(setf *default-timestamp-function* #'get-ks-timestamp)
+;;(setf *default-timestamp-function* #'get-boring-timestamp)
