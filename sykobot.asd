@@ -19,7 +19,8 @@
              (:module "utils"
                       :serial t
                       :components
-                      ((:file "utils")
+                      ((:file "hacks")
+		       (:file "utils")
                        (:file "alref")))
              (:module "core-bots"
                       :serial t
