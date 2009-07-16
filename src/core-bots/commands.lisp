@@ -334,27 +334,14 @@ utf-8 code."
                 0))))
 
 ;;; kiloseconds
-(defcommand kiloseconds ("(.*)" zone)
+(defcommand kiloseconds ("(\\S+)?" zone-string)
   "Syntax: 'kiloseconds [<zone>]' - The current time in kiloseconds. Optionally, a time zone~
  can be provided in the format [+-]NUM. Example: 'kiloseconds -5'."
-  (when (zerop (length zone)) (setf zone "0"))
-  (let ((parsed-zone (parse-integer zone :junk-allowed t)))
-    (if parsed-zone
-        (let ((ks-time (get-ks-time parsed-zone)))
-          (build-string "The time in GMT~@D is ~3$ ks."
-                        (- (mod (+ 11 parsed-zone) 24) 11)
-                        ks-time))
+  (when (null zone-string) (setf zone-string "0"))
+  (let ((zone (parse-integer zone-string :junk-allowed t)))
+    (if zone
+        (build-string "The time is ~A." (get-ks-timestamp :zone zone))
         "Invalid timezone.")))
-
-(defun get-ks-time (&optional (gmt-diff 0))
-  (multiple-value-bind
-        (seconds minutes hours date month year day light zone)
-      (get-decoded-time)
-    (declare (ignore date month year day light))
-    (/ (+ seconds
-          (* 60 (+ minutes
-                   (* 60 (mod (+ hours zone gmt-diff) 24)))))
-       1000)))
 
 ;;; Parrot
 (deflistener parrot
