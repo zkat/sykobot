@@ -48,8 +48,7 @@
 (defreply listener-function ((bot (proto 'listener-bot)) (name (proto 'symbol)))
   (with-properties (listeners) bot
     (gethash name listeners
-             (lambda (bot sender channel message)
-               (declare (ignore bot sender channel message))
+             (lambda ()
                (cerror "Continue" "Nonexistant listener ~S" name)))))
 
 (defreply call-listener ((bot (proto 'listener-bot)) (name (proto 'symbol)))
