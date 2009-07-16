@@ -48,7 +48,6 @@
     (setf (gethash nick (alref channel (seen bot))) (get-universal-time))))
 (defreply have-seen :after ((bot (proto 'seen-bot)) channel nick)
 	  (declare (ignore channel nick))
-	  (print "saving")
 	  (save-seen bot))
 
 (defmessage last-seen (bot channel nick))
@@ -59,7 +58,6 @@
   
 
 (deflistener seen-listener
-  (print "OMG")
   (have-seen *bot* *channel* *sender*))
 
 (defcommand seen ("(.+)" nick)
