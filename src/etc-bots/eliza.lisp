@@ -12,11 +12,11 @@
   ((eliza-mode t)))
 
 (defreply command-function :around ((bot (proto 'eliza-bot)) name)
-  (declare (ignore bot name))
+  (declare (ignore bot))
   (handler-case (call-next-reply)
     (unknown-command (e)
       (if (eliza-mode *bot*)
-          (lambda () (respond-to *message*))
+          (lambda () (respond-to (build-string name " " *message*)))
           (signal e)))))
 
 (defcommand eliza ("(\\w+)?" on-off-p)
