@@ -78,7 +78,7 @@
     (when channel-table
       (setf (gethash nick channel-table) nil))))
 
-(defcommand forget ("(\\S+)" nick)
+(defcommand forget ("(.+)" nick)
   "forget <nick> - make the bot forget having seen nick"
   (forget *bot* *channel* nick)
   (build-string "~A? Who? I have no idea who that is ;)" nick))
