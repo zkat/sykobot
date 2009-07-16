@@ -94,8 +94,10 @@
     ;;psychoanalysis
     ("I need (.+)" ("Why do you need $a0?"
 		    "Would it really help to get $a0?"))
-    ("I dreamt (that|about|)(.+)" ("You dream $0 $1 often then?"
-				   "I dream $0 $1 too!"))
+    ("I (dreamt|dream) (that|about) (.+)" ("You dream $1 $2 often then?"
+				   "I dream $1 $2 too!"))
+    ("I (dream|dream) (.+)" ("I do too. All the damn time"
+			     "I dream $1 too!"))
     ("sorry" ("please don't apologise" "yeah, I'm sorry too"
 	      "no worries"))
     ("do you remember (.+)" ("How could I forget $0?"
