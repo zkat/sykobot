@@ -340,9 +340,12 @@ utf-8 code."
   (when (zerop (length zone)) (setf zone "0"))
   (let ((parsed-zone (parse-integer zone :junk-allowed t)))
     (if parsed-zone
-        (multiple-value-bind (ks-time zone) (get-ks-time parsed-zone)
-          (build-string "The time in GMT~@D is ~3$ ks." zone ks-time))
+        (build-string "The time is ~A." (get-ks-timestamp parsed-zone))
         "Invalid timezone.")))
+
+(defun get-ks-timestamp (&optional (gmt-diff 0))
+  (multiple-value-call #'build-string
+    "~3$ ks in GMT~@D" (get-ks-time gmt-diff)))
 
 (defun get-ks-time (&optional (gmt-diff 0))
   (let ((timezone (- (mod (+ 11 gmt-diff) 24) 11)))
