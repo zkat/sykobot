@@ -43,6 +43,7 @@
 (defmessage save-facts (bot))
 (defmessage set-fact (bot noun info))
 (defmessage get-fact (bot noun))
+(defmessage has-fact (bot noun))
 (defmessage erase-some-facts (bot))
 (defmessage erase-all-facts (bot))
 
@@ -70,6 +71,12 @@
     (if hasp
         info
         (build-string "I know nothing about ~A" noun))))
+
+(defreply has-fact ((bot (proto 'facts-bot)) noun)
+  (multiple-value-bind (info hasp)
+      (gethash noun (facts bot))
+    (declare (ignore info))
+    hasp))
 
 (defreply erase-some-facts ((bot (proto 'facts-bot)))
   (let ((keys (hash-table-keys (facts bot))))
