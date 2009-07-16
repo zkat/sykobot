@@ -21,13 +21,14 @@
                       :components
                       ((:file "hacks")
 		       (:file "utils")
-                       (:file "alref")))
+                       (:file "alref")
+                       (:file "time-utils")))
              (:module "core-bots"
                       :serial t
                       :components
                       ((:file "sykobot")
                        (:file "listeners")
-                       (:file "commands")))             
+                       (:file "commands")))
              (:module "etc-bots"
                       :serial t
                       :components
@@ -37,6 +38,7 @@
 		       (:file "chant")
 		       (:file "now-playing")
 		       (:file "karma")
+		       (:file "seen")
                        (:file "quotegrabs")))
              (:file "config")))))
 
