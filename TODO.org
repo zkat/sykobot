@@ -65,7 +65,7 @@
 *** TODO Admin access
     Maybe later? Register users, etc.
 *** TODO ELIZA
-    Under progress, almost DONE.
+    Under progress, almost DONE. Make a fix that every questions works for 'I' and 'i'
 *** DONE Stability
     Don't want this fucker crashing.
     UPDATE zkat - After that horrible day when everything crashed, the bot's been ridiculously
@@ -77,4 +77,7 @@
     ability to give karma depends on how much karma they themselves have.  UPDATE zkat: We can
     probably improve this a bit still, but it's probably not worth much effort until 0.2. I'm
     tagging this as tentatively done.
+** !fight weechat irssi 
+** !oh noes , !/dev/null commands wich use/abuse random users
+
     

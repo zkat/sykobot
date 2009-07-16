@@ -38,6 +38,7 @@
 		       (:file "chant")
 		       (:file "now-playing")
 		       (:file "karma")
+		       (:file "seen")
                        (:file "quotegrabs")))
              (:file "config")))))
 
