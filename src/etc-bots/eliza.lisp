@@ -8,6 +8,32 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (in-package :sykobot)
 
+(defproto eliza-bot ((proto 'command-bot))
+  ((eliza-mode t)))
+
+(defreply command-function :around ((bot (proto 'eliza-bot)) name)
+  (declare (ignore bot name))
+  (handler-case (call-next-reply)
+    (unknown-command (e)
+      (if (eliza-mode *bot*)
+          (lambda () (respond-to *message*))
+          (signal e)))))
+
+(defcommand eliza ("(\\w+)?" on-off-p)
+  "Syntax: 'eliza <mode>' - Turns Eliza mode on or off, depending on <mode>."
+  (with-accessors ((mode eliza-mode)) *bot*
+    (if on-off-p
+        (cond ((string-equal on-off-p "off")
+               (setf mode nil)
+               "Eliza mode is now off.")
+              ((string-equal on-off-p "on")
+               (setf mode t)
+               "Eliza mode is now on.")
+              (t "Try 'help eliza'."))
+        (build-string "Eliza mode is currently ~:[off~;on~]. ~
+                     Try 'help eliza' for more information."
+                      (eliza-mode *bot*)))))
+
 (defun translate (string alist)
   "take a string and replace any (key, value) in alist"
   (let ((words (split "\\s+" string)))
@@ -180,12 +206,13 @@
   (respond (remove #\? string) *eliza-responses*))
 
 (defcommand - ("(.+)" string)
+  "Syntax: '- <string>' - Test Eliza."
   (respond-to (preprocess string)))
 
 (defcommand reflect ("(.+)" string)
-  "swaps 1st and 2nd person in the accusative case"
+  "Syntax: 'reflect <string>' - Tests Eliza's pronoun reflector."
   (reflect string))
 
 (defcommand preprocess ("(.+)" string)
-  "preprocesses the string - i.e. normalise abbreviations"
+  "Syntax: 'preprocess <string>' - Tests Eliza's preprocessor."
   (preprocess string))
