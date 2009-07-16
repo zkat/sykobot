@@ -21,10 +21,6 @@
 
 (defvar *active-bot* nil)
 
-;;; Good Medicine
-(setf drakma:*drakma-default-external-format* :utf-8
-      flexi-streams:*substitution-char* #\?)
-
 ;;; Stdout logging of raw IRC.
 (defmethod cl-irc:irc-message-event :before (connection message)
   (declare (ignore connection))
