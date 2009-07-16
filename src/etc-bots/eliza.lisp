@@ -22,23 +22,58 @@
   (let ((words (split "\\s+" string)))
     (loop for word in words
        for y from 0
-       when (equalp (char word 0) #\$)
-       do (let ((ele (parse-integer word :start 1 :junk-allowed t)))
+       when (equal (char word 0) #\$)
+       do (let ((following (cadr (split "\\d+" word)))
+		(ele (parse-integer (scan-to-strings "\\d+" word))))
 	    (when (and ele (< ele (length groups)))
-	      (setf (elt words y) (reflect (elt groups ele))))))
+	      (setf (elt words y) (if (case-specifier-p (char word 1))
+				      (reflect (elt groups ele)
+					       (char word 1))
+				      (reflect (elt groups ele))))
+	      (if following (setf (elt words y) (merge-strings ""
+							       (elt words y)
+							       following))))))
+	    
     (format nil "~{~A~^ ~}" words)))
 
-(defparameter *reflections* '(("am" . "are") ("are" . "am")
-			      ("i" . "you") 
-			      ("i'd" . "you would") ("you would" . "i'd")
-			      ("i've" . "you have") ("you have" . "i'd")
-			      ("i'll" . "you will") ("you will" . "i'll")
-			      ("my" . "your") ("your" . "my")
-			      ("mines" . "yours") ("yours" . "mine")
-			      ("me" . "you") ("you" . "me")))
+(defparameter *reflections* '(("n" . (("am" . "are") ("are" . "am")
+				     ("i" . "you") ("you" . "I")
+;;				     ("i'd" . "you would") ("you would" . "i'd")
+;;				     ("i've" . "you have") ("you have" . "i'd")
+;;				     ("i'll" . "you will") ("you will" . "i'll")
+				     ("my" . "your") ("your" . "my")
+				     ("mine" . "yours") ("yours" . "mine")
+				     ("me" . "you") ("you" . "me")))
+			      ("a" . (("you" . "me")))))
 
-(defun reflect (string)
-  (translate string *reflections*))
+(defun case-specifier-p (char)
+  (member char '(#\n #\a)))
+
+(defun reflect (string &optional (in-case #\n))
+  (format nil "~{~A~^ ~}" (mapcar (lambda (w) (reflect-word w in-case)) (split "\\s+" string))))
+
+(defun reflect-word (word &optional (in-case #\n))
+  (unless (case-specifier-p in-case)
+    (error "that isn't a grammatical case"))
+  (cond
+    ((alref word (alref in-case *reflections*)))
+    ((equal in-case #\a) (reflect-word word))
+    (t word)))
+      
+
+(defparameter *preprocessings* '(("i'll" . "I will") ("i'd" . "I would")
+				 ("you'd" . "you would") ("you'll" . "you will")
+				 ("he'd" . "he would") ("he'll" . "he will")
+				 ("she'd" . "she would") ("she'll" . "she will")
+				 ("it'd" . "it would") ("it'll" . "it will")
+				 ("we'd" . "we would") ("we'll" . "we will")
+				 ("they'd" . "they would") ("they'll" . "they will")
+				 ("i've" . "I have") ("i'm" . "I am")
+				 ("ima" . "I am going to")
+				 ("he's" . "he is") ("she's" . "she is") 
+				 ("it's" . "it is")))
+(defun preprocess (string)
+  (translate string *preprocessings*))
 
 (defun respond (string regexen)
   "takes the string, checks through the regexes until a match is made
@@ -56,21 +91,28 @@
     ("my name is (\\w+)" ("hello $0"
 			  "greetings $0"))
     ;;psychoanalysis
-    ("I need (.+)" ("Why do you need $0?"
-		    "Would it really help to get $0?"))
+    ("I need (.+)" ("Why do you need $a0?"
+		    "Would it really help to get $a0?"))
     ("I dreamt (that|about|)(.+)" ("You dream $0 $1 often then?"
 				   "I dream $0 $1 too!"))
     ("sorry" ("please don't apologise" "yeah, I'm sorry too"
 	      "no worries"))
-    ("do you remember (.+)" ("How could I forget!"
+    ("do you remember (.+)" ("How could I forget $0?"
+			     "$0?!"
 			     "How could I forget $0"
 			     "Is $0 worth remembering"))
+
+    ("(\\w+) (thinks*) (that )*(.+)" ("Why do I care what $0 $1?"
+				      "Why should I care what $0 $1?"
+				      "$0 $1 these kinda things often?"))
+
     ("if (.+) then (.+)" ("Do you really think it's likely that $0"
 			  "Well, it sure would be awesome if $1"))
     ("my mother (.+)" ("Who else in your family $0 ?"
 		       "Tell me more about your family"))
-    ("I want (.+)" ("Why would anyone want $0"
+    ("I want (.+)" ("Why would anyone want $a0"
 		    "Yes, that would be nice"))
+    ("I demand (.+)" ("oh, you *demand* do you?"))
     ("are you (.+)" ("And if I were $0 - what then?"
 		     "Why does it matter?"
 		     "Why does it matter if $0"
@@ -93,6 +135,12 @@
 	    "well I'm glad we sorted that out"))
     ("orly" ("yarly"
 	     "btard"))
+    ;; questions
+    ("how (was|is|are|were) ([\\w ]+) (\\w+ing)" ("$1 $0 $2 great"
+						  "$1 $0 $2 meh"
+						  "$1 $0 $2 ok I guess"))
+    ("how (was|is|are|were) ([\\w ]+)" ("$1 $0 great"))
+
     ;; sarcastic stuff
     ("\\w+ (is|are) (fat|big|hot|awesome|win|sexy|ugly)" ("your mum is $1"))
     ("(\\w+) (is|are) here" ("oh great. I love $0"
@@ -102,12 +150,22 @@
     ("die" ("no, you die"))
     ("you suck" ("your mum sucks"))
     ("phrik" ("screw phrik"))
+
+    ;; clutch at straws
+
+    ("interesting" ("well, YOU are not interesting"))
+    ("hate" ("...and I hate you"))
+
+    ;; fine, give up, DEFLECT IT
     ("(.*)" ("Why do you say that $0\?" "What do you mean when you say that $0\?"
 	     "What are your motives behind saying such a thing\?"
 	     "I think it's clear that you're full of shit when you say that $0."))))
 
 (defun respond-to (string)
-  (respond string *eliza-responses*))
+  (respond (remove #\? string) *eliza-responses*))
 
 (defcommand - ("(.+)" string)
-  (respond-to string))
+  (respond-to (preprocess string)))
+
+(defcommand reflect ("(.+)" string)
+  (reflect string))
