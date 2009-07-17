@@ -39,6 +39,7 @@
 		       (:file "now-playing")
 		       (:file "karma")
 		       (:file "seen")
+		       (:file "interpreter")
                        (:file "quotegrabs")))
              (:file "config")))))
 
