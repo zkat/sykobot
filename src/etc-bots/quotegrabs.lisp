@@ -90,7 +90,7 @@
   (if quote
       (destructuring-bind (speaker grabber channel text time-grabbed) quote
         (declare (ignore grabber channel time-grabbed))
-        (build-string "~A: ~A" speaker text))
+        (build-string "<~A> ~A" speaker text))
       "That person evidently never said anything worthy of note"))
 
 ;;; Listener for grabbing
