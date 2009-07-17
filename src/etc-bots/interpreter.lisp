@@ -7,35 +7,26 @@
   (setf (people-to-interpret bot) nil))
 
 (defparameter *language-codes*
-  '(("Afrikaans" . "Af") ("Albanian" . "Sq") ("Amharic" . "Am") ("Arabic" . "Ar") 
-    ("Armenian" . "Hy") ("Azerbaijani" . "Az") ("Basque" . "Eu") ("Belarusian" . "Be")
-    ("Bengali" . "Bn") ("Bihari" . "Bh") ("Bulgarian" . "Bg") ("Burmese" . "My") ("Catalan" . "Ca")
-    ("Cherokee" . "Chr") ("Chinese" . "Zh") ("Chinese-Simplified" . "Zh-Cn")
-    ("Chinese-Traditional" . "Zh-Tw") ("Croatian" . "Hr") ("Czech" . "Cs") ("Danish" . "Da")
-    ("Dhivehi" . "Dv") ("Dutch" . "Nl") ("English" . "En") ("Esperanto" . "Eo") ("Estonian" . "Et")
-    ("Filipino" . "Tl") ("Finnish" . "Fi") ("French" . "Fr") ("Galician" . "Gl") ("Georgian" . "Ka")
-    ("German" . "De") ("Greek" . "El") ("Guarani" . "Gn") ("Gujarati" . "Gu") ("Hebrew" . "Iw")
-    ("Hindi" . "Hi") ("Hungarian" . "Hu") ("Icelandic" . "Is") ("Indonesian" . "Id")
-    ("Inuktitut" . "Iu") ("Italian" . "It") ("Japanese" . "Ja") ("Kannada" . "Kn") ("Kazakh" . "Kk")
-    ("Khmer" . "Km") ("Korean" . "Ko") ("Kurdish" . "Ku") ("Kyrgyz" . "Ky") ("Laothian" . "Lo")
-    ("Latvian" . "Lv") ("Lithuanian" . "Lt") ("Macedonian" . "Mk") ("Malay" . "Ms")
-    ("Malayalam" . "Ml") ("Maltese" . "Mt") ("Marathi" . "Mr") ("Mongolian" . "Mn")
-    ("Nepali" . "Ne") ("Norwegian" . "No") ("Oriya" . "Or") ("Pashto" . "Ps") ("Persian" . "Fa")
-    ("Polish" . "Pl") ("Portuguese" . "Pt-Pt") ("Punjabi" . "Pa") ("Romanian" . "Ro")
-    ("Russian" . "Ru") ("Sanskrit" . "Sa") ("Serbian" . "Sr") ("Sindhi" . "Sd") ("Sinhalese" . "Si")
-    ("Slovak" . "Sk") ("Slovenian" . "Sl") ("Spanish" . "Es") ("Swahili" . "Sw") ("Swedish" . "Sv")
-    ("Tajik" . "Tg") ("Tamil" . "Ta") ("Tagalog" . "Tl") ("Telugu" . "Te") ("Thai" . "Th")
-    ("Tibetan" . "Bo") ("Turkish" . "Tr") ("Ukrainian" . "Uk") ("Urdu" . "Ur") ("Uzbek" . "Uz")
-    ("Uighur" . "Ug") ("Vietnamese" . "Vi") ("Unknown" . "")))
+  '(("Albanian" . "Sq") ("Arabic" . "Ar") ("Bulgarian" . "Bg") ("Catalan" . "Ca")
+    ("Chinese" . "Zh") ("Croatian" . "Hr") ("Czech" . "Cs") ("Danish" . "Da")
+    ("Dutch" . "Nl") ("English" . "En") ("Estonian" . "Et") ("Filipino" . "Tl")
+    ("Finnish" . "Fi") ("French" . "Fr") ("Galician" . "Gl") ("German" . "De")
+    ("Greek" . "El") ("Hebrew" . "Iw") ("Hindi" . "Hi") ("Hungarian" . "Hu")
+    ("Indonesian" . "Id") ("Italian" . "It") ("Japanese" . "Ja") ("Korean" . "Ko") 
+    ("Latvian" . "Lv") ("Lithuanian" . "Lt") ("Maltese" . "Mt") ("Norwegian" . "No")
+    ("Persian" . "Fa") ("Polish" . "Pl") ("Portuguese" . "Pt-Pt") ("Romanian" . "Ro")
+    ("Russian" . "Ru") ("Serbian" . "Sr") ("Slovak" . "Sk") ("Slovenian" . "Sl")
+    ("Spanish" . "Es") ("Swedish" . "Sv") ("Thai" . "Th") ("Turkish" . "Tr") ("Ukrainian" . "Uk")
+    ("Vietnamese" . "Vi")))
 
 (defcommand interpret ("(\\S+)\\s*into\\s*(\\S+)" nick output-lang)
   "Syntax: 'interpret <output-lang> into <lang>' - Turns on automatic translation of ~
 everything <nick> says into <output-lang>. <output-lang> should be one of the bot's ~
 available languages. Use 'nointerpret <nick>' to stop it."
-  (let ((lang (cond ((< 2 (length output-lang))
-		     (cdr (assoc output-lang *language-codes* :test #'string-equal)))
+  (let ((lang (cond ((lang->code output-lang)
+		     output-lang)
 		    ((null output-lang)
-		     "en")
+		     "english")
 		    (t (error "Unknown language: ~A" output-lang)))))
     (setf (alref nick (alref *channel* (people-to-interpret *bot*))) lang)
     (build-string "Very well, I'll translate everything ~A says into ~A" nick output-lang)))
@@ -57,4 +48,27 @@ available languages. Use 'nointerpret <nick>' to stop it."
       (send-msg *bot* *channel* 
 		(build-string "<~A> ~A" *sender*
 			      (translate "*" output-lang *message*))))))
+
+(defcommand translate ("(\\S+) (\\S+) (.*)" input-lang output-lang text)
+  "Syntax: 'translate <input-lang> <output-lang> <text>' - translates TEXT from input-lang into~
+ output-lang. Providing '*' as the input-lang will make it auto-detect the from-language."
+  (translate input-lang output-lang text))
+ 
+(defun lang->code (language)
+  (cdr (assoc language *language-codes* :test #'string-equal)))
+
+(defun translate (input-lang output-lang text)
+  (let* ((lang-pair (merge-strings "|" (if (string= input-lang "*") ""
+					   (lang->code input-lang))
+				   (lang->code output-lang)))
+	 (json-result
+	  (drakma:http-request "http://ajax.googleapis.com/ajax/services/language/translate"
+			       :parameters `(("v" . "1.0") ("q" . ,text) ("langpair" . ,lang-pair))))
+	 (response (json:decode-json-from-string json-result)))
+    (case (alref :response-status response)
+      (200 (decode-html-string
+	    (alref :translated-text
+		   (alref :response-data response))))
+      (T (build-string "Error: ~A"
+		       (alref :response-details response))))))
 
