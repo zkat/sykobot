@@ -15,13 +15,13 @@
   ((:module "src"
             :serial t
             :components
-            ((:file "packages")
+            ((:file "alref")
+	     (:file "packages")
              (:module "utils"
                       :serial t
                       :components
                       ((:file "hacks")
 		       (:file "utils")
-                       (:file "alref")
                        (:file "time-utils")))
              (:module "core-bots"
                       :serial t

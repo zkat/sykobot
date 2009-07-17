@@ -1,5 +1,5 @@
 (defpackage #:sykobot
-  (:use :cl :cl-ppcre :sheeple)
+  (:use :cl :cl-ppcre :sheeple :alref)
   (:export :sykobot :run-bot :connect :disconnect :join :part
            :identify :nick :send-notice :send-msg :topic :add-command
            :remove-command :connection :nickname :server :password
@@ -10,4 +10,4 @@
 	   :*default-listeners-by-channel* :alref :*default-timestamp-function*))
 
 (defpackage #:sykobot-user
-  (:use :cl :sykobot :sheeple :cl-ppcre))
+  (:use :cl :sykobot :sheeple :cl-ppcre :alref))
