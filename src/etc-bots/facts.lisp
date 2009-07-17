@@ -93,10 +93,11 @@
   (split "\\s*(,|but|however|whereas|although|\\; |\\. )\\s*" statement))
 
 (deflistener scan-for-fact
-  (let* ((articles '("a" "an" "the" "this" "that"))
+  (let* ((articles '("a " "an " "the " "this " "that "))
          (verbs '(" am" " is" " are" " isn\\'t" " ain\\'t" "\\'s"
                   " likes" " uses" " has" " fails" " wins" " can" " can't"))
-         (regex (build-string ".*?(~{~A~^|~})*\\s*(\\w+)(~{~A~^|~})\\s+(.+)" articles verbs)))
+         (regex (build-string ".*?(~{~A~^|~})*(\\w+)(~{~A~^|~})\\s+(.+)" articles verbs)))
+
     (loop for statement in (split-into-sub-statements *message*)
        do (do-register-groups (article noun verb info)
               (regex statement)
