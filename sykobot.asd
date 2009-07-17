@@ -40,6 +40,7 @@
 		       (:file "karma")
 		       (:file "seen")
 		       (:file "interpreter")
+		       (:file "spy")
                        (:file "quotegrabs")))
              (:file "config")))))
 
