@@ -7,12 +7,12 @@
    This will give good modularity for the various parts of the command
    system, and will also make aliases easier later on.
 ** TODO Command system
-*** TODO [#A] GIVE command
+*** TODO [#A] Give
     This command probably requires a bit of restructuring of the way the command system works.
     Right now, commands assume their replies are simply going to be sent back to the original
     sender. GIVE breaks this, and since it's supposed to be a command, it would probably be trapped
     by the system's requirement that 'everything is a reply'.
-*** TODO [#A]Admin access
+*** TODO [#A] Admin access
     Maybe later? Register users, etc.
 *** TODO [#B] Fix thinko with #'build-string
     Get that to work as it should.
@@ -24,6 +24,8 @@
 *** TODO [#C] Pipes
     Pipes are neat, because they enable filters such as translation.
     Some commands such as give and echo could also be seen as pipes.
+*** TODO [#C] Karma
+    Karma could use some improvements.
 ** TODO Other stuff
 *** TODO 'log last five minutes and post to wiki...'
 *** TODO Eliza
@@ -36,6 +38,11 @@
     Prevent it somehow. Have a system for ignoring user input for certain listeners/commands.
 *** TODO Google fight
 *** TODO !oh noes, !/dev/null commands which use/abuse random users
+*** TODO !fight weechat irssi 
+*** TODO Stalk command
+    like    stalk nick *yawn* 
+    then like a certain %age of the time after nick speaks, say yawn.
+    (good for bruenig)
 * TODO 0.1
 ** DONE [#A] Goals for new command system
    These are the requirements specified by zkat for the new command
