@@ -33,7 +33,7 @@
                      Try 'help eliza' for more information."
                       (eliza-mode *bot*)))))
 
-(defun translate (string alist)
+(defun replace-words (string alist)
   "take a string and replace any (key, value) in alist"
   (let ((words (split "\\s+" string)))
     (loop for word in words
@@ -101,7 +101,7 @@
 				 ("it's" . "it is") ("that's" . "that is")))
 
 (defun preprocess (string)
-  (translate string *preprocessings*))
+  (replace-words string *preprocessings*))
 
 (defmessage respond (bot string regexen))
 (defreply respond ((bot (proto 'eliza-bot)) string regexen)
@@ -280,7 +280,7 @@
 
 (defcommand - ("(.+)" string)
   "Syntax: '- <string>' - Test Eliza."
-  (respond-to *bot* (preprocess string)))
+  (respond-to *bot* string))
 
 (defcommand reflect ("(.+)" string)
   "Syntax: 'reflect <string>' - Tests Eliza's pronoun reflector."
