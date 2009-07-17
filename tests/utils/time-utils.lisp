@@ -4,6 +4,8 @@
 (def-suite time-utils)
 
 (def-suite time-objects :in time-utils)
+;;; TODO - make decoded-time-object and decoded-kilosecond-time tests check that zones
+;;;        are handled properly.
 (in-suite time-objects)
 
 (test decoded-time-object
@@ -41,15 +43,21 @@
 
 (test decoded-kilosecond-time
   (let* ((universal-time (get-universal-time))
-	 (time-object (decoded-time-object universal-time)))
-    (multiple-value-bind (seconds minutes hours date month year day dstp zone)
+	 (ks-time (decoded-kilosecond-time universal-time)))
+    (multiple-value-bind (seconds minutes hours)
 	(decode-universal-time universal-time)
-      (is (= seconds (time-seconds time-object)))
-      (is (= minutes (time-minutes time-object)))
-      (is (= hours (time-hours time-object)))
-      (is (= date (time-date time-object)))
-      (is (= month (time-month time-object)))
-      (is (= year (time-year time-object)))
-      (is (= day (time-day time-object)))
-      (is (eq dstp (time-dstp time-object)))
-      (is (= zone (time-zone time-object))))))
+      (is (= (/ (+ seconds 
+		   (* minutes 60)
+		   (* hours 3600))
+		1000.0)
+	     ks-time)))))
+
+(test get-kilosecond-time
+  (let ((ks-time (get-kilosecond-time)))
+    (multiple-value-bind (seconds minutes hours)
+	(get-decoded-time)
+      (is (= (/ (+ seconds 
+		   (* minutes 60)
+		   (* hours 3600))
+		1000.0)
+	     ks-time)))))

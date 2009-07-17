@@ -67,10 +67,10 @@
   (let ((seen-time (last-seen *bot* *channel* nick)))
     (if seen-time
 	(build-string "I last saw ~A on ~A" nick
-		      (build-string (get-datestamp :time seen-time)
+		      (build-string (get-datestamp seen-time)
 				    " at "
 				    (funcall *default-timestamp-function* 
-					     :time seen-time)))
+					     seen-time)))
 	(build-string "I haven't seen ~A" nick))))
 
 (defun forget (bot channel nick)

@@ -340,7 +340,7 @@ utf-8 code."
   (when (null zone-string) (setf zone-string "0"))
   (let ((zone (parse-integer zone-string :junk-allowed t)))
     (if zone
-        (build-string "The time is ~A." (get-ks-timestamp :zone zone))
+        (build-string "The time is ~A." (get-kilosecond-timestamp (get-universal-time) zone))
         "Invalid timezone.")))
 
 ;;; Parrot
