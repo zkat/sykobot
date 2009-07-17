@@ -95,9 +95,11 @@
 				 ("we'd" . "we would") ("we'll" . "we will")
 				 ("they'd" . "they would") ("they'll" . "they will")
 				 ("i've" . "I have") ("i'm" . "I am")
-				 ("ima" . "I am going to")
+				 ("ima" . "I am going to") ("wanna" . "want to")
+				 ("gonna" . "going to")
 				 ("he's" . "he is") ("she's" . "she is") 
-				 ("it's" . "it is")))
+				 ("it's" . "it is") ("that's" . "that is")))
+
 (defun preprocess (string)
   (translate string *preprocessings*))
 
@@ -152,7 +154,7 @@
 			  "you would be $1"))
     ("my mother (.+)" ("Who else in your family $0 ?"
 		       "Tell me more about your family"))
-    ("I want (.+)" ("Why would anyone want $a0"
+    ("I (want|wanted) (.+)" ("Why would anyone want $a0"
 		    "Yes, that would be nice"))
     ("I like (.+)" ("I like $a0 too!"))
     ("I demand (.+)" ("oh, you *demand* do you?"))
@@ -162,17 +164,19 @@
 		     "Would you prefer it if I were $0"
 		     "wait, are YOU $0"))
 
-    ("do you know about (.+)" (,(defresp
-				 (let ((noun (elt groups 0)))
+    ("(what )*do you know about (.+)" (,(defresp
+				 (let ((noun (elt groups 1)))
 				   (if (has-fact bot noun)
 				       (build-string 
 					"Well I know that someone said '~A'"
-					(get-fact bot (elt groups 0)))
+					(get-fact bot noun))
 				       (random-elt
 					(list
 					 (build-string "Of course I know about ~A"
 						       noun)
-					 "Nothing at all")))))))
+					 (if (elt groups 0)
+					     "Nothing at all"
+					     "Not at all"))))))))
 
     ("perhaps (.+)" ("Why the uncertainty"
 		     "Of course $0"
@@ -222,7 +226,12 @@
     ("(how|what|where|when|why|who) (.+)" ("$0 indeed"
 					   "I ask myself the same question"))
     ("can (\\w+) (.+)" ("I dunno. Can $0 $a1?"))
-    ("\\w+ (is|are|were|was) (.+)" ("correct"))
+    ("(\\w+) (is|are|were|was) (.+)" ("correct"
+				    "some people think so"
+				    ,(defresp (build-string "REALLY? ~A ~A ~A?"
+							    (elt groups 0)
+							    (elt groups 1)
+							    (elt groups 2)))))
 
 
 
@@ -248,6 +257,12 @@
 	     "music is my life !"
 	     "do you play any instrument ?"))
 
+    ("girls" ("GIRLS? no girl on irc stupid"))
+
+    ("(.+) you$" (,(defresp (build-string "~A you ~A" (elt groups 0)
+					  (if (scan-to-strings "n\\'t" (elt groups 0))
+					      "either"
+					      "too")))))
 
     ;; clutch at straws
 
@@ -261,7 +276,7 @@
 	     "I think it's clear that you're full of shit when you say that $0."))))
 
 (defun respond-to (bot string)
-  (respond bot (remove #\? string) *eliza-responses*))
+  (respond bot (preprocess (remove #\? string)) *eliza-responses*))
 
 (defcommand - ("(.+)" string)
   "Syntax: '- <string>' - Test Eliza."
