@@ -6,17 +6,18 @@
 (defreply init-sheep :after ((bot (proto 'interpreter-bot)) &key)
   (setf (people-to-interpret bot) nil))
 
-(defcommand interpret ("(\\S+) (in|into|to)\\s*([a-z]{2})*" nick foo output-lang)
-  (declare (ignore foo))
-  "Syntax: interpret <output-lang> <nick> - Turns on automatic translation of everything <nick> says into <output-lang>. <output-lang> should be a two letter language specifier"
-  (let ((ol (if output-lang output-lang "en")))
-    (setf (alref nick (alref *channel* (people-to-interpret *bot*))) ol)
-    "Tada!"))
+(defcommand interpret ("(\\S+)\\s*into\\s*(\\S+)" nick output-lang)
+  "Syntax: 'interpret <output-lang> into <lang>' - Turns on automatic translation of ~
+everything <nick> says into <output-lang>. <output-lang> should be a two letter language ~
+specifier. Use 'nointerpret <nick>' to stop it."
+  (let ((lang (or output-lang "en")))
+    (setf (alref nick (alref *channel* (people-to-interpret *bot*))) lang)
+    (build-string "Very well, I'll translate everything ~A says into ~A" nick lang)))
 
 (defcommand nointerpret ("(.+)" nick)
-  "Syntax: nointerpret <nick> - Stop automatically translating whatever <nick> says."
+  "Syntax: 'nointerpret <nick>' - Stop automatically translating whatever <nick> says."
   (setf (alref nick (alref *channel* (people-to-interpret *bot*))) nil)
-  "Tada!")
+  (build-string "Rgr. No longer interpreting for ~A" nick))
 
 (deflistener interpreter-listener
   (let ((output-lang (alref *sender* (alref *channel* (people-to-interpret *bot*)))))
