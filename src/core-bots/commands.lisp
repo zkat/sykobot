@@ -346,15 +346,16 @@ utf-8 code."
 ;;; Parrot
 (deflistener parrot
   (send-msg *bot* *channel* *message*))
+;; I'm semi-disabling parrot for now. -- zkat
 (defcommand parrot ()
   "Syntax: 'parrot' - Turns the bot into an auto-echoing douchebag."
   (if (listener-active-p *bot* *channel* 'parrot)
       (progn
-        (listener-off *bot* *channel* 'parrot)
+        #+nil(listener-off *bot* *channel* 'parrot)
         "NODOUCHE")
       (progn
-        (listener-on *bot* *channel* 'parrot)
-        "TIME TO BE A DOUCHEBAG")))
+	#+nil (listener-on *bot* *channel* 'parrot)
+	"No. Fuck you. Go away.")))
 (defcommand noparrot ()
   "Syntax: 'noparrot' - stops the madness."
   (listener-off *bot* *channel* 'parrot)
