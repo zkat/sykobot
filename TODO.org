@@ -68,8 +68,8 @@
 *** DONE [#C] Compatibility with Existing Commands
     The transition should be smooth. This can be worked on once there
     is something to transition _to_.
-** TODO [#B] Bugfixes
-*** TODO the fact regex fails for quotes like "thewizord is a tree"
+** DONE [#B] Bugfixes
+*** DONE the fact regex fails for quotes like "thewizord is a tree"
     because it reads the 'the' and then goes OH NOES  - need to fix the regex
 ** DONE [#C] Features requested by wizzo
    I guess if we actually get these features built into sykobot, it may actually
