@@ -98,6 +98,7 @@
 (defmessage send-reply (bot target user message))
 (defmessage send-action (bot channel action))
 (defmessage topic (bot channel &optional new-topic))
+(defmessage whois (bot mask))
 
 (defreply nick ((bot (proto 'sykobot)) new-nick)
   (setf (nickname bot) new-nick)
@@ -136,6 +137,9 @@
   (if new-topic
       (irc:topic- (connection bot) channel new-topic)
       (irc:topic (irc:find-channel (connection bot) channel))))
+
+(defreply whois ((bot (proto 'sykobot)) mask)
+  (irc:whois (connection bot) mask))
 
 ;;; Message processing doesn't happen in (proto 'sykobot)!!!
 (defmessage msg-hook (bot msg))

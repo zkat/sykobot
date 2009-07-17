@@ -15,13 +15,13 @@
   ((:module "src"
             :serial t
             :components
-            ((:file "packages")
+            ((:file "alref")
+	     (:file "packages")
              (:module "utils"
                       :serial t
                       :components
                       ((:file "hacks")
 		       (:file "utils")
-                       (:file "alref")
                        (:file "time-utils")))
              (:module "core-bots"
                       :serial t
@@ -52,9 +52,20 @@
   ((:module "tests"
             :serial t
             :components
-            ((:file "sykobot")))))
+            ((:file "packages")
+	     (:file "suite")
+	     (:module "utils"
+                      :serial t
+                      :components
+                      ((:file "time-utils")))
+	     (:module "core-bots"
+		      :serial t
+		      :components
+		      ((:file "sykobot")))))))
+
 
 (defmethod asdf:perform ((o asdf:test-op) (c (eql (asdf:find-system :sykobot))))
+  (declare (ignore o c))
   (format t "~&~%*******************~%~
                  ** Loading tests **~%~
                  *******************~%")
