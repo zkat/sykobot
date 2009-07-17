@@ -43,7 +43,7 @@
     like    stalk nick *yawn* 
     then like a certain %age of the time after nick speaks, say yawn.
     (good for bruenig)
-* TODO 0.1
+* DONE 0.1
 ** DONE [#A] Goals for new command system
    These are the requirements specified by zkat for the new command
    system to be a viable alternative to the current one.
