@@ -81,7 +81,7 @@
 	  (setf documentation (car body))
 	  (setf real-body (cdr body)))
 	(setf real-body body))
-    `(add-command (proto 'command-bot) (symbol-name ',name)
+    `(add-command (proto 'command-bot) (string-downcase (symbol-name ',name))
 		  (defclone ((proto 'command))
 		      ((cmd-function
                         (lambda ()
