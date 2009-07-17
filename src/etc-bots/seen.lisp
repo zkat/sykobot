@@ -31,7 +31,6 @@
 (defmessage save-seen (bot))
 
 (defreply load-seen ((bot (proto 'seen-bot)))
-  (print "loading")
   (when (probe-file (seen-db bot))
     (setf (seen bot)
 	  (cl-store:restore (seen-db bot)))))
@@ -39,17 +38,13 @@
 (defreply save-seen ((bot (proto 'seen-bot)))
   (cl-store:store (seen bot) (seen-db bot)))
 
-
-
-
 (defmessage have-seen (bot channel nick))
 (defreply have-seen ((bot (proto 'seen-bot)) channel nick)
   (when (alref channel (seen bot))
     (setf (gethash nick (alref channel (seen bot))) (get-universal-time))))
 (defreply have-seen :after ((bot (proto 'seen-bot)) channel nick)
-	  (declare (ignore channel nick))
-	  (print "saving")
-	  (save-seen bot))
+  (declare (ignore channel nick))
+  (save-seen bot))
 
 (defmessage last-seen (bot channel nick))
 (defreply last-seen ((bot (proto 'seen-bot)) channel nick)
@@ -57,9 +52,7 @@
     (when seen-table
       (gethash nick seen-table))))
   
-
 (deflistener seen-listener
-  (print "OMG")
   (have-seen *bot* *channel* *sender*))
 
 (defcommand seen ("(.+)" nick)
