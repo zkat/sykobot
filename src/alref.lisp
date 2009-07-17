@@ -11,8 +11,14 @@
 ;;;;   project, lacks some of the features (both convenience
 ;;;;   and bug-safety) that the full utility has.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defpackage #:alref
+  (:use :cl)
+  (:export :alref))
+(in-package :alref)
 
-(in-package :sykobot)
+(defmacro with-gensyms (vars &body body)
+  `(let ,(loop for x in vars collect `(,x (gensym)))
+     ,@body))
 
 (defun alref (item alist &key
               (test #'string-equal)
