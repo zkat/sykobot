@@ -1,13 +1,29 @@
 * TODO 0.2
+** TODO Proper plugin system
+   There should be a plugin prototype that defines an interface for all plugins to follow.
+   It should also provide capabilities for defining and controlling things like commands
+   and listeners on a per-plugin basis.
+** TODO Listeners as sheep
+   This will give good modularity for the various parts of the command
+   system, and will also make aliases easier later on.
 ** TODO Command system
 *** TODO [#A] GIVE command
     This command probably requires a bit of restructuring of the way the command system works.
     Right now, commands assume their replies are simply going to be sent back to the original
     sender. GIVE breaks this, and since it's supposed to be a command, it would probably be trapped
     by the system's requirement that 'everything is a reply'.
+*** TODO [#A]Admin access
+    Maybe later? Register users, etc.
 *** TODO [#B] Fix thinko with #'build-string
     Get that to work as it should.
     Hint: output is to a stream, but maintain abstraction over IRC lib.
+*** TODO [#B] Aliases
+    Aliases are one of the features requested by wizzo, and thus are a
+    high-priority item. They would also help with some things like the
+    command prefix.
+*** TODO [#C] Pipes
+    Pipes are neat, because they enable filters such as translation.
+    Some commands such as give and echo could also be seen as pipes.
 ** TODO Other stuff
 *** TODO 'log last five minutes and post to wiki...'
 *** TODO Eliza
@@ -16,11 +32,12 @@
     so 'seen nick' would say "last seen ....." or "nope, never heard of them"
 *** TODO Praise listener
     listen for stuff like nick++ or nick ftw
+*** TODO Abuse
+    Prevent it somehow. Have a system for ignoring user input for certain listeners/commands.
+*** TODO Google fight
+*** TODO !oh noes, !/dev/null commands which use/abuse random users
 * TODO 0.1
-** TODO [#A] Listeners as sheep
-   This will give good modularity for the various parts of the command
-   system, and will also make aliases easier later on.
-** TODO [#A] Goals for new command system
+** DONE [#A] Goals for new command system
    These are the requirements specified by zkat for the new command
    system to be a viable alternative to the current one.
 *** DONE [#A] Proper Reporting of Incorrect Syntax
@@ -41,20 +58,13 @@
     Sykopomp likes simple macros (who doesn't?). Also, it should be
     transparent enough that if it breaks, it'll be easy for anybody
     to understand and fix, regardless of who wrote it.
-*** TODO [#B] Aliases
-    Aliases are one of the features requested by wizzo, and thus are a
-    high-priority item. They would also help with some things like the
-    command prefix.
-*** TODO [#C] Pipes
-    Pipes are neat, because they enable filters such as translation.
-    Some commands such as give and echo could also be seen as pipes.
 *** DONE [#C] Compatibility with Existing Commands
     The transition should be smooth. This can be worked on once there
     is something to transition _to_.
 ** TODO [#B] Bugfixes
 *** TODO the fact regex fails for quotes like "thewizord is a tree"
     because it reads the 'the' and then goes OH NOES  - need to fix the regex
-** TODO [#C] Features requested by wizzo
+** DONE [#C] Features requested by wizzo
    I guess if we actually get these features built into sykobot, it may actually
    replace supybot as phrik's backend.
 *** DONE google search
@@ -62,22 +72,10 @@
     Persistent quotegrabs, including being able to !grab, !rq, and !q <someone>
 *** DONE Factoids
     ability to define simple persistent factoids that can be called up with just !factname
-*** TODO Admin access
-    Maybe later? Register users, etc.
-*** TODO ELIZA
+*** DONE ELIZA
     Under progress, almost DONE. Make a fix that every questions works for 'I' and 'i'
 *** DONE Stability
     Don't want this fucker crashing.
     UPDATE zkat - After that horrible day when everything crashed, the bot's been ridiculously
     stable. I'm tentatively tagging this as done. There's still plenty of work to do with stability,
     but I think it's all about maturing from now on.
-** DONE [#C] Other Features
-*** DONE Karma
-    Record karma points for each user, and allow giving positive and negative karma. People's
-    ability to give karma depends on how much karma they themselves have.  UPDATE zkat: We can
-    probably improve this a bit still, but it's probably not worth much effort until 0.2. I'm
-    tagging this as tentatively done.
-** !fight weechat irssi 
-** !oh noes , !/dev/null commands wich use/abuse random users
-
-    
