@@ -16,6 +16,13 @@
     so 'seen nick' would say "last seen ....." or "nope, never heard of them"
 *** TODO Praise listener
     listen for stuff like nick++ or nick ftw
+*** TODO Stalk command
+    like    stalk nick *yawn* 
+    then like a certain %age of the time after nick speaks, say yawn.
+    (good for bruenig)
+*** TODO !fight weechat irssi 
+*** TODO !oh noes , !/dev/null commands wich use/abuse random users
+
 * TODO 0.1
 ** TODO [#A] Listeners as sheep
    This will give good modularity for the various parts of the command
@@ -77,7 +84,4 @@
     ability to give karma depends on how much karma they themselves have.  UPDATE zkat: We can
     probably improve this a bit still, but it's probably not worth much effort until 0.2. I'm
     tagging this as tentatively done.
-** !fight weechat irssi 
-** !oh noes , !/dev/null commands wich use/abuse random users
-
     
