@@ -7,7 +7,7 @@
 (defmacro with-decoded-time (time zone &body body)
   `(multiple-value-bind
          (seconds minutes hours date month year day light timezone)
-       (decode-universal-time ,time ,zone)
+       (decode-universal-time ,time (- ,zone))
      (declare (ignorable seconds minutes hours date
 			 month year day light timezone))
      ,@body))
