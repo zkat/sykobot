@@ -424,6 +424,9 @@ I love to singa"
 (defcommand translate ("(\\S+) (\\S+) (.*)" input-lang output-lang text)
   "Syntax: 'translate <input-lang> <output-lang> <text>' - translates TEXT from input-lang into~
  output-lang. Providing '*' as the input-lang will make it auto-detect the from-language."
+  (translate input-lang output-lang text))
+ 
+(defun translate (input-lang output-lang text)
   (if (and (= (length output-lang) 2)
            (or (= (length input-lang) 2)
                (string= input-lang "*")))

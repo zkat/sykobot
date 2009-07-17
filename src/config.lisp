@@ -17,7 +17,7 @@
 (defvar *realname* nil)
 (defvar *bot-dir* nil)
 (defvar *default-listeners* '(command-listener scan-for-url remember-last-thing-said
-			      send-memos scan-for-fact scan-for-more scan-for-now-playing seen-listener))
+			      send-memos scan-for-fact scan-for-more scan-for-now-playing seen-listener interpreter-listener))
 (defvar *default-listeners-by-channel* nil)
 (defvar *default-timestamp-function* #'get-kilosecond-timestamp)
 (defvar *cmd-prefix* nil)
@@ -35,6 +35,7 @@
 						(proto 'facts-bot)
 						(proto 'karma-bot)
 						(proto 'seen-bot)
+						(proto 'interpreter-bot)
 						(proto 'command-bot))))
   (let ((bot (clone bot-prototype)))
     (handler-bind ((cl-irc:no-such-reply (lambda (c)
