@@ -57,7 +57,7 @@
 
 (defreply find-command ((bot (proto 'command-bot)) name)
   (with-properties (commands) bot
-    (gethash (string-upcase name) commands)))
+    (gethash (string-downcase name) commands)))
 
 (defreply command-function ((bot (proto 'command-bot)) name)
   (or (let ((cmd (find-command bot name)))
