@@ -61,6 +61,8 @@
 	(build-string "I last saw ~A on ~A" nick
 		      (build-string (get-datestamp seen-time)
 				    " at "
+				    ;; *default-timestamp-function* needs to be declared
+				    ;; -before- this defcommand. - zkat
 				    (funcall *default-timestamp-function* 
 					     seen-time)))
 	(build-string "I haven't seen ~A" nick))))
