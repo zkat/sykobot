@@ -1,7 +1,7 @@
 ;;;; Unit tests for src/utils/time-utils.lisp
 (in-package :sykobot)
 
-(def-suite time-utils)
+(def-suite time-utils :in sykobot-tests)
 
 (def-suite time-objects :in time-utils)
 ;;; TODO - make decoded-time-object and decoded-kilosecond-time tests check that zones
