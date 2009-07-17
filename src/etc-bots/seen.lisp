@@ -1,12 +1,13 @@
-
+;;;; Copyright 2009 Kat Marchan
+;;;;
+;;;; This file is part of sykobot.
+;;;;
+;;;; For licensing and warranty information, refer to COPYING
+;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (in-package :sykobot)
 
-;;; Config options
-
-
-
 ;;; Seen
-
 (defproto seen-bot ((proto 'command-bot))
   ((seen nil)))
 
@@ -21,12 +22,10 @@
 	    (setf (alref channel (seen bot)) (make-hash-table :test #'equalp))))
 
 ;;; utility
-
 (defun seen-db (bot)
   (merge-pathnames "seen-table.db" (bot-dir bot)))
 
 ;;; loading, saving
-
 (defmessage load-seen (bot))
 (defmessage save-seen (bot))
 
