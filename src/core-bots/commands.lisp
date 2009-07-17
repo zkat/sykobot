@@ -355,7 +355,7 @@ utf-8 code."
         "NODOUCHE")
       (progn
 	#+nil (listener-on *bot* *channel* 'parrot)
-	"No. Fuck you. Go away.")))
+	(build-string "Fuck off, ~A. I know it's you. You're not allowed to pull this shit anymore" *sender*))))
 (defcommand noparrot ()
   "Syntax: 'noparrot' - stops the madness."
   (listener-off *bot* *channel* 'parrot)
