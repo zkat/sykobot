@@ -37,6 +37,12 @@
 						(proto 'seen-bot)
 						(proto 'interpreter-bot)
 						(proto 'command-bot))))
+  ;; Force unicode output. TODO: Support more implementations.
+  ;; Prevents errors attempting to output unicode in non-unicode locales.
+  #+(and sbcl #.(cl:if (cl:find-package "SWANK") '(or) '(and)))
+  (progn (setf sb-impl::*default-external-format* :UTF-8)
+         (setf sb-alien::*default-c-string-external-format* :UTF-8)
+         (sb-kernel:stream-cold-init-or-reset))
   (let ((bot (clone bot-prototype)))
     (handler-bind ((cl-irc:no-such-reply (lambda (c)
                                            (let ((r (find-restart 'continue c)))
