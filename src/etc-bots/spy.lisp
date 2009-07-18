@@ -9,8 +9,11 @@
 
 (defcommand spy ("on (\\S+)" channel)
   (with-accessors ((channels channels-to-spy)) *bot*
-    (pushnew *channel* (alref channel channels) :test #'equalp))
-  "I'll be sneaky")
+    (if (find *channel* (alref channel channels) :test #'equalp)
+        "Have you nothing better to do than torture a bot?"
+        (progn
+          (push *channel* (alref channel channels))
+          "I'll be sneaky"))))
 
 (defcommand nospy ("(\\S+)" channel)
   (with-accessors ((channels channels-to-spy)) *bot*
