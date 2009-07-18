@@ -12,11 +12,11 @@
 ;;; - The time object struct represents the decoded time as an object with accessors,
 ;;;   as opposed to the multiple values of lisp's decoded-time. Some additional functions
 ;;;   are provided that match the standard's time API.
-(defstruct (time (:constructor %make-time))
+(defstruct (time-object (:constructor %make-time))
   seconds minutes hours date month year day dstp zone)
 
 (defun decoded-time-object (time &optional zone)
-  "Creates a time struct based on a universal TIME. If ZONE is provided, it's used as the zone
+  "Creates a time-object struct based on a universal TIME. If ZONE is provided, it's used as the zone
 when decoding the universal time. Otherwise, the local timezone is used."
   (multiple-value-bind (seconds minutes hours date month year day dstp zone)
       (decode-universal-time time zone)
