@@ -197,7 +197,7 @@ Otherwise, it dumps a generic help string."
   "Pfft. I have no versions. I'm 100% git")
 (defcommand commands ()
   "Syntax: 'commands' - Lists all available commands"
-  (build-string "Available commands are ~{~A~^ ~}"
+  (build-string "Available commands are: ~{~A~^ ~}"
                 (list-all-commands *bot*)))
 (defcommand topic ("(.*)" new-topic)
   "Syntax: 'topic [<new-topic>]' - If new-topic is provided, and the bot has topic-setting~
