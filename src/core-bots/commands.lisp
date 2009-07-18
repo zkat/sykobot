@@ -177,6 +177,18 @@ splits it into a command and arguments"
 (defcommand echo ("(.*)" string)
   "Syntax: 'echo <string>' - Echoes back STRING."
   string)
+(defcommand slap ("(\\S+)" nick)
+  "Syntax: 'slap <nick>' - Slaps nick with something."
+  (build-string "slaps " nick " with"
+                      (random-elt '(" a man page"
+				    " the linux kernel"
+				    " a segfault"
+				    " windows XP"
+				    " windows Vista"
+				    " Stallman"
+				    " Bill Gates"
+                                    " your mom"))))	       
+
 (defcommand reverse ("(.*)" input)
   "Syntax: 'reverse <string>' - Reverses the input."
   (reverse input))
@@ -214,6 +226,7 @@ privileges, it sets the channel's topic. Otherwise, it dumps the current topic."
 (defcommand language () 
   "Syntax: 'language' - Returns information about the bot's implementation language."
   "I'm \"Lost In Stupid Parentheses\"")
+
 ;;; Give is currently broken
 #+nil (defcommand give ("(\\S+) (\\S+) (.*)$" new-target new-command new-args)
         (setf *sender* new-target)
