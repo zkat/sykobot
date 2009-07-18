@@ -21,10 +21,6 @@
 
 (defvar *active-bot* nil)
 
-;;; Good Medicine
-(setf drakma:*drakma-default-external-format* :utf-8
-      flexi-streams:*substitution-char* #\?)
-
 ;;; Stdout logging of raw IRC.
 (defmethod cl-irc:irc-message-event :before (connection message)
   (declare (ignore connection))
@@ -88,8 +84,8 @@
 
 (defreply part ((bot (proto 'sykobot)) channel)
   (irc:part (connection bot) channel)
-  (with-properties (channels) bot
-    (setf channels (delete channels channel :test #'string-equal))))
+  (with-accessors ((channels channels)) bot
+    (setf channels (delete channel channels :test #'string-equal))))
 
 (defreply identify ((bot (proto 'sykobot)) password)
   (send-msg bot "nickserv" (build-string "identify ~A" password)))
@@ -102,6 +98,7 @@
 (defmessage send-reply (bot target user message))
 (defmessage send-action (bot channel action))
 (defmessage topic (bot channel &optional new-topic))
+(defmessage whois (bot mask))
 
 (defreply nick ((bot (proto 'sykobot)) new-nick)
   (setf (nickname bot) new-nick)
@@ -140,6 +137,9 @@
   (if new-topic
       (irc:topic- (connection bot) channel new-topic)
       (irc:topic (irc:find-channel (connection bot) channel))))
+
+(defreply whois ((bot (proto 'sykobot)) mask)
+  (irc:whois (connection bot) mask))
 
 ;;; Message processing doesn't happen in (proto 'sykobot)!!!
 (defmessage msg-hook (bot msg))

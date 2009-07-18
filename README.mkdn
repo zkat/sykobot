@@ -4,16 +4,16 @@ About
 Vision
 ------
 
-Sykobot is a next-gen AI, programmed in a next-gen language, designed to be a irc bot for #archlinux, #archlinux-offtopic, or any other irc channel.
-Sykobot currently supports main bot functions, and has flexible code.
+Sykobot is a next-gen AI, programmed in a next-gen language. It's aimed at being very easily
+extensible.
 
 
 Supported Platforms
 -------------------
 
-Sykobot is developed on GNU/Linux. It should, however, work on any Unix-like system with a Common Lisp compiler.
-It has been tested and confirmed to work on [SBCL][1], [Clozure CL][2], and [Allegro CL Express][3].
-If you run sykobot on another platform, please let us know.
+Sykobot is developed on GNU/Linux. It should, however, work on any Unix-like system with a Common
+Lisp compiler.  It has been tested and confirmed to work on [SBCL][1], [Clozure CL][2], and [Allegro
+CL Express][3].  If you run sykobot on another platform, please let us know.
 
 
 Dependencies
@@ -30,8 +30,7 @@ Dependencies
 
 Installing Dependencies
 -----------------------
-You need a Common Lisp compiler to run sykobot, along with several dependencies for various features
-of the bot.
+You need a Common Lisp compiler to run sykobot, along with several dependencies.
 
 Most of the dependencies can be installed with [clbuild][5], available via darcs:
 	darcs get http://common-lisp.net/project/clbuild/clbuild
@@ -59,23 +58,31 @@ Now we need to download sheeple and sykobot itself -- through git.
 Notes
 -----
 
-Sykobot is still in development, although simple bot functions work. There is currently no official stable branch. However, if you have any trouble, we will be glad to help you at #sykosomatic.
+Sykobot is still in development, although it already has quite a few features. Sykopomp's
+master branch on github has the latest tagged release, although you can pull from the devel
+branch for the Bleeding Edge Experience. We promise, it'll make more than just your edge bleed.
 
 
 Features
 --------
+
+Sykobot has quite a few modules already, including:
 
 * Search -- A simple google search
 * Facts -- A simple parser extracts "facts" from the flow of chatter.
 * Quotes -- A facility for grabbing quotes that people in the channel say.
 * Kiloseconds -- The current time, in [kiloseconds][6].
 * Memos -- Leave a message for somebody else, to be delivered when they next speak.
-
+* ELIZA -- a full-fledged simple ELIZA implementation, so you can chat away with your new friend.
+* Karma -- Who's been naughty? Who's been nice? The karma system is weighted.
+* Seen -- That command that's been on minion's TODO list since the dawn of time.
+* And more...
 
 Using Sykobot
 -------------
 
-Currently, the best way to get setup using and hacking sykobot is to ask for help at #sykosomatic on freenode. The developers are distributed across timezones and are always glad to help.
+Currently, the best way to get setup using and hacking sykobot is to ask for help at #sykosomatic on
+freenode. The developers are distributed across timezones and are always glad to help.
 
 
 Bug Reporting
