@@ -32,10 +32,10 @@ available languages. Use 'nointerpret <nick>' to stop it."
     (build-string "Very well, I'll translate everything ~A says into ~A" nick output-lang)))
 
 (defcommand available-languages ()
-  (build-string "~{~A~^, ~}" (remove "Unknown"
-				    (loop for (lang . code) in *language-codes*
-				       collect lang)
-				    :test #'string-equal)))
+  (build-string "~{~A~^, ~}"
+                (str-remove "Unknown"
+                            (loop for (lang . code) in *language-codes*
+                               collect lang))))
 
 (defcommand nointerpret ("(.+)" nick)
   "Syntax: 'nointerpret <nick>' - Stop automatically translating whatever <nick> says."
@@ -55,7 +55,7 @@ available languages. Use 'nointerpret <nick>' to stop it."
   (translate input-lang output-lang text))
  
 (defun lang->code (language)
-  (cdr (assoc language *language-codes* :test #'string-equal)))
+  (cdr (str-assoc language *language-codes*)))
 
 (defun translate (input-lang output-lang text)
   (let* ((lang-pair (merge-strings "|" (if (string= input-lang "*") ""

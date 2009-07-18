@@ -80,12 +80,12 @@
 
 (defreply join ((bot (proto 'sykobot)) channel)
   (irc:join (connection bot) channel)
-  (pushnew channel (channels bot) :test #'string-equal))
+  (str-pushnew channel (channels bot)))
 
 (defreply part ((bot (proto 'sykobot)) channel)
   (irc:part (connection bot) channel)
   (with-accessors ((channels channels)) bot
-    (setf channels (delete channel channels :test #'string-equal))))
+    (setf channels (str-delete channel channels))))
 
 (defreply identify ((bot (proto 'sykobot)) password)
   (send-msg bot "nickserv" (build-string "identify ~A" password)))

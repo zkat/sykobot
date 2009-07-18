@@ -53,12 +53,12 @@ I can tell that they're supposed to do SOMETHING, but they don't."
        (let ((str (nth-value 1 (scan-to-strings "(?i)[more|moar]\\W+(\\w+)\\W+(\\w+)\\W+(\\w+)" s))))
          (or
           (and str
-               (or (member (elt str 0) *prepositions* :test #'string-equal)
-                   (member (elt str 0) *conjunctions* :test #'string-equal)
-                   (member (elt str 0) *articles* :test #'string-equal))
-               (or (member (elt str 1) *prepositions* :test #'string-equal)
-                   (member (elt str 1) *conjunctions* :test #'string-equal)
-                   (member (elt str 1) *articles* :test #'string-equal))
+               (or (str-member (elt str 0) *prepositions*)
+                   (str-member (elt str 0) *conjunctions*)
+                   (str-member (elt str 0) *articles*))
+               (or (str-member (elt str 1) *prepositions*)
+                   (str-member (elt str 1) *conjunctions*)
+                   (str-member (elt str 1) *articles*))
                (setf (alref *channel* *more*)
                      (string-upcase (concatenate 'string (elt str 0)
                                                  " " (elt str 1)
@@ -66,9 +66,9 @@ I can tell that they're supposed to do SOMETHING, but they don't."
           (let ((str (nth-value 1 (scan-to-strings "(?i)[more|moar]\\W+(\\w+)\\W+(\\w+)" s))))
             (or
              (and str
-                  (or (member (elt str 0) *prepositions* :test #'string-equal)
-                      (member (elt str 0) *conjunctions* :test #'string-equal)
-                      (member (elt str 0) *articles* :test #'string-equal))
+                  (or (str-member (elt str 0) *prepositions*)
+                      (str-member (elt str 0) *conjunctions*)
+                      (str-member (elt str 0) *articles*))
                   (setf (alref *channel* *more*)
                         (string-upcase (concatenate 'string (elt str 0)
                                                     " " (elt str 1)))))
