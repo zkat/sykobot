@@ -57,7 +57,7 @@
 
 (defreply find-command ((bot (proto 'command-bot)) name)
   (with-properties (commands) bot
-    (gethash (string-upcase name) commands)))
+    (gethash (string-downcase name) commands)))
 
 (defreply command-function ((bot (proto 'command-bot)) name)
   (or (let ((cmd (find-command bot name)))
@@ -81,7 +81,7 @@
 	  (setf documentation (car body))
 	  (setf real-body (cdr body)))
 	(setf real-body body))
-    `(add-command (proto 'command-bot) (symbol-name ',name)
+    `(add-command (proto 'command-bot) (string-downcase (symbol-name ',name))
 		  (defclone ((proto 'command))
 		      ((cmd-function
                         (lambda ()
@@ -197,7 +197,7 @@ Otherwise, it dumps a generic help string."
   "Pfft. I have no versions. I'm 100% git")
 (defcommand commands ()
   "Syntax: 'commands' - Lists all available commands"
-  (build-string "Available commands are ~{~A~^ ~}"
+  (build-string "Available commands are: ~{~A~^ ~}"
                 (list-all-commands *bot*)))
 (defcommand topic ("(.*)" new-topic)
   "Syntax: 'topic [<new-topic>]' - If new-topic is provided, and the bot has topic-setting~
@@ -364,11 +364,13 @@ utf-8 code."
 ;;; URLs
 (deflistener scan-for-url
   (do-register-groups (link) ("(https?://.*?)(?:>|[.,]? |$)" *message*)
-    (multiple-value-bind (title url) (url-info link)
-      (send-msg *bot* *channel*
-                (build-string "Title: ~A (at ~A)"
-                              (or title "<unknown title>")
-                              (puri:uri-host (puri:uri url)))))))
+    (handler-case
+        (multiple-value-bind (title url) (url-info link)
+          (send-msg *bot* *channel*
+                    (build-string "Title: ~A (at ~A)"
+                                  (or title "<unknown title>")
+                                  (puri:uri-host (puri:uri url)))))
+      (error () nil))))
 
 ;; ;;; Aliasing commands
 ;; ;;; Don't stress this with crazy regexp aliases. It only works
@@ -420,27 +422,6 @@ I love to singa"
   "This accepts no arguments. It makes lisp signal an error, to make sure they're handled properly."
   (error "This is a test error.")
   "Uh oh")
-
-(defcommand translate ("(\\S+) (\\S+) (.*)" input-lang output-lang text)
-  "Syntax: 'translate <input-lang> <output-lang> <text>' - translates TEXT from input-lang into~
- output-lang. Providing '*' as the input-lang will make it auto-detect the from-language."
-  (if (and (= (length output-lang) 2)
-           (or (= (length input-lang) 2)
-               (string= input-lang "*")))
-      (let* ((lang-pair (merge-strings "|" (if (string= input-lang "*") ""
-                                               input-lang)
-                                       output-lang))
-             (json-result
-              (drakma:http-request "http://ajax.googleapis.com/ajax/services/language/translate"
-                                   :parameters `(("v" . "1.0") ("q" . ,text) ("langpair" . ,lang-pair))))
-             (response (json:decode-json-from-string json-result)))
-        (case (alref :response-status response)
-          (200 (decode-html-string
-                (alref :translated-text
-                       (alref :response-data response))))
-          (T (build-string "Error: ~A"
-                           (alref :response-details response)))))
-      "Language specifications need to be 2 letters long."))
 
 (defcommand weather ("(.+)" location)
   "Syntax: 'weather <location>' - Tells you the current weather in <location>"
