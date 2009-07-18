@@ -79,5 +79,6 @@
     tagging this as tentatively done.
 ** !fight weechat irssi 
 ** !oh noes , !/dev/null commands wich use/abuse random users
+** Slap command , needs to use a seperate file for slap items
 
     
