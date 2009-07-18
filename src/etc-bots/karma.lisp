@@ -74,13 +74,20 @@
     karma))
 
 (defcommand praise ("(.+)" nick)
-  (if (string-equal nick *sender*)
-      (progn
-	(give-unkarma *bot* nick *sender*)
-	"Self-glorifying dorks get no love.")
-      (progn
-	(give-karma *bot* nick *sender*)
-	(build-string "ALL PRAISE ~:@(~A~)" nick))))
+  (cond
+    ((string-equal nick *sender*)
+     (progn
+       (give-unkarma *bot* nick *sender*)
+       "Self-glorifying dorks get no love."))
+    ((string-equal nick (nickname *bot*))
+     (progn
+       (give-karma *bot* nick *sender*)
+       "Thanks! 8)"))
+    (t
+     (progn
+       (give-karma *bot* nick *sender*)
+       (build-string "ALL PRAISE ~:@(~A~)" nick)))))
+
 (defcommand unpraise ("(.+)" nick)
   (give-unkarma *bot* nick *sender*)
   (build-string "~A shitsux" nick))
