@@ -8,7 +8,8 @@
 	  (setf (channels-to-spy bot) nil))
 
 (defcommand spy ("on (\\S+)" channel)
-  (push *channel* (alref channel (channels-to-spy *bot*)))
+  (with-accessors ((channels channels-to-spy)) *bot*
+    (pushnew *channel* (alref channel channels) :test #'equalp))
   "I'll be sneaky")
 
 (defcommand nospy ("(\\S+)" channel)
