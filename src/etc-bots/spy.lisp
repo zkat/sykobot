@@ -11,9 +11,9 @@
   "Syntax: 'spy on <channel>' - Echoes all messages in <channel> to the current ~
    channel. The bot can only spy on channels which it has already joined."
   (with-accessors ((channels channels-to-spy)) *bot*
-    (if (or (find *channel* (alref channel channels) :test #'equalp)
+    (if (or (str-find *channel* (alref channel channels))
             (string-equal channel *channel*)
-            (not (find channel (channels *bot*) :test #'equalp)))
+            (not (str-find channel (channels *bot*))))
         "Have you nothing better to do than torture a bot?"
         (progn
           (push *channel* (alref channel channels))
@@ -24,7 +24,7 @@
    current channel."
   (with-accessors ((channels channels-to-spy)) *bot*
     (setf (alref channel channels)
-          (remove *channel* (alref channel channels) :test #'equalp)))
+          (str-remove *channel* (alref channel channels))))
   "I'll withdraw right away")
 
 (deflistener spy-listener

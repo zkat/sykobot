@@ -21,7 +21,8 @@
                       :serial t
                       :components
                       ((:file "hacks")
-		       (:file "utils")
+                       (:file "strings")
+                       (:file "utils")
                        (:file "time-utils")))
              (:module "core-bots"
                       :serial t
