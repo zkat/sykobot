@@ -364,11 +364,13 @@ utf-8 code."
 ;;; URLs
 (deflistener scan-for-url
   (do-register-groups (link) ("(https?://.*?)(?:>|[.,]? |$)" *message*)
-    (multiple-value-bind (title url) (url-info link)
-      (send-msg *bot* *channel*
-                (build-string "Title: ~A (at ~A)"
-                              (or title "<unknown title>")
-                              (puri:uri-host (puri:uri url)))))))
+    (handler-case
+        (multiple-value-bind (title url) (url-info link)
+          (send-msg *bot* *channel*
+                    (build-string "Title: ~A (at ~A)"
+                                  (or title "<unknown title>")
+                                  (puri:uri-host (puri:uri url)))))
+      (error () nil))))
 
 ;; ;;; Aliasing commands
 ;; ;;; Don't stress this with crazy regexp aliases. It only works
