@@ -12,14 +12,15 @@
   "I'll be sneaky")
 
 (defcommand nospy ("(\\S+)" channel)
-  (setf (alref channel (channels-to-spy *bot*)) (remove *channel* (channels-to-spy *bot*)))
+  (with-accessors ((channels channels-to-spy)) *bot*
+    (setf (alref channel channels)
+          (remove *channel* (alref channel channels) :test #'equalp)))
   "I'll withdraw right away")
 
 (deflistener spy-listener
   (let ((report-to (alref *channel* (channels-to-spy *bot*))))
     (when report-to
       (loop for channel in report-to
-	 do (send-msg *bot* channel (build-string "~A <~A> ~A"
-						  *channel*
-						  *sender*
-						  *message*))))))
+	 do (send-msg *bot* channel
+                      (build-string "~A <~A> ~A"
+                                    *channel* *sender* *message*))))))
