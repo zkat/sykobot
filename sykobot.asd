@@ -15,18 +15,20 @@
   ((:module "src"
             :serial t
             :components
-            ((:file "packages")
+            ((:file "alref")
+	     (:file "packages")
              (:module "utils"
                       :serial t
                       :components
-                      ((:file "utils")
-                       (:file "alref")))
+                      ((:file "hacks")
+		       (:file "utils")
+                       (:file "time-utils")))
              (:module "core-bots"
                       :serial t
                       :components
                       ((:file "sykobot")
                        (:file "listeners")
-                       (:file "commands")))             
+                       (:file "commands")))
              (:module "etc-bots"
                       :serial t
                       :components
@@ -34,7 +36,10 @@
                        (:file "facts")
 		       (:file "eliza")
 		       (:file "chant")
+		       (:file "now-playing")
 		       (:file "karma")
+		       (:file "seen")
+		       (:file "interpreter")
                        (:file "quotegrabs")))
              (:file "config")))))
 
@@ -48,9 +53,20 @@
   ((:module "tests"
             :serial t
             :components
-            ((:file "sykobot")))))
+            ((:file "packages")
+	     (:file "suite")
+	     (:module "utils"
+                      :serial t
+                      :components
+                      ((:file "time-utils")))
+	     (:module "core-bots"
+		      :serial t
+		      :components
+		      ((:file "sykobot")))))))
+
 
 (defmethod asdf:perform ((o asdf:test-op) (c (eql (asdf:find-system :sykobot))))
+  (declare (ignore o c))
   (format t "~&~%*******************~%~
                  ** Loading tests **~%~
                  *******************~%")

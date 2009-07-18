@@ -8,7 +8,6 @@
 (in-package :sykobot)
 
 ;;; Memos
-
 (defproto memos-bot ((proto 'command-bot))
   ((memos (make-hash-table :test #'equalp))))
 

@@ -7,45 +7,41 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (in-package :sykobot)
 
-;; ;;; Response stack
-;; ;;; Used to assist piping and multiple return values
-;; (defvar *responses*)
-
 ;;; Modularization of commands
 (defproto command-bot ((proto 'listener-bot))
   ((commands (make-hash-table :test #'equal))
    (detection-regex nil)
    (command-prefix "@")))
 
-(defreply init-sheep :after ((proto 'command-bot) &key)
-  (setf (commands proto) (make-hash-table :test #'equal)))
-
 (defproto command ()
-  ((cmd-function (lambda (a b c d)
-		   (declare (ignore a b c d))
-		   "Oops. Why are you grabbing the proto's cmd-function?"))
+  ((cmd-function (constantly "OOPS. Don't go here."))
    (dox "No documentation available.")))
 
 ;;; Detection regex handling
 (defmessage update-detection-regex (bot))
 (defreply update-detection-regex ((bot (proto 'command-bot)))
   (setf (detection-regex bot)
-        (create-scanner (build-string "^~A[:,] |^~A" (nickname bot) (command-prefix bot))
+        (create-scanner (build-string "^(?:~A[:,] |~A)" (nickname bot) (command-prefix bot))
                         :case-insensitive-mode T)))
 
 (defreply (setf command-prefix) :after (new-value (bot (proto 'command-bot)))
-  "Whenever we set this property, we should make sure the regex is updated as well."
+  "Keeps the detection-regex up-to-date."
   (declare (ignore new-value))
   (update-detection-regex bot))
 
-(defreply init-bot :after ((bot (proto 'command-bot)))
-  (update-detection-regex bot))
-
-(defreply nick :after ((bot (proto 'command-bot)) new-nick)
-  (declare (ignore new-nick))
+(defreply (setf nickname) :after (new-value (bot (proto 'command-bot)))
+  "Keeps the detection-regex up-to-date."
+  (declare (ignore new-value))
   (update-detection-regex bot))
 
 ;;; Command handling stuff
+(define-condition unknown-command (error)
+  ((command-name :reader command-name
+                 :initarg :command-name))
+  (:report (lambda (condition stream)
+             (format stream "Unknown command: ~A"
+                     (command-name condition)))))
+
 (defmessage add-command (bot name command))
 (defmessage remove-command (bot command))
 (defmessage find-command (bot name))
@@ -61,15 +57,12 @@
 
 (defreply find-command ((bot (proto 'command-bot)) name)
   (with-properties (commands) bot
-    (gethash (string-upcase name) commands)))
+    (gethash (string-downcase name) commands)))
 
 (defreply command-function ((bot (proto 'command-bot)) name)
   (or (let ((cmd (find-command bot name)))
 	(when cmd (cmd-function cmd)))
-      (lambda (bot args sender channel)
-	(declare (ignore bot args sender channel))
-	(error (build-string "I don't know how to ~A"
-			     name)))))
+      (error 'unknown-command :command-name name)))
 
 (defreply erase-all-commands ((bot (proto 'command-bot)))
   (clrhash (commands bot)))
@@ -77,13 +70,6 @@
 (defreply list-all-commands ((bot (proto 'command-bot)))
   (with-properties (commands) bot
     (hash-table-keys commands)))
-
-;; We declare these variables here, but do not bind them unless we're actually inside
-;; the body of a command.
-(defvar *bot*)
-(defvar *message*)
-(defvar *sender*)
-(defvar *channel*)
 
 ;; A very convenient macro...
 (defmacro defcommand (name (&optional (regex "") &rest vars) &body body)
@@ -95,11 +81,10 @@
 	  (setf documentation (car body))
 	  (setf real-body (cdr body)))
 	(setf real-body body))
-    `(add-command (proto 'command-bot) (symbol-name ',name)
+    `(add-command (proto 'command-bot) (string-downcase (symbol-name ',name))
 		  (defclone ((proto 'command))
 		      ((cmd-function
-                        (lambda (*bot* *message* *sender* *channel*)
-                          (declare (ignorable *message* *bot* *sender* *channel*))
+                        (lambda ()
                           ,@(if vars
                                 `((or (register-groups-bind ,vars (,regex *message*)
                                         ,@real-body)
@@ -110,19 +95,14 @@
 			       `((dox ,documentation))))))))
 
 ;;; Command processing
-
-;;; Checks if a message is applicable for the bot.
-;;; If so, returns the command section.
-;;; CALLED BY: command-listener, undeafen-listener
-(defmessage get-message-index (bot message))
+(defmessage get-message-index (bot message)
+  (:documentation "Checks if a message is applicable for the bot. If so,
+it returns the command section of the message."))
 (defreply get-message-index ((bot (proto 'sykobot)) message)
   (nth-value 1 (scan (detection-regex bot) message)))
 
-;;; When a message is applicable for the bot, responds to it.
-;;; CALLED BY: call-listeners
-;;; CALLS: respond-to-message
-;;;  - Adlai
 (deflistener command-listener
+  "When a message is applicable for the bot, respond to it."
   (let ((index (get-message-index *bot* *message*)))
     (when index
       (restartable (respond-to-message *bot* *sender* *channel*
@@ -132,20 +112,18 @@
 (defmessage get-responses (bot cmd args sender channel))
 (defmessage process-command-string (bot string sender channel &optional pipe-input))
 
-;;; Removes the direct message indicator from a message,
-;;;   and then splits it into a command and arguments.
-;;; CALLED BY: command-listener
-;;; CALLS: process-command-string
-;;;  - Adlai
 (defreply respond-to-message ((bot (proto 'sykobot))
                               (sender (proto 'string))
                               (channel (proto 'string))
                               (message (proto 'string)))
-  (destructuring-bind (command &optional args)
+  "Removes the direct message indicator from a message, and then
+splits it into a command and arguments"
+  (destructuring-bind (command &optional *message*)
       (split "\\s+" message :limit 2)
     (send-reply bot channel sender
-                (funcall (command-function bot command)
-			 bot args sender channel)))
+                (funcall (command-function bot command))))
+
+
   #+nil (let* ((results (process-command-string bot message sender channel)))
           (loop for result in results
              do (send-reply bot channel sender (build-string result)))))
@@ -199,7 +177,10 @@
 (defcommand echo ("(.*)" string)
   "Syntax: 'echo <string>' - Echoes back STRING."
   string)
-(defcommand help ("(\\S+)?" cmd-name)
+(defcommand reverse ("(.*)" input)
+  "Syntax: 'reverse <string>' - Reverses the input."
+  (reverse input))
+(defcommand help ("(.*)" cmd-name)
   "Syntax: 'help [<cmd-name>]' - If cmd-name is provided, dumps the docstring for that command. ~
 Otherwise, it dumps a generic help string."
   (if (<= 1 (length cmd-name))
@@ -233,7 +214,6 @@ privileges, it sets the channel's topic. Otherwise, it dumps the current topic."
 (defcommand language () 
   "Syntax: 'language' - Returns information about the bot's implementation language."
   "I'm \"Lost In Stupid Parentheses\"")
-
 ;;; Give is currently broken
 #+nil (defcommand give ("(\\S+) (\\S+) (.*)$" new-target new-command new-args)
         (setf *sender* new-target)
@@ -243,12 +223,15 @@ privileges, it sets the channel's topic. Otherwise, it dumps the current topic."
 ;; These are broken until encoding issues can be finalized. -Adlai
 ;; I'll worry about it later. Worksfornow -syko
 (defcommand code->char ("(\\S+)*" code-string)
+  "Syntax: 'code->char <number>' - Converts <number> into its utf-8 representation."
   (let ((code (if code-string (parse-integer code-string :junk-allowed T) 0)))
     (build-string "~:[Invalid code~;~A~]"
                   (and (integerp code) (/= code 127) (>= code 32))
 		  (code-char code))))
 
 (defcommand char->code ("(\\S+)*" char-string)
+  "Syntax: 'char->code <arg>' - Takes the first character seen in <arg> and converts it to its ~
+utf-8 code."
   (let ((code (and char-string (char-code (elt char-string 0)))))
     (build-string  "~:[Invalid character~;~A~]"
                    (and (integerp code) (/= code 127) (>= code 32))
@@ -351,40 +334,28 @@ privileges, it sets the channel's topic. Otherwise, it dumps the current topic."
                 0))))
 
 ;;; kiloseconds
-(defcommand kiloseconds ("(.*)" zone)
+(defcommand kiloseconds ("(\\S+)?" zone-string)
   "Syntax: 'kiloseconds [<zone>]' - The current time in kiloseconds. Optionally, a time zone~
  can be provided in the format [+-]NUM. Example: 'kiloseconds -5'."
-  (when (zerop (length zone)) (setf zone "0"))
-  (let ((parsed-zone (parse-integer zone :junk-allowed t)))
-    (if parsed-zone
-        (let ((ks-time (get-ks-time parsed-zone)))
-          (build-string "The time in GMT~@D is ~3$ ks."
-                        (- (mod (+ 11 parsed-zone) 24) 11)
-                        ks-time))
+  (when (null zone-string) (setf zone-string "0"))
+  (let ((zone (parse-integer zone-string :junk-allowed t)))
+    (if zone
+        (build-string "The time is ~A." (get-kilosecond-timestamp (get-universal-time) zone))
         "Invalid timezone.")))
-
-(defun get-ks-time (&optional (gmt-diff 0))
-  (multiple-value-bind
-        (seconds minutes hours date month year day light zone)
-      (get-decoded-time)
-    (declare (ignore date month year day light))
-    (/ (+ seconds
-          (* 60 (+ minutes
-                   (* 60 (mod (+ hours zone gmt-diff) 24)))))
-       1000)))
 
 ;;; Parrot
 (deflistener parrot
   (send-msg *bot* *channel* *message*))
+;; I'm semi-disabling parrot for now. -- zkat
 (defcommand parrot ()
   "Syntax: 'parrot' - Turns the bot into an auto-echoing douchebag."
   (if (listener-active-p *bot* *channel* 'parrot)
       (progn
-        (listener-off *bot* *channel* 'parrot)
+        #+nil(listener-off *bot* *channel* 'parrot)
         "NODOUCHE")
       (progn
-        (listener-on *bot* *channel* 'parrot)
-        "TIME TO BE A DOUCHEBAG")))
+	#+nil (listener-on *bot* *channel* 'parrot)
+	(build-string "Fuck off, ~A. I know it's you. You're not allowed to pull this shit anymore" *sender*))))
 (defcommand noparrot ()
   "Syntax: 'noparrot' - stops the madness."
   (listener-off *bot* *channel* 'parrot)
@@ -447,29 +418,8 @@ I love to singa"
 
 (defcommand error ()
   "This accepts no arguments. It makes lisp signal an error, to make sure they're handled properly."
-  (error "OH SHIT ERRORED! D:")
+  (error "This is a test error.")
   "Uh oh")
-
-(defcommand translate ("(\\S+) (\\S+) (.*)" input-lang output-lang text)
-  "Syntax: 'translate <input-lang> <output-lang> <text>' - translates TEXT from input-lang into~
- output-lang. Providing '*' as the input-lang will make it auto-detect the from-language."
-  (if (and (= (length output-lang) 2)
-           (or (= (length input-lang) 2)
-               (string= input-lang "*")))
-      (let* ((lang-pair (merge-strings "|" (if (string= input-lang "*") ""
-                                               input-lang)
-                                       output-lang))
-             (json-result
-              (drakma:http-request "http://ajax.googleapis.com/ajax/services/language/translate"
-                                   :parameters `(("v" . "1.0") ("q" . ,text) ("langpair" . ,lang-pair))))
-             (response (json:decode-json-from-string json-result)))
-        (case (alref :response-status response)
-          (200 (decode-html-string
-                (alref :translated-text
-                       (alref :response-data response))))
-          (T (build-string "Error: ~A"
-                           (alref :response-details response)))))
-      "Language specifications need to be 2 letters long."))
 
 (defcommand weather ("(.+)" location)
   "Syntax: 'weather <location>' - Tells you the current weather in <location>"
@@ -496,6 +446,3 @@ I love to singa"
        "there are ~A and the temperature is ~A°C at ~A"
        cloudyness temp station-name)
       (build-string "I couldn't find the weather for ~A" location))))
-
-;; (defcommand reverse ("(.*)" input)
-;;   (cmd-msg (reverse input)))

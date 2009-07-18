@@ -4,7 +4,7 @@
 ;;;;
 ;;;; For licensing and warranty information, refer to COPYING
 ;;;;
-;;;; code in this file is largely based on clikibot's chant routine.
+;;;; code in this file is largely taken from clikibot's chant routine
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (in-package :sykobot)
 
@@ -21,29 +21,28 @@
 (defvar *articles*
   '("an" "a" "the"))
 
-;;; This variable stores the current 'fad'.
-;;; It is an alist, because each channel that the bot connects to
-;;;  could have a different fad.
-(defvar *more* nil)
+(defvar *more* nil
+  "This variable stores the current 'fad'. It is an alist, because each channel
+that the bot connects to could have a different fad.")
 
 ;;; This command is used to chant.
 (defcommand chant ()
   "Syntax: 'chant' - Chants about a current topic."
   (build-string "MORE ~:@(~A~)" (alref *channel* *more* :default "MONEY")))
 
-;;; This is where the cookie crumbles.
-;;;
-;;; More detailed documentation coming soon; essentially, each
-;;;   regexp scans an increasingly general search, trying to
-;;;   find the current 'fad'. The boolean functions essentially
-;;;   ensure that once a match is found, the function will exit.
-;;;
-;;; Because the scans are arranged in decreasing specificity, this
-;;;   means that the most specific 'fad' will be cached.
-;;;
-;;; This scan function is fucked. I've started going over the regexps, and
-;;;   I can tell that they're supposed to do SOMETHING, but they don't.
 (deflistener scan-for-more
+  "This is where the cookie crumbles.
+
+More detailed documentation coming soon; essentially, each
+regexp scans an increasingly general search, trying to
+find the current 'fad'. The boolean functions essentially
+ensure that once a match is found, the function will exit.
+
+Because the scans are arranged in decreasing specificity, this
+means that the most specific 'fad' will be cached.
+
+This scan function is fucked. I've started going over the regexps, and
+I can tell that they're supposed to do SOMETHING, but they don't."
   (let ((s *message*))
     (let ((str (nth-value
                 1 (scan-to-strings "[MORE|MOAR]\\W+((\\W|[A-Z0-9])+)([A-Z0-9])($|[^A-Z0-9])" s))))
