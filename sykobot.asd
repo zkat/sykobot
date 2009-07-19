@@ -56,21 +56,20 @@
             :serial t
             :components
             ((:file "packages")
-	     (:file "suite")
-	     (:module "utils"
+             (:file "suite")
+             (:module "utils"
                       :serial t
                       :components
                       ((:file "time-utils")))
-	     (:module "core-bots"
-		      :serial t
-		      :components
-		      ((:file "sykobot")))))))
-
+             (:module "core-bots"
+                      :serial t
+                      :components
+                      ((:file "sykobot")))))))
 
 (defmethod asdf:perform ((o asdf:test-op) (c (eql (asdf:find-system :sykobot))))
   (declare (ignore o c))
-  (format t "~&~%*******************~%~
-                 ** Loading tests **~%~
+  (format t "~&~%*******************~@
+                 ** Loading tests **~@
                  *******************~%")
   (asdf:oos 'asdf:load-op 'sykobot-tests)
   (asdf:oos 'asdf:test-op 'sykobot-tests))
