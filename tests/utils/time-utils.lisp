@@ -9,7 +9,7 @@
 (in-suite time-objects)
 
 (test decoded-time-object
-  (is (time-p (decoded-time-object (get-universal-time))))
+  (is (time-object-p (decoded-time-object (get-universal-time))))
   (let* ((universal-time (get-universal-time))
 	 (time-object (decoded-time-object universal-time)))
     (multiple-value-bind (seconds minutes hours date month year day dstp zone)
