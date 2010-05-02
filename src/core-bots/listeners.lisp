@@ -17,12 +17,12 @@
 (defvar *default-listeners*)
 (defvar *default-listeners-by-channel*)
 
-(defproto listener-bot ((proto 'sykobot))
+(defproto =listener-bot= (=sykobot=)
   ((listeners (make-hash-table :test #'eq))
    (active-listeners nil)
    (deafp nil)))
 
-(defreply msg-hook ((*bot* (proto 'listener-bot)) msg)
+(defreply msg-hook ((*bot* =listener-bot=) msg)
   (let ((*sender* (irc:source msg))
         (*channel* (let ((target (car (irc:arguments msg))))
 		   (if (equal target (nickname *bot*))
@@ -39,23 +39,23 @@
 (defmessage listener-function (bot name))
 (defmessage call-listener (bot name))
 
-(defreply set-listener ((bot (proto 'listener-bot)) (name (proto 'symbol)) function)
+(defreply set-listener ((bot =listener-bot=) (name =symbol=) function)
   (setf (gethash name (listeners bot)) function))
 
-(defreply remove-listener ((bot (proto 'listener-bot)) (name (proto 'symbol)))
+(defreply remove-listener ((bot =listener-bot=) (name =symbol=))
   (remhash name (listeners bot)))
 
-(defreply listener-function ((bot (proto 'listener-bot)) (name (proto 'symbol)))
+(defreply listener-function ((bot =listener-bot=) (name =symbol=))
   (with-properties (listeners) bot
     (gethash name listeners
              (lambda ()
                (cerror "Continue" "Nonexistant listener ~S" name)))))
 
-(defreply call-listener ((bot (proto 'listener-bot)) (name (proto 'symbol)))
+(defreply call-listener ((bot =listener-bot=) (name =symbol=))
   (funcall (listener-function bot name)))
 
 (defmacro deflistener (name &body body)
-  `(set-listener (proto 'listener-bot) ',name
+  `(set-listener =listener-bot= ',name
                  (lambda () ,@body)))
 
 ;;; Customization of listeners
@@ -64,32 +64,32 @@
 (defmessage call-active-listeners (bot channel))
 (defmessage listener-active-p (bot channel name))
 
-(defreply listener-on ((bot (proto 'listener-bot)) channel name)
+(defreply listener-on ((bot =listener-bot=) channel name)
   (pushnew name (alref channel (active-listeners bot))))
 
-(defreply listener-off ((bot (proto 'listener-bot)) channel name)
+(defreply listener-off ((bot =listener-bot=) channel name)
   (with-properties (active-listeners) bot
     (setf (alref channel active-listeners)
           (delete name (alref channel active-listeners)))))
 
-(defreply call-active-listeners ((bot (proto 'listener-bot)) channel)
+(defreply call-active-listeners ((bot =listener-bot=) channel)
   (let ((deafp (alref channel (deafp bot))))
     (if deafp
         (call-listener bot deafp)
         (dolist (name (alref channel (active-listeners bot)))
           (call-listener bot name)))))
 
-(defreply listener-active-p ((bot (proto 'listener-bot)) channel name)
+(defreply listener-active-p ((bot =listener-bot=) channel name)
   (member name (alref channel (active-listeners bot))))
 
 (defun activate-listeners (bot channel &rest names)
   (dolist (name names)
     (listener-on bot channel name)))
 
-(defreply part :after ((bot (proto 'listener-bot)) channel)
+(defreply part :after ((bot =listener-bot=) channel)
   (setf (alref channel (active-listeners bot)) nil))
 
-(defreply join :after ((bot (proto 'listener-bot)) channel)
+(defreply join :after ((bot =listener-bot=) channel)
   (let ((channel-listeners (alref channel *default-listeners-by-channel*)))
     (if channel-listeners
 	(apply #'activate-listeners bot channel channel-listeners)
@@ -98,7 +98,7 @@
 ;;; Deafness (aka silence)
 (defmessage toggle-deafness (bot channel))
 
-(defreply toggle-deafness ((bot (proto 'listener-bot)) channel)
+(defreply toggle-deafness ((bot =listener-bot=) channel)
   (setf (alref channel (deafp bot))
         (and (not (deafp bot))
              'undeafen)))

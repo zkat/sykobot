@@ -7,7 +7,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (in-package :sykobot)
 
-(defproto sykobot ()
+(defproto =sykobot= ()
   ((connection nil)
    (msg-loop-thread nil)
    (nickname "sykobot")
@@ -44,13 +44,13 @@
 (defmessage part (bot channel))
 (defmessage identify (bot password))
 
-(defreply init-bot ((bot (proto 'sykobot)))
+(defreply init-bot ((bot =sykobot=))
   (when *active-bot*
     (error "There is already a bot running. Disconnect the current *active-bot* and try again."))
   (connect bot)
   (setf *active-bot* bot))
 
-(defreply connect ((bot (proto 'sykobot)))
+(defreply connect ((bot =sykobot=))
   (setf (connection bot) (irc:connect :nickname (nickname bot)
                                       :server (server bot)
                                       :port (port bot)
@@ -73,21 +73,21 @@
                                (when r (invoke-restart r))))))
              (irc:read-message-loop (connection bot)))))))
 
-(defreply disconnect ((bot (proto 'sykobot)) &optional message)
+(defreply disconnect ((bot =sykobot=) &optional message)
   (bt:destroy-thread (msg-loop-thread bot))
   (setf *active-bot* nil)
   (irc:quit (connection bot) (or message (values))))
 
-(defreply join ((bot (proto 'sykobot)) channel)
+(defreply join ((bot =sykobot=) channel)
   (irc:join (connection bot) channel)
   (str-pushnew channel (channels bot)))
 
-(defreply part ((bot (proto 'sykobot)) channel)
+(defreply part ((bot =sykobot=) channel)
   (irc:part (connection bot) channel)
   (with-accessors ((channels channels)) bot
     (setf channels (str-delete channel channels))))
 
-(defreply identify ((bot (proto 'sykobot)) password)
+(defreply identify ((bot =sykobot=) password)
   (send-msg bot "nickserv" (build-string "identify ~A" password)))
 
 ;;;
@@ -100,13 +100,13 @@
 (defmessage topic (bot channel &optional new-topic))
 (defmessage whois (bot mask))
 
-(defreply nick ((bot (proto 'sykobot)) new-nick)
+(defreply nick ((bot =sykobot=) new-nick)
   (setf (nickname bot) new-nick)
   (irc:nick (connection bot) new-nick))
 
-(defreply send-msg ((bot (proto 'sykobot))
-                    (target (proto 'string))
-                    (message (proto 'string)))
+(defreply send-msg ((bot =sykobot=)
+                    (target =string=)
+                    (message =string=))
   (with-properties (connection) bot
     (do-lines (line message collected-lines)
       do (irc:privmsg connection
@@ -117,10 +117,10 @@
 		       line))
       collect line into collected-lines)))
 
-(defreply send-reply ((bot (proto 'sykobot))
-                      (target (proto 'string))
-                      (user (proto 'string))
-                      (message (proto 'string)))
+(defreply send-reply ((bot =sykobot=)
+                      (target =string=)
+                      (user =string=)
+                      (message =string=))
   (send-msg bot target
             (if (string-equal target user) message
                 (apply #'merge-strings #\Newline
@@ -129,21 +129,21 @@
 					       user line)
 			 into message)))))
 
-(defreply send-action ((bot (proto 'sykobot)) channel action)
+(defreply send-action ((bot =sykobot=) channel action)
   (irc:privmsg (connection bot) channel
                (build-string "~AACTION ~A~2:*" #\^A action)))
 
-(defreply topic ((bot (proto 'sykobot)) channel &optional new-topic)
+(defreply topic ((bot =sykobot=) channel &optional new-topic)
   (if new-topic
       (irc:topic- (connection bot) channel new-topic)
       (irc:topic (irc:find-channel (connection bot) channel))))
 
-(defreply whois ((bot (proto 'sykobot)) mask)
+(defreply whois ((bot =sykobot=) mask)
   (irc:whois (connection bot) mask))
 
-;;; Message processing doesn't happen in (proto 'sykobot)!!!
+;;; Message processing doesn't happen in =sykobot=!!!
 (defmessage msg-hook (bot msg))
-(defreply msg-hook ((bot (proto 'sykobot)) msg)
+(defreply msg-hook ((bot =sykobot=) msg)
   (declare (ignore bot msg))
   (format t "I don't know how to handle messages! You might want ~
              to look into using (proto 'sykobot-listeners), who ~
