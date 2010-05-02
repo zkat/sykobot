@@ -8,10 +8,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (in-package :sykobot)
 
-(defproto eliza-bot ((proto 'facts-bot))
+(defproto =eliza-bot= (=facts-bot=)
   ((eliza-mode t)))
 
-(defreply command-function :around ((bot (proto 'eliza-bot)) name)
+(defreply command-function :around ((bot =eliza-bot=) name)
   (handler-case (call-next-reply)
     (unknown-command (e)
       (if (eliza-mode *bot*)
@@ -104,7 +104,7 @@
   (replace-words string *preprocessings*))
 
 (defmessage respond (bot string regexen))
-(defreply respond ((bot (proto 'eliza-bot)) string regexen)
+(defreply respond ((bot =eliza-bot=) string regexen)
   "takes the string, checks through the regexes until a match is made
    and chooses a random response from the response list"
   (or

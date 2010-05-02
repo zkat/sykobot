@@ -8,13 +8,13 @@
 (in-package :sykobot)
 
 ;;; Memos
-(defproto memos-bot ((proto 'command-bot))
+(defproto =memos-bot= (=command-bot=)
   ((memos (make-hash-table :test #'equalp))))
 
-(defreply init-sheep :after ((bot (proto 'memos-bot)) &key)
+(defreply init-object :after ((bot =memos-bot=) &key)
   (setf (memos bot) (make-hash-table :test #'equalp)))
 
-(defreply init-bot :after ((bot (proto 'memos-bot)))
+(defreply init-bot :after ((bot =memos-bot=))
 	  (load-memos bot))
 
 (defcommand memo ("for (\\S+)\\s*: ?(.*)" recipient memo)
@@ -38,35 +38,35 @@
 (defmessage memos-for (bot recipient))
 (defmessage erase-all-memos (bot))
 
-(defreply load-memos ((bot (proto 'memos-bot)))
+(defreply load-memos ((bot =memos-bot=))
   (when (probe-file (memos-db bot))
     (setf (memos bot)
           (cl-store:restore (memos-db bot)))))
 
-(defreply save-memos ((bot (proto 'memos-bot)))
+(defreply save-memos ((bot =memos-bot=))
   (cl-store:store (memos bot) (memos-db bot)))
 
-(defreply add-memo ((bot (proto 'memos-bot)) recipient text sender)
+(defreply add-memo ((bot =memos-bot=) recipient text sender)
   (pushnew (make-memo recipient sender text)
            (gethash recipient (memos bot))
            :test #'equalp))
-(defreply add-memo :after ((bot (proto 'memos-bot)) recipient text sender)
+(defreply add-memo :after ((bot =memos-bot=) recipient text sender)
   (declare (ignore recipient text sender))
   (save-memos bot))
 
-(defreply remove-memo ((bot (proto 'memos-bot)) memo)
+(defreply remove-memo ((bot =memos-bot=) memo)
   (setf (gethash (car memo) (memos bot))
         (delete memo (gethash (car memo) (memos bot)) :test #'equalp)))
-(defreply remove-memo :after ((bot (proto 'memos-bot)) memo)
+(defreply remove-memo :after ((bot =memos-bot=) memo)
   (declare (ignore memo))
   (save-memos bot))
 
-(defreply erase-all-memos ((bot (proto 'memos-bot)))
+(defreply erase-all-memos ((bot =memos-bot=))
   (clrhash (memos bot)))
-(defreply erase-all-memos :after ((bot (proto 'memos-bot)))
+(defreply erase-all-memos :after ((bot =memos-bot=))
   (save-memos bot))
 
-(defreply memos-for ((bot (proto 'memos-bot)) recipient)
+(defreply memos-for ((bot =memos-bot=) recipient)
   (nth-value 0 (gethash recipient (memos bot))))
 
 (deflistener send-memos
