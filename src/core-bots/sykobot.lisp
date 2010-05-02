@@ -146,5 +146,5 @@
 (defreply msg-hook ((bot =sykobot=) msg)
   (declare (ignore bot msg))
   (format t "I don't know how to handle messages! You might want ~
-             to look into using (proto 'sykobot-listeners), who ~
+             to look into using =sykobot-listeners=, who ~
              is able to respond to messages."))

@@ -1,11 +1,11 @@
 
 (in-package :sykobot)
 
-(defproto spy-bot ((proto 'command-bot))
+(defproto =spy-bot= (=command-bot=)
   ((channels-to-spy nil)))
 
-(defreply init-sheep :after ((bot (proto 'spy-bot)) &key)
-	  (setf (channels-to-spy bot) nil))
+(defreply init-object :after ((bot =spy-bot=) &key)
+  (setf (channels-to-spy bot) nil))
 
 (defcommand spy ("on (\\S+)" channel)
   "Syntax: 'spy on <channel>' - Echoes all messages in <channel> to the current ~
