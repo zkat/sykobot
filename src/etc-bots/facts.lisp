@@ -7,13 +7,13 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (in-package :sykobot)
 
-(defproto facts-bot ((proto 'command-bot))
+(defproto =facts-bot= (=command-bot=)
   ((facts (make-hash-table :test #'equalp))))
 
-(defreply init-sheep :after ((bot (proto 'facts-bot)) &key)
+(defreply init-object :after ((bot =facts-bot=) &key)
   (setf (facts bot) (make-hash-table :test #'equalp)))
 
-(defreply init-bot :after ((bot (proto 'facts-bot)))
+(defreply init-bot :after ((bot =facts-bot=))
   (load-facts bot))
 
 ;;; Limiting
@@ -47,46 +47,46 @@
 (defmessage erase-some-facts (bot))
 (defmessage erase-all-facts (bot))
 
-(defreply load-facts ((bot (proto 'facts-bot)))
+(defreply load-facts ((bot =facts-bot=))
   (when (probe-file (facts-db bot))
     (setf (facts bot)
           (cl-store:restore (facts-db bot)))))
 
-(defreply save-facts ((bot (proto 'facts-bot)))
+(defreply save-facts ((bot =facts-bot=))
   (when (zerop (mod (hash-table-count (facts bot)) *facts-write-interval*))
     (cl-store:store (facts bot) (facts-db bot))))
 
-(defreply set-fact ((bot (proto 'facts-bot)) noun info)
+(defreply set-fact ((bot =facts-bot=) noun info)
   (when (> (hash-table-count (facts bot)) *max-facts-to-store*)
     (erase-some-facts bot))
   (setf (gethash noun (facts bot)) info))
 
-(defreply set-fact :after ((bot (proto 'facts-bot)) noun info)
+(defreply set-fact :after ((bot =facts-bot=) noun info)
   (declare (ignore noun info))
   (save-facts bot))
 
-(defreply get-fact ((bot (proto 'facts-bot)) noun)
+(defreply get-fact ((bot =facts-bot=) noun)
   (multiple-value-bind (info hasp)
       (gethash noun (facts bot))
     (if hasp
         info
         (build-string "I know nothing about ~A" noun))))
 
-(defreply has-fact ((bot (proto 'facts-bot)) noun)
+(defreply has-fact ((bot =facts-bot=) noun)
   (multiple-value-bind (info hasp)
       (gethash noun (facts bot))
     (declare (ignore info))
     hasp))
 
-(defreply erase-some-facts ((bot (proto 'facts-bot)))
+(defreply erase-some-facts ((bot =facts-bot=))
   (let ((keys (hash-table-keys (facts bot))))
     (dotimes (n *facts-to-remove*) ; remove approximately *facts-to-remove* facts
       (remhash (random-elt keys) (facts bot)))))
 
 
-(defreply erase-all-facts ((bot (proto 'facts-bot)))
+(defreply erase-all-facts ((bot =facts-bot=))
   (clrhash (facts bot)))
-(defreply erase-all-facts :after ((bot (proto 'facts-bot)))
+(defreply erase-all-facts :after ((bot =facts-bot=))
   (save-facts bot))
 
 (defun split-into-sub-statements (statement)

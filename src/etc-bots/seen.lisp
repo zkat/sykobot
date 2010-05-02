@@ -8,16 +8,16 @@
 (in-package :sykobot)
 
 ;;; Seen
-(defproto seen-bot ((proto 'command-bot))
+(defproto =seen-bot= (=command-bot=)
   ((seen nil)))
 
-(defreply init-sheep :after ((bot (proto 'seen-bot)) &key)
-	  (setf (seen bot) nil))
+(defreply init-object :after ((bot =seen-bot=) &key)
+  (setf (seen bot) nil))
 
-(defreply init-bot :after ((bot (proto 'seen-bot)))
+(defreply init-bot :after ((bot =seen-bot=))
 	  (load-seen bot))
 
-(defreply join :after ((bot (proto 'seen-bot)) channel)
+(defreply join :after ((bot =seen-bot=) channel)
 	  (unless (alref channel (seen bot))
 	    (setf (alref channel (seen bot)) (make-hash-table :test #'equalp))))
 
@@ -29,24 +29,24 @@
 (defmessage load-seen (bot))
 (defmessage save-seen (bot))
 
-(defreply load-seen ((bot (proto 'seen-bot)))
+(defreply load-seen ((bot =seen-bot=))
   (when (probe-file (seen-db bot))
     (setf (seen bot)
 	  (cl-store:restore (seen-db bot)))))
 
-(defreply save-seen ((bot (proto 'seen-bot)))
+(defreply save-seen ((bot =seen-bot=))
   (cl-store:store (seen bot) (seen-db bot)))
 
 (defmessage have-seen (bot channel nick))
-(defreply have-seen ((bot (proto 'seen-bot)) channel nick)
+(defreply have-seen ((bot =seen-bot=) channel nick)
   (when (alref channel (seen bot))
     (setf (gethash nick (alref channel (seen bot))) (get-universal-time))))
-(defreply have-seen :after ((bot (proto 'seen-bot)) channel nick)
+(defreply have-seen :after ((bot =seen-bot=) channel nick)
   (declare (ignore channel nick))
   (save-seen bot))
 
 (defmessage last-seen (bot channel nick))
-(defreply last-seen ((bot (proto 'seen-bot)) channel nick)
+(defreply last-seen ((bot =seen-bot=) channel nick)
   (let ((seen-table (alref channel (seen bot))))
     (when seen-table
       (gethash nick seen-table))))

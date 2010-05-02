@@ -7,13 +7,13 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (in-package :sykobot)
 
-(defproto karma-bot ((proto 'command-bot))
+(defproto =karma-bot= (=command-bot=)
   ((karma (make-hash-table :test #'equalp))))
 
-(defreply init-sheep :after ((bot (proto 'karma-bot)) &key)
-	  (setf (karma bot) (make-hash-table :test #'equalp)))
+(defreply init-object :after ((bot =karma-bot=) &key)
+  (setf (karma bot) (make-hash-table :test #'equalp)))
 
-(defreply init-bot :after ((bot (proto 'karma-bot)))
+(defreply init-bot :after ((bot =karma-bot=))
 	  (load-karma bot))
 
 (defun karma-db (bot)
@@ -22,12 +22,12 @@
 (defmessage load-karma (bot))
 (defmessage save-karma (bot))
 
-(defreply load-karma ((bot (proto 'karma-bot)))
+(defreply load-karma ((bot =karma-bot=))
   (when (probe-file (karma-db bot))
     (setf (karma bot)
 	  (cl-store:restore (karma-db bot)))))
 
-(defreply save-karma ((bot (proto 'karma-bot)))
+(defreply save-karma ((bot =karma-bot=))
   (cl-store:store (karma bot) (karma-db bot)))
 
 (defun make-karma-record (receiver giver &key (positive t))
@@ -37,20 +37,20 @@
 (defmessage give-karma (bot receiver giver))
 (defmessage give-unkarma (bot receiver giver))
 
-(defreply add-karma ((bot (proto 'karma-bot)) receiver karma)
+(defreply add-karma ((bot =karma-bot=) receiver karma)
   (push karma (gethash receiver (karma bot))))
-(defreply add-karma :after ((bot (proto 'karma-bot)) receiver karma)
+(defreply add-karma :after ((bot =karma-bot=) receiver karma)
   (declare (ignore karma receiver))
   (save-karma bot))
 
-(defreply give-karma ((bot (proto 'karma-bot)) receiver giver)
+(defreply give-karma ((bot =karma-bot=) receiver giver)
   (add-karma bot receiver (make-karma-record receiver giver)))
 
-(defreply give-unkarma ((bot (proto 'karma-bot)) receiver giver)
+(defreply give-unkarma ((bot =karma-bot=) receiver giver)
   (add-karma bot receiver (make-karma-record receiver giver :positive nil)))
 
 (defmessage calculate-base-karma (bot nick))
-(defreply calculate-base-karma ((bot (proto 'karma-bot)) nick)
+(defreply calculate-base-karma ((bot =karma-bot=) nick)
   (let ((karma 0))
     (loop for k-record in (gethash nick (karma bot))
 	 do (if (elt k-record 2)
@@ -59,7 +59,7 @@
     karma))
 
 (defmessage calculate-adjusted-karma (bot nick))
-(defreply calculate-adjusted-karma ((bot (proto 'karma-bot)) nick)
+(defreply calculate-adjusted-karma ((bot =karma-bot=) nick)
   (let* ((base-karma (calculate-base-karma bot nick))
 	 (karma base-karma))
     (loop for k-record in (gethash nick (karma bot))

@@ -8,18 +8,18 @@
 (in-package :sykobot)
 
 ;;; Quotes
-(defproto quotes-bot ((proto 'command-bot))
+(defproto =quotes-bot= (=command-bot=)
   ((quotes (make-hash-table :test #'equalp))
    (last-said (make-hash-table :test #'equalp))))
 
-(defreply init-sheep :after ((bot (proto 'quotes-bot)) &key)
+(defreply init-object :after ((bot =quotes-bot=) &key)
   (setf (quotes bot) (make-hash-table :test #'equalp))
   (setf (last-said bot) (make-hash-table :test #'equalp)))
 
-(defreply init-bot :after ((bot (proto 'quotes-bot)))
+(defreply init-bot :after ((bot =quotes-bot=))
 	  (load-quotes bot))
 
-(defreply join :after ((bot (proto 'quotes-bot)) channel)
+(defreply join :after ((bot =quotes-bot=) channel)
   (setf (gethash channel (last-said bot))
 	(make-hash-table :test #'equalp)))
 
@@ -61,22 +61,22 @@
 (defmessage add-quote (bot speaker grabber channel text))
 (defmessage get-quotes (bot nick))
 
-(defreply load-quotes ((bot (proto 'quotes-bot)))
+(defreply load-quotes ((bot =quotes-bot=))
   (when (probe-file (quotes-db bot))
     (setf (quotes bot)
           (cl-store:restore (quotes-db bot)))))
 
-(defreply save-quotes ((bot (proto 'quotes-bot)))
+(defreply save-quotes ((bot =quotes-bot=))
   (cl-store:store (quotes bot) (quotes-db bot)))
 
-(defreply add-quote ((bot (proto 'quotes-bot)) speaker grabber channel text)
+(defreply add-quote ((bot =quotes-bot=) speaker grabber channel text)
   (push (make-quote speaker grabber channel text)
         (gethash speaker (quotes bot))))
-(defreply add-quote :after ((bot (proto 'quotes-bot)) speaker grabber channel text)
+(defreply add-quote :after ((bot =quotes-bot=) speaker grabber channel text)
           (declare (ignore speaker grabber channel text))
           (save-quotes bot))
 
-(defreply get-quotes ((bot (proto 'quotes-bot)) nick)
+(defreply get-quotes ((bot =quotes-bot=) nick)
   (gethash nick (quotes bot)))
 
 ;;;
