@@ -30,6 +30,7 @@
   (ensure-directories-exist (merge-pathnames (dir bot) *home*)))
 
 (defun run-bot (&optional (bot-prototype (object :parents (list =spy-bot=
+                                                                =favor-bot=
                                                                 =interpreter-bot=
                                                                 =quotes-bot=
                                                                 =memos-bot=
