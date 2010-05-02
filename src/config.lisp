@@ -26,25 +26,24 @@
 (defvar *home* (merge-pathnames ".sykobot/" (user-homedir-pathname)))
 
 (defmessage bot-dir (bot))
-(defreply bot-dir ((bot (proto 'sykobot)))
+(defreply bot-dir ((bot =sykobot=))
   (ensure-directories-exist (merge-pathnames (dir bot) *home*)))
 
-(defun run-bot (&optional (bot-prototype (clone (proto 'quotes-bot) 
-						(proto 'memos-bot)
-						(proto 'eliza-bot)
-						(proto 'facts-bot)
-						(proto 'karma-bot)
-						(proto 'seen-bot)
-						(proto 'interpreter-bot)
-						(proto 'spy-bot)
-						(proto 'command-bot))))
+(defun run-bot (&optional (bot-prototype (object :parents (list =quotes-bot= 
+                                                                =memos-bot=
+                                                                =eliza-bot=
+                                                                =facts-bot=
+                                                                =karma-bot=
+                                                                =seen-bot=
+                                                                =command-bot=))))
   ;; Force unicode output. TODO: Support more implementations.
   ;; Prevents errors attempting to output unicode in non-unicode locales.
   #+(and sbcl #.(cl:if (cl:find-package "SWANK") '(or) '(and)))
   (progn (setf sb-impl::*default-external-format* :UTF-8)
          (setf sb-alien::*default-c-string-external-format* :UTF-8)
          (sb-kernel:stream-cold-init-or-reset))
-  (let ((bot (clone bot-prototype)))
+
+  (let ((bot (object :parents (list bot-prototype))))
     (handler-bind ((cl-irc:no-such-reply (lambda (c)
                                            (let ((r (find-restart 'continue c)))
                                              (when r (invoke-restart r))))))
@@ -65,7 +64,7 @@
       (when *port*
         (setf (port bot) *port*))
       (when *cmd-prefix*
-	(setf (command-prefix bot) *cmd-prefix*))
+        (setf (command-prefix bot) *cmd-prefix*))
       (init-bot bot)
       (when *identify-with-nickserv?*
         (identify bot *nickserv-password*))
