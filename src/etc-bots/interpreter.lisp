@@ -20,7 +20,7 @@
     ("Vietnamese" . "Vi")))
 
 (defcommand interpret ("(\\S+)\\s*into\\s*(\\S+)" nick output-lang)
-  "Syntax: 'interpret <output-lang> into <lang>' - Turns on automatic translation of ~
+  "Syntax: 'interpret <nick> into <output-lang>' - Turns on automatic translation of ~
 everything <nick> says into <output-lang>. <output-lang> should be one of the bot's ~
 available languages. Use 'nointerpret <nick>' to stop it."
   (let ((lang (cond ((lang->code output-lang)
