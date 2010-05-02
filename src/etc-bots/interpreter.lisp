@@ -1,9 +1,9 @@
 (in-package :sykobot)
 
-(defproto interpreter-bot ((proto 'command-bot))
+(defproto =interpreter-bot= (=command-bot=)
   ((people-to-interpret nil)))
 
-(defreply init-sheep :after ((bot (proto 'interpreter-bot)) &key)
+(defreply init-object :after ((bot =interpreter-bot=) &key)
   (setf (people-to-interpret bot) nil))
 
 (defparameter *language-codes*
