@@ -436,7 +436,8 @@ I love to singa"
   (error "This is a test error.")
   "Uh oh")
 
-(defcommand weather ("(.+)" location)
+;; This shit ain't working
+#+nil(defcommand weather ("(.+)" location)
   "Syntax: 'weather <location>' - Tells you the current weather in <location>"
   (let* ((location-data
 	  (json:decode-json-from-string 
