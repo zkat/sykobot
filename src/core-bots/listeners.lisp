@@ -19,22 +19,22 @@
 
 (defproto =listener-bot= (=sykobot=)
   ((listeners (make-hash-table :test #'eq))
-   (active-listeners nil)
+   (inactive-listeners nil)
    (deafp nil)))
 
 (defreply msg-hook ((*bot* =listener-bot=) msg)
   (let ((*sender* (irc:source msg))
         (*channel* (let ((target (car (irc:arguments msg))))
-		   (if (equal target (nickname *bot*))
-		       (irc:source msg)
-		       target)))
+                     (if (string-equal target (nickname *bot*))
+                         (irc:source msg)
+                         target)))
         (*message* (escape-format-string (cadr (irc:arguments msg)))))
     (handler-case
         (call-active-listeners *bot* *channel*)
       (error (e) (send-msg *bot* *channel*
                            (build-string "ERROR: ~A" e))))))
 
-(defmessage add-listener (bot name function))
+(defmessage set-listener (bot name function))
 (defmessage remove-listener (bot name))
 (defmessage listener-function (bot name))
 (defmessage call-listener (bot name))
@@ -65,29 +65,26 @@
 (defmessage listener-active-p (bot channel name))
 
 (defreply listener-on ((bot =listener-bot=) channel name)
-  (pushnew name (alref channel (active-listeners bot))))
+  (with-properties (inactive-listeners) bot
+    (setf (alref channel inactive-listeners)
+          (delete name (alref channel inactive-listeners)))))
 
 (defreply listener-off ((bot =listener-bot=) channel name)
-  (with-properties (active-listeners) bot
-    (setf (alref channel active-listeners)
-          (delete name (alref channel active-listeners)))))
+  (pushnew name (alref channel (inactive-listeners bot))))
 
 (defreply call-active-listeners ((bot =listener-bot=) channel)
   (let ((deafp (alref channel (deafp bot))))
     (if deafp
         (call-listener bot deafp)
-        (dolist (name (alref channel (active-listeners bot)))
-          (call-listener bot name)))))
-
-(defreply listener-active-p ((bot =listener-bot=) channel name)
-  (member name (alref channel (active-listeners bot))))
+        (maphash (lambda (listener-name function)
+                   (unless (find listener-name (alref channel (inactive-listeners bot))
+                                 :test #'string-equal)
+                     (funcall function)))
+                 (listeners bot)))))
 
 (defun activate-listeners (bot channel &rest names)
   (dolist (name names)
     (listener-on bot channel name)))
-
-(defreply part :after ((bot =listener-bot=) channel)
-  (setf (alref channel (active-listeners bot)) nil))
 
 (defreply join :after ((bot =listener-bot=) channel)
   (let ((channel-listeners (alref channel *default-listeners-by-channel*)))

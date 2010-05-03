@@ -36,7 +36,7 @@
                                                                 =memos-bot=
                                                                 =eliza-bot=
                                                                 =facts-bot=
-                                                                =karma-bot=
+                                                                ;; =karma-bot=
                                                                 =seen-bot=
                                                                 =command-bot=))))
   ;; Force unicode output. TODO: Support more implementations.
