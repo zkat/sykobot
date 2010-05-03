@@ -104,9 +104,7 @@
   (setf (nickname bot) new-nick)
   (irc:nick (connection bot) new-nick))
 
-(defreply send-msg ((bot =sykobot=)
-                    (target =string=)
-                    (message =string=))
+(defreply send-msg ((bot =sykobot=) target message)
   (with-properties (connection) bot
     (do-lines (line message collected-lines)
       do (irc:privmsg connection
@@ -117,10 +115,7 @@
 		       line))
       collect line into collected-lines)))
 
-(defreply send-reply ((bot =sykobot=)
-                      (target =string=)
-                      (user =string=)
-                      (message =string=))
+(defreply send-reply ((bot =sykobot=) target user message)
   (send-msg bot target
             (if (string-equal target user) message
                 (apply #'merge-strings #\Newline
@@ -134,9 +129,12 @@
                (build-string "~AACTION ~A~2:*" #\^A action)))
 
 (defreply topic ((bot =sykobot=) channel &optional new-topic)
-  (if new-topic
-      (irc:topic- (connection bot) channel new-topic)
-      (irc:topic (irc:find-channel (connection bot) channel))))
+  (let ((channel (irc:find-channel (connection bot) channel)))
+    (if channel
+        (if new-topic
+            (irc:topic- (connection bot) channel new-topic)
+            (irc:topic (irc:find-channel (connection bot) channel)))
+        "No such channel.")))
 
 (defreply whois ((bot =sykobot=) mask)
   (irc:whois (connection bot) mask))

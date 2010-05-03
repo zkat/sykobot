@@ -104,18 +104,19 @@ it returns the command section of the message."))
 (deflistener command-listener
   "When a message is applicable for the bot, respond to it."
   (let ((index (get-message-index *bot* *message*)))
-    (when index
-      (restartable (respond-to-message *bot* *sender* *channel*
-				       (subseq *message* index))))))
+    (cond (index
+           (restartable (respond-to-message *bot* *sender* *channel*
+                                            (subseq *message* index))))
+          ((string-equal *sender* *channel*)
+           (restartable (respond-to-message *bot* *sender* *channel*
+                                            *message*)))
+          (t nil))))
 
 (defmessage respond-to-message (bot sender channel message))
 (defmessage get-responses (bot cmd args sender channel))
 (defmessage process-command-string (bot string sender channel &optional pipe-input))
 
-(defreply respond-to-message ((bot =sykobot=)
-                              (sender =string=)
-                              (channel =string=)
-                              (message =string=))
+(defreply respond-to-message ((bot =sykobot=) sender channel message)
   "Removes the direct message indicator from a message, and then
 splits it into a command and arguments"
   (destructuring-bind (command &optional *message*)
@@ -357,10 +358,10 @@ utf-8 code."
         "Invalid timezone.")))
 
 ;;; Parrot
-(deflistener parrot
+#+nil(deflistener parrot
   (send-msg *bot* *channel* *message*))
 ;; I'm semi-disabling parrot for now. -- zkat
-(defcommand parrot ()
+#+nil(defcommand parrot ()
   "Syntax: 'parrot' - Turns the bot into an auto-echoing douchebag."
   (if (listener-active-p *bot* *channel* 'parrot)
       (progn
@@ -369,7 +370,7 @@ utf-8 code."
       (progn
 	#+nil (listener-on *bot* *channel* 'parrot)
 	(build-string "Fuck off, ~A. I know it's you. You're not allowed to pull this shit anymore" *sender*))))
-(defcommand noparrot ()
+#+nil(defcommand noparrot ()
   "Syntax: 'noparrot' - stops the madness."
   (listener-off *bot* *channel* 'parrot)
   "NODOUCHE")
